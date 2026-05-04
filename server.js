@@ -91,6 +91,10 @@ app.use(session({
   cookie: { maxAge: 1000 * 60 * 60 * 24 }
 }));
 
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 // ============= HELPERS =============
 function formatNumberPtBr(n) {
   const num = Number(n) || 0;
@@ -2288,7 +2292,7 @@ app.post("/api/logout", requireAuth, (req, res) => {
 
 // ============= START =============
 
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
   console.log(`✅ Conectado ao Supabase: ${SUPABASE_URL}`);
 });

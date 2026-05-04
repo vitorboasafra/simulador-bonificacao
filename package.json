@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-local.ps1",
-    "start": "node server-supabase.js",
+    "start": "node server.js",
     "restart": "npm.cmd start",
     "migrate": "node scripts/migrate-to-supabase.js",
     "supabase": "node -e \"require('fs').copyFileSync('server-supabase.js', 'server.js')\" && npm start"
