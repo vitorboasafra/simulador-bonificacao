@@ -1,0 +1,23 @@
+{
+  "name": "simulador-bonificacao-login",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-local.ps1",
+    "start": "node server-supabase.js",
+    "restart": "npm.cmd start",
+    "migrate": "node scripts/migrate-to-supabase.js",
+    "supabase": "node -e \"require('fs').copyFileSync('server-supabase.js', 'server.js')\" && npm start"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.4",
+    "dotenv": "^16.3.1",
+    "express": "^4.21.2",
+    "express-session": "^1.18.0",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^8.0.7",
+    "pdf-lib": "^1.17.1",
+    "pdfkit": "^0.15.0",
+    "xlsx": "^0.18.5"
+  }
+}

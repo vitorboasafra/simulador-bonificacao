@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simulador de Bonificação</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <style>
+      body {
+        background: #E7E7E7;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen py-6 px-4 text-[#203a28]">
+    <main class="mx-auto w-full max-w-6xl space-y-6">
+      <header class="rounded-lg border border-[#d8e5c6] bg-white/95 p-5 shadow-xl shadow-[#203a28]/10">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-4">
+            <img src="/assets/boa-safra-logo.png" alt="Boa Safra Sementes" class="h-auto w-36 shrink-0 rounded-2xl" />
+            <div class="border-l border-[#d8e5c6] pl-4">
+              <h1 class="text-2xl font-semibold text-[#1f4d2d]">Simulador de Bonificação</h1>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <span
+              id="statusTopo"
+              class="hidden rounded-lg border border-[#cde5bd] bg-[#edf7e8] px-3 py-2 text-sm text-[#315b2f]"
+            ></span>
+            <span
+              id="usuarioLogado"
+              class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] px-3 py-2 text-sm text-[#38563f]"
+            ></span>
+            <button
+              id="btnUploadPlanilha"
+              type="button"
+              title="Upload da planilha"
+              aria-label="Upload da planilha"
+              class="flex h-10 w-10 items-center justify-center rounded-lg border border-[#d8e5c6] bg-[#f8faf4] text-[#38563f] transition-colors duration-200 hover:bg-[#edf4e2] hover:text-[#1f4d2d]"
+            >
+              <i class="fa-solid fa-file-arrow-up"></i>
+            </button>
+            <input id="uploadPlanilhaTopo" type="file" accept=".xlsx,.xls" class="hidden" />
+            <button
+              id="btnConfiguracoes"
+              type="button"
+              title="Configurações"
+              aria-label="Configurações"
+              class="flex h-10 w-10 items-center justify-center rounded-lg border border-[#d8e5c6] bg-[#f8faf4] text-[#38563f] transition-colors duration-200 hover:bg-[#edf4e2] hover:text-[#1f4d2d]"
+            >
+              <i class="fa-solid fa-gear"></i>
+            </button>
+            <a
+              id="dashboardCard"
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hidden rounded-lg border border-[#cde5bd] bg-[#edf7e8] px-4 py-2 text-sm font-bold uppercase tracking-[0.02em] text-[#1f4d2d] transition-colors duration-200 hover:bg-[#dff0d6]"
+            >
+              Acesso ao Dashboard
+            </a>
+            <button
+              id="btnLogout"
+              type="button"
+              class="rounded-lg bg-[#6f5428] px-4 py-2 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#5c451f]"
+            >
+              Sair
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <section class="rounded-lg border border-[#d8e5c6] bg-white/95 p-6 shadow-xl shadow-[#203a28]/10 space-y-5">
+        <h2 class="text-lg font-semibold text-[#1f4d2d]">Preencha os Dados</h2>
+
+        <div class="space-y-5">
+          <div>
+            <label for="fornecedor" class="mb-2 block text-sm font-medium text-[#38563f]">1. Fornecedor</label>
+            <div class="relative">
+              <input
+                id="fornecedor"
+                type="text"
+                class="w-full rounded-lg border border-[#cfdcbd] bg-[#f8faf4] px-3 py-2 text-[#203a28] focus:ring-[#7FB23D] focus:border-[#7FB23D] outline-none"
+                placeholder="Digite ou selecione um fornecedor"
+                autocomplete="off"
+              />
+              <div
+                id="listaFornecedores"
+                class="absolute left-0 right-0 top-full z-30 mt-1 hidden max-h-72 overflow-auto rounded-lg border border-[#cfdcbd] bg-white shadow-xl"
+              ></div>
+            </div>
+          </div>
+
+          <div id="etapaCentros" class="hidden">
+            <label class="mb-2 block text-sm font-medium text-[#38563f]">2. Centros</label>
+            <div
+              id="listaCentros"
+              class="max-h-56 overflow-auto rounded-lg border border-[#cfdcbd] bg-[#f8faf4] p-3 text-sm text-[#203a28]"
+            ></div>
+          </div>
+
+          <div id="etapaCultivares" class="hidden">
+            <label class="mb-2 block text-sm font-medium text-[#38563f]">3. Selecione a Cultivar</label>
+            <div
+              id="listaCultivares"
+              class="max-h-56 overflow-auto rounded-lg border border-[#cfdcbd] bg-[#f8faf4] p-3 text-sm text-[#203a28]"
+            ></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="secaoResumo" class="hidden rounded-lg border border-[#d8e5c6] bg-white/95 p-6 shadow-xl shadow-[#203a28]/10 space-y-5">
+        <h2 class="text-lg font-semibold text-[#1f4d2d]">Resumo</h2>
+        <div id="resumoCombinacoes" class="rounded-lg border border-[#cfdcbd] bg-[#f8faf4] p-4 text-sm text-[#38563f]">
+          Aguardando seleção.
+        </div>
+      </section>
+
+      <section id="secaoParametros" class="hidden rounded-lg border border-[#d8e5c6] bg-white/95 p-6 shadow-xl shadow-[#203a28]/10 space-y-5">
+        <h2 class="text-lg font-semibold text-[#1f4d2d]">Parâmetros de Bonificação</h2>
+
+        <label class="inline-flex items-center gap-2 text-sm font-medium text-[#38563f]">
+          <input id="modoGlobal" type="checkbox" checked class="h-4 w-4 rounded border-[#cfdcbd] text-[#7FB23D]" />
+          Aplicar os mesmos valores para todas as inscrições estaduais/materiais
+        </label>
+
+        <div id="configGlobal" class="grid gap-4 md:grid-cols-2">
+          <div>
+            <label for="globalPerc" class="mb-2 block text-sm font-medium text-[#38563f]">Porcentagem (%)</label>
+            <input
+              id="globalPerc"
+              type="number"
+              step="0.1"
+              value="10"
+              class="w-full rounded-lg border border-[#cfdcbd] bg-[#f8faf4] px-3 py-2 text-[#203a28] focus:ring-[#7FB23D] focus:border-[#7FB23D] outline-none"
+            />
+          </div>
+          <div>
+            <label for="globalValor" class="mb-2 block text-sm font-medium text-[#38563f]">Valor da Saca (R$)</label>
+            <input
+              id="globalValor"
+              type="number"
+              step="0.01"
+              value="0"
+              class="w-full rounded-lg border border-[#cfdcbd] bg-[#f8faf4] px-3 py-2 text-[#203a28] focus:ring-[#7FB23D] focus:border-[#7FB23D] outline-none"
+            />
+          </div>
+        </div>
+
+        <div id="configPorItem" class="hidden space-y-3"></div>
+
+        <div class="grid gap-3 md:grid-cols-2">
+          <button
+            id="btnNovaCotacao"
+            type="button"
+            class="rounded-lg border border-[#cfdcbd] bg-white px-4 py-3 text-[#38563f] font-semibold transition-colors duration-200 hover:bg-[#edf4e2]"
+          >
+            Nova Simulação
+          </button>
+          <button
+            id="btnCalcular"
+            type="button"
+            class="rounded-lg bg-[#2f6b37] px-4 py-3 text-white font-semibold transition-colors duration-200 hover:bg-[#25572d]"
+          >
+            Calcular
+          </button>
+        </div>
+      </section>
+
+      <section id="secaoResultado" class="hidden rounded-lg border border-[#d8e5c6] bg-white/95 p-6 shadow-xl shadow-[#203a28]/10 space-y-5">
+        <h2 class="text-lg font-semibold text-[#1f4d2d]">Resultado</h2>
+        <div id="totalGeral" class="rounded-lg bg-[#edf7e8] border border-[#cde5bd] px-4 py-3 text-[#1f4d2d] font-semibold">
+          Total Geral: R$ 0,00
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-[#d8e5c6] text-sm">
+            <thead class="bg-[#edf4e2]">
+              <tr>
+                <th class="px-3 py-2 text-left font-semibold text-[#38563f]">Centro</th>
+                <th class="px-3 py-2 text-left font-semibold text-[#38563f]">Inscrição Estadual</th>
+                <th class="px-3 py-2 text-left font-semibold text-[#38563f]">Material</th>
+                <th class="px-3 py-2 text-left font-semibold text-[#38563f]">Peso Base</th>
+                <th class="px-3 py-2 text-left font-semibold text-[#38563f]">% Bonif</th>
+                <th class="px-3 py-2 text-left font-semibold text-[#38563f]">Sacas</th>
+                <th class="px-3 py-2 text-left font-semibold text-[#38563f]">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody id="resultadoBody" class="divide-y divide-[#e6edd8] bg-white"></tbody>
+          </table>
+        </div>
+        <button
+          id="btnPdf"
+          type="button"
+          class="hidden w-full rounded-lg bg-[#6f5428] px-4 py-3 text-white font-semibold transition-colors duration-200 hover:bg-[#5c451f]"
+        >
+          Emitir PDF de bonificação
+        </button>
+      </section>
+
+      <section id="secaoEspelhoNFe" class="hidden rounded-lg border border-[#d8e5c6] bg-white/95 p-6 shadow-xl shadow-[#203a28]/10 space-y-4">
+        <div class="flex items-center justify-between gap-4">
+          <h2 class="text-lg font-semibold text-[#1f4d2d]">📋 Espelho de NFe de Bonificação</h2>
+          <p class="text-xs text-[#61713d]">Para conferência e replicação manual</p>
+        </div>
+        <div id="conteudoEspelhoNFe" class="space-y-4">
+          <!-- Conteúdo injetado dinamicamente -->
+        </div>
+      </section>
+    </main>
+
+    <div id="modalConfiguracoes" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 px-4">
+      <section class="max-h-[90vh] w-full max-w-4xl overflow-auto rounded-lg border border-[#d8e5c6] bg-white p-6 shadow-xl">
+        <div class="mb-5 flex items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-semibold text-[#1f4d2d]">Configurações</h2>
+            <p id="planilhaAtual" class="mt-1 text-sm text-[#61713d]">Carregando planilha atual...</p>
+          </div>
+          <button
+            id="btnFecharConfiguracoes"
+            type="button"
+            class="flex h-9 w-9 items-center justify-center rounded-lg border border-[#d8e5c6] bg-[#f8faf4] text-[#38563f] hover:bg-[#edf4e2]"
+            aria-label="Fechar configurações"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="grid gap-5 lg:grid-cols-2">
+          <section class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4">
+            <h3 class="font-semibold text-[#1f4d2d]">Alterar senha</h3>
+            <form id="formUsuario" class="mt-4 grid gap-3">
+              <input
+                id="novaSenhaConfig"
+                type="password"
+                class="rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-sm outline-none focus:border-[#7FB23D]"
+                placeholder="Senha com mínimo 4 caracteres"
+              />
+              <button type="submit" class="rounded-lg bg-[#2f6b37] px-4 py-2 text-sm font-semibold text-white hover:bg-[#25572d]">
+                Salvar senha
+              </button>
+            </form>
+          </section>
+
+          <section class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4">
+            <div class="flex items-center justify-between gap-3">
+              <h3 class="font-semibold text-[#1f4d2d]">Histórico de Cálculos</h3>
+              <button
+                id="btnLimparHistorico"
+                type="button"
+                class="rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-xs font-semibold text-[#38563f] hover:bg-[#edf4e2]"
+              >
+                Limpar
+              </button>
+            </div>
+            <div id="listaHistorico" class="mt-4 max-h-80 space-y-2 overflow-auto text-sm"></div>
+          </section>
+        </div>
+
+        <div id="adminConfiguracoes" class="mt-5 hidden grid gap-5 lg:grid-cols-2">
+          <section class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4">
+            <h3 class="font-semibold text-[#1f4d2d]">Dashboard Power BI</h3>
+            <form id="formDashboard" class="mt-4 grid gap-3">
+              <input
+                id="dashboardLinkConfig"
+                type="url"
+                class="rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-sm outline-none focus:border-[#7FB23D]"
+                placeholder="Cole o link do dashboard"
+              />
+              <button type="submit" class="rounded-lg bg-[#2f6b37] px-4 py-2 text-sm font-semibold text-white hover:bg-[#25572d]">
+                Atualizar link
+              </button>
+            </form>
+          </section>
+
+          <section class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4">
+            <h3 class="font-semibold text-[#1f4d2d]">Adicionar Usuário</h3>
+            <form id="formNovoUsuarioAdmin" class="mt-4 grid gap-3">
+              <input id="novoUsuarioAdmin" type="text" class="rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-sm outline-none focus:border-[#7FB23D]" placeholder="Usuário" />
+              <input id="novoEmailAdmin" type="email" class="rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-sm outline-none focus:border-[#7FB23D]" placeholder="usuario@boasafrasementes.com.br" />
+              <input id="novaSenhaAdmin" type="password" class="rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-sm outline-none focus:border-[#7FB23D]" placeholder="Senha inicial" />
+              <label class="inline-flex items-center gap-2 text-sm text-[#38563f]">
+                <input id="novoAdminCheck" type="checkbox" class="h-4 w-4 rounded border-[#cfdcbd] text-[#7FB23D]" />
+                Administrador
+              </label>
+              <button type="submit" class="rounded-lg bg-[#2f6b37] px-4 py-2 text-sm font-semibold text-white hover:bg-[#25572d]">
+                Salvar Usuário
+              </button>
+            </form>
+          </section>
+
+          <section class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4 lg:col-span-2">
+            <div class="grid gap-4 lg:grid-cols-[1fr_1.2fr]">
+              <div>
+                <h3 class="font-semibold text-[#1f4d2d]">Promover administrador</h3>
+                <form id="formPromoverAdmin" class="mt-4 grid gap-3">
+                  <input id="usuarioPromoverAdmin" type="text" class="rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-sm outline-none focus:border-[#7FB23D]" placeholder="Usuário existente" />
+                  <input id="emailPromoverAdmin" type="email" class="rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-sm outline-none focus:border-[#7FB23D]" placeholder="Email corporativo" />
+                  <button type="submit" class="rounded-lg bg-[#6f5428] px-4 py-2 text-sm font-semibold text-white hover:bg-[#5c451f]">
+                    Tornar administrador
+                  </button>
+                </form>
+              </div>
+              <div>
+                <h3 class="font-semibold text-[#1f4d2d]">Usuários cadastrados</h3>
+                <div id="listaUsuariosAdmin" class="mt-4 max-h-80 space-y-2 overflow-auto text-sm"></div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <p id="statusConfig" class="mt-4 hidden rounded-lg px-3 py-2 text-sm"></p>
+      </section>
+    </div>
+
+    <script>
+      const fornecedorEl = document.getElementById("fornecedor");
+      const listaFornecedoresEl = document.getElementById("listaFornecedores");
+      const usuarioLogadoEl = document.getElementById("usuarioLogado");
+      const statusTopoEl = document.getElementById("statusTopo");
+      const dashboardCardEl = document.getElementById("dashboardCard");
+      const btnUploadPlanilhaEl = document.getElementById("btnUploadPlanilha");
+      const uploadPlanilhaTopoEl = document.getElementById("uploadPlanilhaTopo");
+      const btnConfiguracoesEl = document.getElementById("btnConfiguracoes");
+      const btnLogoutEl = document.getElementById("btnLogout");
+      const modalConfiguracoesEl = document.getElementById("modalConfiguracoes");
+      const btnFecharConfiguracoesEl = document.getElementById("btnFecharConfiguracoes");
+      const planilhaAtualEl = document.getElementById("planilhaAtual");
+      const statusConfigEl = document.getElementById("statusConfig");
+      const formUsuarioEl = document.getElementById("formUsuario");
+      const novaSenhaConfigEl = document.getElementById("novaSenhaConfig");
+      const listaHistoricoEl = document.getElementById("listaHistorico");
+      const btnLimparHistoricoEl = document.getElementById("btnLimparHistorico");
+      const adminConfiguracoesEl = document.getElementById("adminConfiguracoes");
+      const formDashboardEl = document.getElementById("formDashboard");
+      const dashboardLinkConfigEl = document.getElementById("dashboardLinkConfig");
+      const formNovoUsuarioAdminEl = document.getElementById("formNovoUsuarioAdmin");
+      const novoUsuarioAdminEl = document.getElementById("novoUsuarioAdmin");
+      const novoEmailAdminEl = document.getElementById("novoEmailAdmin");
+      const novaSenhaAdminEl = document.getElementById("novaSenhaAdmin");
+      const novoAdminCheckEl = document.getElementById("novoAdminCheck");
+      const formPromoverAdminEl = document.getElementById("formPromoverAdmin");
+      const usuarioPromoverAdminEl = document.getElementById("usuarioPromoverAdmin");
+      const emailPromoverAdminEl = document.getElementById("emailPromoverAdmin");
+      const listaUsuariosAdminEl = document.getElementById("listaUsuariosAdmin");
+      const etapaCentrosEl = document.getElementById("etapaCentros");
+      const etapaCultivaresEl = document.getElementById("etapaCultivares");
+      const listaCentrosEl = document.getElementById("listaCentros");
+      const listaCultivaresEl = document.getElementById("listaCultivares");
+      const secaoResumoEl = document.getElementById("secaoResumo");
+      const secaoParametrosEl = document.getElementById("secaoParametros");
+      const secaoResultadoEl = document.getElementById("secaoResultado");
+      const secaoEspelhoNFeEl = document.getElementById("secaoEspelhoNFe");
+      const conteudoEspelhoNFeEl = document.getElementById("conteudoEspelhoNFe");
+      const modoGlobalEl = document.getElementById("modoGlobal");
+      const configGlobalEl = document.getElementById("configGlobal");
+      const configPorItemEl = document.getElementById("configPorItem");
+      const globalPercEl = document.getElementById("globalPerc");
+      const globalValorEl = document.getElementById("globalValor");
+      const resumoEl = document.getElementById("resumoCombinacoes");
+      const resultadoBodyEl = document.getElementById("resultadoBody");
+      const totalGeralEl = document.getElementById("totalGeral");
+      const btnNovaCotacaoEl = document.getElementById("btnNovaCotacao");
+      const btnCalcularEl = document.getElementById("btnCalcular");
+      const btnPdfEl = document.getElementById("btnPdf");
+
+      let usuarioAtual = "";
+      let usuarioAdminAtual = false;
+      let combinacoesAtuais = [];
+      let ultimoPayloadPdf = null;
+      let fornecedoresDisponiveis = [];
+      let fornecedorAtualSelecionado = "";
+      const configsLocais = {};
+
+      function selectedValues(containerEl, inputName) {
+        return Array.from(containerEl.querySelectorAll(`input[name="${inputName}"]:checked`)).map((el) => el.value);
+      }
+
+      function showTopStatus(message) {
+        statusTopoEl.textContent = message;
+        statusTopoEl.classList.remove("hidden");
+        window.setTimeout(() => statusTopoEl.classList.add("hidden"), 2500);
+      }
+
+      function showConfigStatus(message, type = "success") {
+        const colorClass =
+          type === "success"
+            ? "bg-[#edf7e8] border border-[#cde5bd] text-[#315b2f]"
+            : "bg-red-50 border border-red-200 text-red-700";
+        statusConfigEl.textContent = message;
+        statusConfigEl.className = `mt-4 rounded-lg px-3 py-2 text-sm ${colorClass}`;
+      }
+
+      async function fetchJson(url, options = {}) {
+        const response = await fetch(url, options);
+        const contentType = response.headers.get("content-type") || "";
+        const data = contentType.includes("application/json") ? await response.json() : {};
+        if (!response.ok) throw new Error(data.erro || "Erro ao processar solicitação.");
+        return data;
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function debounce(fn, delay = 150) {
+        let timer;
+        return (...args) => {
+          clearTimeout(timer);
+          timer = window.setTimeout(() => fn(...args), delay);
+        };
+      }
+
+      function renderFornecedorList(filter = "") {
+        const normalized = filter.trim().toLowerCase();
+        const filtered = fornecedoresDisponiveis.filter((nome) => nome.toLowerCase().includes(normalized));
+
+        if (!filtered.length) {
+          listaFornecedoresEl.innerHTML = `<div class="px-3 py-2 text-sm text-[#74835d]">Nenhum produtor encontrado.</div>`;
+        } else {
+          listaFornecedoresEl.innerHTML = filtered
+            .map(
+              (nome) => `
+                <button type="button" data-fornecedor="${escapeHtml(nome)}" class="block w-full px-3 py-2 text-left text-sm text-[#203a28] hover:bg-[#edf4e2]">
+                  ${escapeHtml(nome)}
+                </button>
+              `
+            )
+            .join("");
+        }
+
+        listaFornecedoresEl.classList.remove("hidden");
+      }
+
+      function renderCheckboxes(containerEl, inputName, values, selected = []) {
+        if (!values.length) {
+          containerEl.innerHTML = `<p class="text-[#74835d]">Nenhuma opção disponível.</p>`;
+          return;
+        }
+
+        const selectedSet = new Set(selected);
+        containerEl.innerHTML = values
+          .map((value, idx) => {
+            const id = `${inputName}_${idx}`;
+            const checked = selectedSet.has(value) ? "checked" : "";
+            return `
+              <label for="${id}" class="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-[#edf4e2] cursor-pointer">
+                <input id="${id}" type="checkbox" name="${inputName}" value="${escapeHtml(value)}" ${checked} class="h-4 w-4 rounded border-[#cfdcbd] text-[#7FB23D]">
+                <span>${escapeHtml(value)}</span>
+              </label>
+            `;
+          })
+          .join("");
+      }
+
+      function clearResultado() {
+        totalGeralEl.textContent = "Total Geral: R$ 0,00";
+        resultadoBodyEl.innerHTML = "";
+        btnPdfEl.classList.add("hidden");
+        ultimoPayloadPdf = null;
+      }
+
+      function resetarFluxo(clearFornecedor = false) {
+        if (clearFornecedor) fornecedorEl.value = "";
+        if (clearFornecedor) fornecedorAtualSelecionado = "";
+        etapaCentrosEl.classList.add("hidden");
+        etapaCultivaresEl.classList.add("hidden");
+        secaoResumoEl.classList.add("hidden");
+        secaoParametrosEl.classList.add("hidden");
+        secaoResultadoEl.classList.add("hidden");
+        secaoEspelhoNFeEl.classList.add("hidden");
+        listaCentrosEl.innerHTML = "";
+        listaCultivaresEl.innerHTML = "";
+        configPorItemEl.innerHTML = "";
+        configPorItemEl.classList.add("hidden");
+        Object.keys(configsLocais).forEach((key) => delete configsLocais[key]);
+        globalPercEl.value = "10";
+        globalValorEl.value = "0";
+        modoGlobalEl.checked = true;
+        configGlobalEl.classList.remove("hidden");
+        clearResultado();
+      }
+
+      async function carregarFornecedores() {
+        const data = await fetchJson("/api/fornecedores");
+        fornecedoresDisponiveis = data.fornecedores;
+      }
+
+      async function carregarCentros() {
+        if (!fornecedorEl.value || !fornecedoresDisponiveis.includes(fornecedorEl.value)) return;
+
+        const data = await fetchJson(`/api/filtros?fornecedor=${encodeURIComponent(fornecedorEl.value)}`);
+        renderCheckboxes(listaCentrosEl, "centro", data.centros);
+        etapaCentrosEl.classList.remove("hidden");
+      }
+
+      async function selecionarFornecedor(nome) {
+        fornecedorEl.value = nome;
+        fornecedorAtualSelecionado = nome;
+        listaFornecedoresEl.classList.add("hidden");
+        resetarFluxo(false);
+        await carregarCentros();
+      }
+
+      async function carregarCultivares() {
+        const centros = selectedValues(listaCentrosEl, "centro");
+        if (!fornecedorEl.value || !centros.length) {
+          etapaCultivaresEl.classList.add("hidden");
+          secaoResumoEl.classList.add("hidden");
+          secaoParametrosEl.classList.add("hidden");
+          secaoResultadoEl.classList.add("hidden");
+          secaoEspelhoNFeEl.classList.add("hidden");
+          clearResultado();
+          return;
+        }
+
+        const qs = new URLSearchParams({ fornecedor: fornecedorEl.value, centros: centros.join(",") });
+        const data = await fetchJson(`/api/filtros?${qs.toString()}`);
+        renderCheckboxes(listaCultivaresEl, "cultivar", data.cultivares);
+        etapaCultivaresEl.classList.remove("hidden");
+        secaoResumoEl.classList.add("hidden");
+        secaoParametrosEl.classList.add("hidden");
+        secaoResultadoEl.classList.add("hidden");
+        clearResultado();
+      }
+
+      function readConfigsPorItem() {
+        const inputs = configPorItemEl.querySelectorAll(".cfg-item");
+        for (const input of inputs) {
+          const key = input.dataset.key;
+          const type = input.dataset.type;
+          if (!configsLocais[key]) configsLocais[key] = { perc: 10, valor: 0 };
+          configsLocais[key][type] = Number(input.value) || 0;
+        }
+      }
+
+      function buildPayload(extra = {}) {
+        readConfigsPorItem();
+        return {
+          fornecedorNome: fornecedorEl.value,
+          centros: selectedValues(listaCentrosEl, "centro"),
+          cultivares: selectedValues(listaCultivaresEl, "cultivar"),
+          modoGlobal: modoGlobalEl.checked,
+          globalPerc: Number(globalPercEl.value) || 0,
+          globalValor: Number(globalValorEl.value) || 0,
+          configs: configsLocais,
+          ...extra
+        };
+      }
+
+      function renderResumo(combinacoes) {
+        if (!combinacoes.length) {
+          resumoEl.textContent = "Nenhum dado encontrado para os filtros selecionados.";
+          return;
+        }
+
+        resumoEl.innerHTML = `<ul class="space-y-1">${combinacoes
+          .map(
+            (item) =>
+              `<li><strong>Inscrição Estadual ${escapeHtml(item.inscricaoEstadual)}</strong> | Centro ${escapeHtml(item.centro)} | ${escapeHtml(item.cultivar)} | Peso: ${escapeHtml(item.pesoBaseFmt)} kg</li>`
+          )
+          .join("")}</ul>`;
+      }
+
+      function renderConfigPorItem() {
+        if (!combinacoesAtuais.length) {
+          configPorItemEl.classList.add("hidden");
+          configPorItemEl.innerHTML = "";
+          return;
+        }
+
+        configPorItemEl.innerHTML = combinacoesAtuais
+          .map((item) => {
+            const key = `${item.inscricaoEstadual}|||${item.centro}|||${item.cultivar}`;
+            const current = configsLocais[key] || { perc: 10, valor: 0 };
+            return `
+              <div class="rounded-lg border border-[#cfdcbd] bg-[#f8faf4] p-3">
+                <p class="mb-3 text-sm font-medium text-[#38563f]">Inscrição Estadual ${escapeHtml(item.inscricaoEstadual)} | Centro ${escapeHtml(item.centro)} | ${escapeHtml(item.cultivar)}</p>
+                <div class="grid gap-3 md:grid-cols-2">
+                  <div>
+                    <label class="mb-1 block text-xs font-medium text-[#61713d]">Percentual (%)</label>
+                    <input data-key="${escapeHtml(key)}" data-type="perc" type="number" step="0.1" value="${escapeHtml(current.perc)}" class="cfg-item w-full rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-sm text-[#203a28] focus:ring-[#7FB23D] focus:border-[#7FB23D] outline-none">
+                  </div>
+                  <div>
+                    <label class="mb-1 block text-xs font-medium text-[#61713d]">Valor da saca (R$)</label>
+                    <input data-key="${escapeHtml(key)}" data-type="valor" type="number" step="0.01" value="${escapeHtml(current.valor)}" class="cfg-item w-full rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-sm text-[#203a28] focus:ring-[#7FB23D] focus:border-[#7FB23D] outline-none">
+                  </div>
+                </div>
+              </div>
+            `;
+          })
+          .join("");
+        configPorItemEl.classList.remove("hidden");
+      }
+
+      async function atualizarPreviewSeCompleto() {
+        const payload = buildPayload();
+        const completo = payload.fornecedorNome && payload.centros.length > 0 && payload.cultivares.length > 0;
+
+        if (!completo) {
+          secaoResumoEl.classList.add("hidden");
+          secaoParametrosEl.classList.add("hidden");
+          secaoResultadoEl.classList.add("hidden");
+          clearResultado();
+          return;
+        }
+
+        secaoResumoEl.classList.remove("hidden");
+        secaoParametrosEl.classList.remove("hidden");
+        resumoEl.textContent = "Carregando resumo...";
+
+        try {
+          const result = await fetchJson("/api/calcular", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          combinacoesAtuais = result.combinacoes;
+          renderResumo(result.combinacoes);
+          if (!modoGlobalEl.checked) renderConfigPorItem();
+        } catch (error) {
+          resumoEl.textContent = error.message;
+        }
+      }
+
+      const debouncedAtualizarPreviewSeCompleto = debounce(atualizarPreviewSeCompleto);
+
+      function renderResultado(result) {
+        totalGeralEl.textContent = `Total Geral: R$ ${result.totalGeralFmt}`;
+        resultadoBodyEl.innerHTML = result.detalhes
+          .map(
+            (d) => `
+              <tr>
+                <td class="px-3 py-2 text-[#38563f]">${escapeHtml(d.centro)}</td>
+                <td class="px-3 py-2 text-[#38563f]">${escapeHtml(d.inscricaoEstadual)}</td>
+                <td class="px-3 py-2 text-[#38563f]">${escapeHtml(d.cultivar)}</td>
+                <td class="px-3 py-2 text-[#38563f]">${escapeHtml(d.pesoBaseFmt)} kg</td>
+                <td class="px-3 py-2 text-[#38563f]">${escapeHtml(d.perc)}%</td>
+                <td class="px-3 py-2 text-[#38563f]">${escapeHtml(d.sacasFmt)}</td>
+                <td class="px-3 py-2 font-semibold text-[#1f4d2d]">R$ ${escapeHtml(d.subtotalFmt)}</td>
+              </tr>
+            `
+          )
+          .join("");
+      }
+
+      async function onCalcular() {
+        const payload = buildPayload({ salvarHistorico: true });
+        const completo = payload.fornecedorNome && payload.centros.length > 0 && payload.cultivares.length > 0;
+
+        if (!completo) {
+          alert("Preencha fornecedor, centro e cultivar antes de calcular.");
+          return;
+        }
+
+        try {
+          const result = await fetchJson("/api/calcular", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          combinacoesAtuais = result.combinacoes;
+          renderResumo(result.combinacoes);
+          renderResultado(result);
+          ultimoPayloadPdf = result.payloadPdf;
+          secaoResultadoEl.classList.remove("hidden");
+          btnPdfEl.classList.toggle("hidden", result.detalhes.length === 0);
+
+          if (result.detalhes.length > 0) {
+            const pdfEmitido = await baixarPdf();
+            if (pdfEmitido) showTopStatus("PDF de bonificação emitido.");
+          }
+          
+          if (!modoGlobalEl.checked) renderConfigPorItem();
+          if (result.historicoErro) {
+            showTopStatus(result.historicoErro);
+          }
+          await carregarHistorico().catch(() => {
+            showTopStatus("Calculo concluido. Historico indisponivel no momento.");
+          });
+        } catch (error) {
+          alert(error.message);
+        }
+      }
+
+      async function carregarEspelhoNFe(detalhes, fornecedorNome, totalGeralFmt) {
+        try {
+          const result = await fetchJson("/api/nfe-estructura", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ detalhes, fornecedorNome, totalGeralFmt })
+          });
+
+          conteudoEspelhoNFeEl.innerHTML = result.visualizacao.headerHtml + 
+                                           result.visualizacao.itemsHtml + 
+                                           result.visualizacao.footerHtml;
+          secaoEspelhoNFeEl.classList.remove("hidden");
+          
+          // Armazena dados da NFe para usar nos botões de ação
+          window.nfeAtual = {
+            estrutura: result.estrutura,
+            detalhes: detalhes,
+            fornecedorNome: fornecedorNome,
+            totalGeralFmt: totalGeralFmt
+          };
+          
+          // Adiciona event listeners aos botões de ação usando delegated listeners
+          setTimeout(() => {
+            adicionarHandlersNFe();
+          }, 100);
+          
+          // Scroll para o espelho da NFe
+          setTimeout(() => {
+            secaoEspelhoNFeEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          }, 300);
+        } catch (error) {
+          console.error("Erro ao carregar espelho de NFe:", error.message);
+        }
+      }
+
+      function adicionarHandlersNFe() {
+        const btnConfirmar = document.getElementById("btnConfirmarNFe");
+        const btnReplicar = document.getElementById("btnReplicarNFe");
+        const btnCancelar = document.getElementById("btnCancelarNFe");
+
+        // Remove listeners antigos para evitar duplicação
+        if (btnConfirmar) {
+          const newConfirmar = btnConfirmar.cloneNode(true);
+          btnConfirmar.parentNode.replaceChild(newConfirmar, btnConfirmar);
+          newConfirmar.addEventListener("click", confirmarNFe);
+        }
+
+        if (btnReplicar) {
+          const newReplicar = btnReplicar.cloneNode(true);
+          btnReplicar.parentNode.replaceChild(newReplicar, btnReplicar);
+          newReplicar.addEventListener("click", replicarNFe);
+        }
+
+        if (btnCancelar) {
+          const newCancelar = btnCancelar.cloneNode(true);
+          btnCancelar.parentNode.replaceChild(newCancelar, btnCancelar);
+          newCancelar.addEventListener("click", cancelarNFe);
+        }
+      }
+
+      async function confirmarNFe() {
+        if (!window.nfeAtual) {
+          alert("Nenhuma NFe carregada para confirmar.");
+          return;
+        }
+
+        try {
+          const result = await fetchJson("/api/confirmar-nfe", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(window.nfeAtual)
+          });
+
+          showTopStatus(`✅ NFe ${result.nfeNumero} confirmada com sucesso!`);
+          
+          // Atualiza visual para mostrar status confirmado
+          const statusEl = document.getElementById("nfeStatus");
+          if (statusEl) {
+            statusEl.textContent = "CONFIRMADA";
+            statusEl.className = "text-xs font-bold text-white bg-[#2f6b37] px-3 py-1 rounded-full inline-block";
+          }
+
+          // Desabilita botão de confirmar
+          const btnConfirmar = document.getElementById("btnConfirmarNFe");
+          if (btnConfirmar) {
+            btnConfirmar.disabled = true;
+            btnConfirmar.className = "flex-1 rounded-lg bg-[#99b399] text-white font-bold py-3 px-4 cursor-not-allowed flex items-center justify-center gap-2 shadow-md";
+            btnConfirmar.innerHTML = '<i class="fa-solid fa-check"></i> Confirmada';
+          }
+        } catch (error) {
+          alert(`Erro ao confirmar NFe: ${error.message}`);
+          console.error("Erro:", error);
+        }
+      }
+
+      async function replicarNFe() {
+        if (!window.nfeAtual) {
+          alert("Nenhuma NFe carregada para replicar.");
+          return;
+        }
+
+        try {
+          const result = await fetchJson("/api/replicar-nfe", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              nfeId: window.nfeAtual.estrutura.numero,
+              estrutura: window.nfeAtual.estrutura
+            })
+          });
+
+          showTopStatus(`✅ NFe ${result.nfeNumero} replicada com sucesso!`);
+          console.log("Nova NFe gerada:", result.nfeNumero);
+        } catch (error) {
+          alert(`Erro ao replicar NFe: ${error.message}`);
+          console.error("Erro:", error);
+        }
+      }
+
+      function cancelarNFe() {
+        window.nfeAtual = null;
+        secaoEspelhoNFeEl.classList.add("hidden");
+        conteudoEspelhoNFeEl.innerHTML = "";
+        showTopStatus("Emissão de NFe cancelada.");
+      }
+
+      async function baixarPdf() {
+        if (!ultimoPayloadPdf) return false;
+        const response = await fetch("/api/relatorio", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(ultimoPayloadPdf)
+        });
+        if (!response.ok) {
+          alert("Não foi possível gerar o PDF.");
+          return false;
+        }
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "Bonificacao.pdf";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+        return true;
+      }
+
+      async function enviarPlanilha(file) {
+        const formData = new FormData();
+        formData.append("planilha", file);
+
+        const response = await fetch("/api/planilha", { method: "POST", body: formData });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.erro || "Não foi possível atualizar a planilha.");
+
+        fornecedorEl.value = "";
+        resetarFluxo(false);
+        await carregarFornecedores();
+        await carregarInfoPlanilha();
+        showTopStatus("Planilha atualizada com sucesso.");
+      }
+
+      async function carregarInfoPlanilha() {
+        const data = await fetchJson("/api/planilha");
+        if (!data.arquivo) {
+          planilhaAtualEl.textContent = "Nenhuma planilha carregada.";
+          return;
+        }
+
+        const origem = data.origem === "upload" ? "upload manual" : "planilha padrão";
+        const dataUpload = data.enviadoEm ? ` em ${new Date(data.enviadoEm).toLocaleString("pt-BR")}` : "";
+        planilhaAtualEl.textContent = `Atual: ${data.arquivo} (${origem}${dataUpload})`;
+      }
+
+      async function carregarDashboardLink() {
+        const data = await fetchJson("/api/dashboard-link");
+        const link = String(data.link || "").trim();
+        dashboardLinkConfigEl.value = link;
+        dashboardCardEl.href = link || "#";
+        dashboardCardEl.classList.toggle("hidden", !link);
+        dashboardCardEl.classList.toggle("opacity-60", !link);
+        return link;
+      }
+
+      function renderUsuariosAdmin(usuarios) {
+        if (!usuarios.length) {
+          listaUsuariosAdminEl.innerHTML = `<p class="text-[#74835d]">Nenhum usuário cadastrado.</p>`;
+          return;
+        }
+
+        listaUsuariosAdminEl.innerHTML = usuarios
+          .map((user) => {
+            const usuario = user.usuario || "";
+            const adminLabel = user.admin ? "Remover admin" : "Tornar admin";
+            const adminValue = user.admin ? "false" : "true";
+            const email = user.email || "";
+            const removeDisabled = usuario === usuarioAtual ? "disabled" : "";
+            const passwordDisabled = usuario === usuarioAtual ? "disabled" : "";
+            return `
+              <div class="rounded-lg border border-[#d8e5c6] bg-white p-3">
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p class="font-semibold text-[#1f4d2d]">${escapeHtml(usuario)} ${user.admin ? "<span class=\"text-xs text-[#6f5428]\">Administrador</span>" : ""}</p>
+                    <p class="text-xs text-[#61713d]">${escapeHtml(email || "Email nao informado")} | ${user.confirmado ? "Confirmado" : "Pendente"}</p>
+                  </div>
+                  <div class="flex flex-wrap gap-2">
+                    <button type="button" data-admin-user="${escapeHtml(usuario)}" data-admin-email="${escapeHtml(email)}" data-admin-value="${adminValue}" class="rounded-lg border border-[#cfdcbd] bg-[#f8faf4] px-3 py-2 text-xs font-semibold text-[#38563f] hover:bg-[#edf4e2]">${adminLabel}</button>
+                    <button type="button" data-password-user="${escapeHtml(usuario)}" ${passwordDisabled} class="rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-xs font-semibold text-[#38563f] hover:bg-[#edf4e2] disabled:cursor-not-allowed disabled:opacity-50">Redefinir senha</button>
+                    <button type="button" data-delete-user="${escapeHtml(usuario)}" ${removeDisabled} class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50">Excluir</button>
+                  </div>
+                </div>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      async function carregarUsuariosAdmin() {
+        if (!usuarioAdminAtual) return;
+        const data = await fetchJson("/api/usuarios");
+        renderUsuariosAdmin(data.usuarios);
+      }
+
+      function renderHistorico(historico) {
+        if (!historico.length) {
+          listaHistoricoEl.innerHTML = `<p class="text-[#74835d]">Nenhum cálculo nas últimas 24 horas.</p>`;
+          return;
+        }
+
+        listaHistoricoEl.innerHTML = historico
+          .map(
+            (item) => `
+              <div class="rounded-lg border border-[#d8e5c6] bg-white px-3 py-2">
+                <p class="font-semibold text-[#1f4d2d]">R$ ${escapeHtml(item.totalGeralFmt)}</p>
+                <p class="text-[#38563f]">${escapeHtml(item.produtorNome)}</p>
+                <p class="text-xs text-[#61713d]">${escapeHtml(item.usuario)} | ${new Date(item.createdAt).toLocaleString("pt-BR")} | ${escapeHtml(item.itens)} item(ns)</p>
+              </div>
+            `
+          )
+          .join("");
+      }
+
+      async function carregarHistorico() {
+        const data = await fetchJson("/api/historico");
+        renderHistorico(data.historico);
+      }
+
+      async function abrirConfiguracoes() {
+        statusConfigEl.classList.add("hidden");
+        adminConfiguracoesEl.classList.toggle("hidden", !usuarioAdminAtual);
+        modalConfiguracoesEl.classList.remove("hidden");
+        modalConfiguracoesEl.classList.add("flex");
+        await Promise.all([
+          carregarInfoPlanilha(),
+          carregarHistorico(),
+          carregarDashboardLink(),
+          usuarioAdminAtual ? carregarUsuariosAdmin() : Promise.resolve()
+        ]);
+      }
+
+      function fecharConfiguracoes() {
+        modalConfiguracoesEl.classList.add("hidden");
+        modalConfiguracoesEl.classList.remove("flex");
+      }
+
+      modoGlobalEl.addEventListener("change", () => {
+        configGlobalEl.classList.toggle("hidden", !modoGlobalEl.checked);
+        if (modoGlobalEl.checked) {
+          configPorItemEl.classList.add("hidden");
+        } else {
+          renderConfigPorItem();
+        }
+      });
+
+      fornecedorEl.addEventListener("focus", () => renderFornecedorList(fornecedorEl.value));
+      fornecedorEl.addEventListener("input", () => {
+        renderFornecedorList(fornecedorEl.value);
+        const exactMatch = fornecedoresDisponiveis.find(
+          (nome) => nome.toLowerCase() === fornecedorEl.value.trim().toLowerCase()
+        );
+
+        if (exactMatch && exactMatch !== fornecedorAtualSelecionado) {
+          selecionarFornecedor(exactMatch);
+          return;
+        }
+
+        if (!exactMatch) {
+          fornecedorAtualSelecionado = "";
+          resetarFluxo(false);
+        }
+      });
+
+      fornecedorEl.addEventListener("keydown", async (event) => {
+        if (event.key !== "Enter") return;
+        const firstOption = listaFornecedoresEl.querySelector("[data-fornecedor]");
+        if (!firstOption) return;
+        event.preventDefault();
+        await selecionarFornecedor(firstOption.dataset.fornecedor);
+      });
+
+      listaFornecedoresEl.addEventListener("mousedown", async (event) => {
+        const button = event.target.closest("[data-fornecedor]");
+        if (!button) return;
+        event.preventDefault();
+        await selecionarFornecedor(button.dataset.fornecedor);
+      });
+
+      document.addEventListener("click", (event) => {
+        if (!fornecedorEl.contains(event.target) && !listaFornecedoresEl.contains(event.target)) {
+          listaFornecedoresEl.classList.add("hidden");
+        }
+      });
+
+      listaCentrosEl.addEventListener("change", carregarCultivares);
+      listaCultivaresEl.addEventListener("change", debouncedAtualizarPreviewSeCompleto);
+      globalPercEl.addEventListener("change", debouncedAtualizarPreviewSeCompleto);
+      globalValorEl.addEventListener("change", debouncedAtualizarPreviewSeCompleto);
+      btnNovaCotacaoEl.addEventListener("click", () => {
+        resetarFluxo(true);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+      btnCalcularEl.addEventListener("click", onCalcular);
+      btnPdfEl.addEventListener("click", baixarPdf);
+      btnUploadPlanilhaEl.addEventListener("click", () => uploadPlanilhaTopoEl.click());
+      uploadPlanilhaTopoEl.addEventListener("change", async () => {
+        if (!uploadPlanilhaTopoEl.files.length) return;
+        try {
+          await enviarPlanilha(uploadPlanilhaTopoEl.files[0]);
+        } catch (error) {
+          alert(error.message);
+        } finally {
+          uploadPlanilhaTopoEl.value = "";
+        }
+      });
+      btnConfiguracoesEl.addEventListener("click", abrirConfiguracoes);
+      btnFecharConfiguracoesEl.addEventListener("click", fecharConfiguracoes);
+      modalConfiguracoesEl.addEventListener("click", (event) => {
+        if (event.target === modalConfiguracoesEl) fecharConfiguracoes();
+      });
+
+      formUsuarioEl.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const senha = String(novaSenhaConfigEl.value || "").trim();
+        if (senha.length < 4) {
+          showConfigStatus("Informe uma senha com no minimo 4 caracteres.", "error");
+          return;
+        }
+
+        try {
+          const data = await fetchJson(`/api/usuarios/${encodeURIComponent(usuarioAtual)}/senha`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ senha })
+          });
+          novaSenhaConfigEl.value = "";
+          showConfigStatus(data.mensagem);
+        } catch (error) {
+          showConfigStatus(error.message, "error");
+        }
+      });
+
+      btnLimparHistoricoEl.addEventListener("click", async () => {
+        const data = await fetchJson("/api/historico", { method: "DELETE" });
+        renderHistorico(data.historico);
+        showConfigStatus("Histórico limpo com sucesso.");
+      });
+
+      formDashboardEl.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        try {
+          const data = await fetchJson("/api/dashboard-link", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ link: dashboardLinkConfigEl.value })
+          });
+          await carregarDashboardLink();
+          showConfigStatus(data.mensagem);
+        } catch (error) {
+          showConfigStatus(error.message, "error");
+        }
+      });
+
+      formNovoUsuarioAdminEl.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        try {
+          const data = await fetchJson("/api/usuarios", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              usuario: novoUsuarioAdminEl.value,
+              email: novoEmailAdminEl.value,
+              senha: novaSenhaAdminEl.value,
+              admin: novoAdminCheckEl.checked
+            })
+          });
+          formNovoUsuarioAdminEl.reset();
+          renderUsuariosAdmin(data.usuarios);
+          showConfigStatus(data.mensagem);
+        } catch (error) {
+          showConfigStatus(error.message, "error");
+        }
+      });
+
+      formPromoverAdminEl.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const usuario = String(usuarioPromoverAdminEl.value || "").trim();
+        if (!usuario) {
+          showConfigStatus("Informe o usuário que receberá permissão de administrador.", "error");
+          return;
+        }
+
+        try {
+          const data = await fetchJson(`/api/usuarios/${encodeURIComponent(usuario)}/admin`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: emailPromoverAdminEl.value, admin: true })
+          });
+          formPromoverAdminEl.reset();
+          renderUsuariosAdmin(data.usuarios);
+          showConfigStatus(data.mensagem);
+        } catch (error) {
+          showConfigStatus(error.message, "error");
+        }
+      });
+
+      listaUsuariosAdminEl.addEventListener("click", async (event) => {
+        const adminButton = event.target.closest("[data-admin-user]");
+        const passwordButton = event.target.closest("[data-password-user]");
+        const deleteButton = event.target.closest("[data-delete-user]");
+
+        try {
+          if (adminButton) {
+            const usuario = adminButton.dataset.adminUser;
+            const email = adminButton.dataset.adminEmail;
+            if (!email) {
+              showConfigStatus("Informe o email corporativo pelo formulário de promoção antes de alterar este usuário.", "error");
+              return;
+            }
+
+            const data = await fetchJson(`/api/usuarios/${encodeURIComponent(usuario)}/admin`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email, admin: adminButton.dataset.adminValue === "true" })
+            });
+            renderUsuariosAdmin(data.usuarios);
+            showConfigStatus(data.mensagem);
+          }
+
+          if (passwordButton) {
+            const usuario = passwordButton.dataset.passwordUser;
+            const senha = window.prompt(`Digite a nova senha para ${usuario}:`);
+            if (senha === null) return;
+            if (String(senha).trim().length < 4) {
+              showConfigStatus("Informe uma senha com no mínimo 4 caracteres.", "error");
+              return;
+            }
+
+            const data = await fetchJson(`/api/usuarios/${encodeURIComponent(usuario)}/senha`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ senha })
+            });
+            showConfigStatus(data.mensagem);
+          }
+
+          if (deleteButton) {
+            const usuario = deleteButton.dataset.deleteUser;
+            if (!window.confirm(`Excluir o usuário ${usuario}?`)) return;
+            const data = await fetchJson(`/api/usuarios/${encodeURIComponent(usuario)}`, { method: "DELETE" });
+            renderUsuariosAdmin(data.usuarios);
+            showConfigStatus(data.mensagem);
+          }
+        } catch (error) {
+          showConfigStatus(error.message, "error");
+        }
+      });
+
+      async function boot() {
+        try {
+          const session = await fetchJson("/api/session");
+          usuarioAtual = session.usuario;
+          usuarioAdminAtual = Boolean(session.admin);
+          usuarioLogadoEl.textContent = `Usuário: ${session.usuario}`;
+          await carregarFornecedores();
+          await carregarInfoPlanilha();
+          await carregarDashboardLink();
+          window.setInterval(() => carregarDashboardLink().catch(() => {}), 30000);
+        } catch (_error) {
+          window.location.href = "/";
+        }
+      }
+
+      btnLogoutEl.addEventListener("click", async (event) => {
+        event.preventDefault();
+        try {
+          await fetchJson("/api/logout", { method: "POST" });
+          window.location.href = "/";
+        } catch (_error) {
+          window.location.href = "/logout";
+        }
+      });
+
+      boot();
+    </script>
+  </body>
+</html>

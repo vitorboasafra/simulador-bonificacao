@@ -1,0 +1,48 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Node
+node_modules/
+package-lock.json
+yarn.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# App specific
+data/historico.json
+data/planilha.json
+data/planilha-*.xlsx
+data/planilha-*.xls
+usuarios.json
+confirmacoes.json
+cookies.txt
+
+# Backups
+*.backup
+*.bak
+
+# Build
+dist/
+build/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Local Netlify folder
+.netlify

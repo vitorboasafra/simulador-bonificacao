@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login | Boa Safra Sementes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <style>
+      .brand-bg {
+        background: #7c96f6;
+      }
+      body {
+        background: linear-gradient(90deg, rgba(231, 231, 231, 0.9), rgba(231, 231, 231, 0.72)), url("/plano-de-fundo.png") center / cover fixed no-repeat;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen flex items-center justify-center px-4 py-8 text-[#203a28]">
+    <main class="w-full max-w-md">
+      <section class="mb-6 text-center">
+        <img
+          src="/assets/boa-safra-logo.png"
+          alt="Boa Safra Sementes"
+          class="mx-auto h-auto w-48 rounded-2xl"
+        />
+        <h1 class="mt-4 text-2xl font-semibold text-[#1f4d2d]">Simulador de Bonificação</h1>
+      </section>
+
+      <section class="rounded-lg border border-[#d8e5c6] bg-white/95 p-8 shadow-xl shadow-[#315b2f]/10">
+        <div id="statusMsg" class="hidden mb-4 rounded-lg px-3 py-2 text-sm"></div>
+        <form id="formReenviarConfirmacao" class="hidden mb-5 grid gap-3 rounded-lg border border-[#cde5bd] bg-[#f8faf4] p-3">
+          <label for="emailConfirmacao" class="text-sm font-medium text-[#38563f]">Reenviar confirmação</label>
+          <div class="grid gap-2 sm:grid-cols-[1fr_auto]">
+            <input
+              id="emailConfirmacao"
+              type="email"
+              required
+              pattern="^[^\s@]+@boasafrasementes\.com\.br$"
+              class="rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-sm text-[#203a28] outline-none focus:border-[#7FB23D]"
+              placeholder="Digite seu email"
+            />
+            <button type="submit" class="rounded-lg bg-[#2f6b37] px-4 py-2 text-sm font-semibold text-white hover:bg-[#25572d]">
+              Reenviar
+            </button>
+          </div>
+          <p id="statusReenvio" class="hidden text-xs"></p>
+        </form>
+
+        <div class="mb-5 grid grid-cols-2 gap-2 rounded-lg bg-[#edf4e2] p-1">
+          <button
+            id="tabLogin"
+            type="button"
+            class="rounded-md px-3 py-2 text-sm font-semibold transition-colors duration-200 bg-white text-[#1f4d2d] shadow-sm"
+          >
+            Acessar
+          </button>
+          <button
+            id="tabCadastro"
+            type="button"
+            class="rounded-md px-3 py-2 text-sm font-semibold transition-colors duration-200 text-[#61713d] hover:text-[#1f4d2d]"
+          >
+            Novo Registro
+          </button>
+        </div>
+
+        <form id="formLogin" class="space-y-5" action="/login" method="post" autocomplete="on">
+          <div>
+            <label for="email" class="mb-2 block text-sm font-medium text-[#38563f]">E-mail corporativo</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              pattern="^[^\s@]+@boasafrasementes\.com\.br$"
+              class="w-full rounded-lg border border-[#cfdcbd] bg-[#f8faf4] px-4 py-3 text-[#203a28] placeholder:text-[#83906f] focus:ring-[#7FB23D] focus:border-[#7FB23D] outline-none"
+              placeholder="Digite seu email"
+            />
+          </div>
+
+          <div>
+            <label for="senha" class="mb-2 block text-sm font-medium text-[#38563f]">Senha</label>
+            <div class="relative">
+              <input
+                id="senha"
+                name="senha"
+                type="password"
+                required
+                class="w-full rounded-lg border border-[#cfdcbd] bg-[#f8faf4] px-4 py-3 pr-12 text-[#203a28] placeholder:text-[#83906f] focus:ring-[#7FB23D] focus:border-[#7FB23D] outline-none"
+                placeholder="Digite sua senha"
+              />
+              <button
+                id="toggleSenha"
+                type="button"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-[#74835d] hover:text-[#315b2f]"
+                aria-label="Mostrar ou ocultar senha"
+              >
+                <i id="iconeSenha" class="fas fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            class="w-full rounded-lg bg-[#2f6b37] px-4 py-3 text-white font-semibold transition-colors duration-200 hover:bg-[#25572d]"
+          >
+            Entrar
+          </button>
+        </form>
+
+        <form id="formCadastro" class="hidden space-y-5" action="/cadastro" method="post" autocomplete="on">
+          <div>
+            <label for="novoUsuario" class="mb-2 block text-sm font-medium text-[#38563f]">Novo usuário</label>
+            <input
+              id="novoUsuario"
+              name="usuario"
+              type="text"
+              required
+              class="w-full rounded-lg border border-[#cfdcbd] bg-[#f8faf4] px-4 py-3 text-[#203a28] placeholder:text-[#83906f] focus:ring-[#7FB23D] focus:border-[#7FB23D] outline-none"
+              placeholder="Ex: vitor.matias"
+            />
+          </div>
+
+          <div>
+            <label for="novoEmail" class="mb-2 block text-sm font-medium text-[#38563f]">E-mail corporativo</label>
+            <input
+              id="novoEmail"
+              name="email"
+              type="email"
+              required
+              pattern="^[^\s@]+@boasafrasementes\.com\.br$"
+              class="w-full rounded-lg border border-[#cfdcbd] bg-[#f8faf4] px-4 py-3 text-[#203a28] placeholder:text-[#83906f] focus:ring-[#7FB23D] focus:border-[#7FB23D] outline-none"
+              placeholder="usuario@boasafrasementes.com.br"
+            />
+            <p class="mt-2 text-xs text-[#61713d]">Somente e-mails com domínio @boasafrasementes.com.br</p>
+          </div>
+
+          <div>
+            <label for="novaSenha" class="mb-2 block text-sm font-medium text-[#38563f]">Nova senha</label>
+            <div class="relative">
+              <input
+                id="novaSenha"
+                name="senha"
+                type="password"
+                required
+                minlength="4"
+                class="w-full rounded-lg border border-[#cfdcbd] bg-[#f8faf4] px-4 py-3 pr-12 text-[#203a28] placeholder:text-[#83906f] focus:ring-[#7FB23D] focus:border-[#7FB23D] outline-none"
+                placeholder="Mínimo 4 caracteres"
+              />
+              <button
+                id="toggleNovaSenha"
+                type="button"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-[#74835d] hover:text-[#315b2f]"
+                aria-label="Mostrar ou ocultar senha"
+              >
+                <i id="iconeNovaSenha" class="fas fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            class="w-full rounded-lg bg-[#2f6b37] px-4 py-3 text-white font-semibold transition-colors duration-200 hover:bg-[#25572d]"
+          >
+            Cadastrar
+          </button>
+        </form>
+      </section>
+
+      <footer class="mt-6 text-center text-sm font-medium leading-6 text-[#2f6b37]">
+        <p>&copy; 2026 Boa Safra Sementes</p>
+        <p>Desenvolvido por Vitor Matias</p>
+      </footer>
+    </main>
+
+    <script>
+      const formLogin = document.getElementById("formLogin");
+      const formCadastro = document.getElementById("formCadastro");
+      const formReenviarConfirmacao = document.getElementById("formReenviarConfirmacao");
+      const emailConfirmacao = document.getElementById("emailConfirmacao");
+      const statusReenvio = document.getElementById("statusReenvio");
+      const tabLogin = document.getElementById("tabLogin");
+      const tabCadastro = document.getElementById("tabCadastro");
+      const statusMsg = document.getElementById("statusMsg");
+
+      function setTab(isLogin) {
+        formLogin.classList.toggle("hidden", !isLogin);
+        formCadastro.classList.toggle("hidden", isLogin);
+        tabLogin.className = isLogin
+          ? "rounded-md px-3 py-2 text-sm font-semibold transition-colors duration-200 bg-white text-[#1f4d2d] shadow-sm"
+          : "rounded-md px-3 py-2 text-sm font-semibold transition-colors duration-200 text-[#61713d] hover:text-[#1f4d2d]";
+        tabCadastro.className = !isLogin
+          ? "rounded-md px-3 py-2 text-sm font-semibold transition-colors duration-200 bg-white text-[#1f4d2d] shadow-sm"
+          : "rounded-md px-3 py-2 text-sm font-semibold transition-colors duration-200 text-[#61713d] hover:text-[#1f4d2d]";
+      }
+
+      function togglePassword(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        const show = input.type === "password";
+        input.type = show ? "text" : "password";
+        icon.classList.toggle("fa-eye");
+        icon.classList.toggle("fa-eye-slash");
+      }
+
+      document.getElementById("toggleSenha").addEventListener("click", () => togglePassword("senha", "iconeSenha"));
+      document
+        .getElementById("toggleNovaSenha")
+        .addEventListener("click", () => togglePassword("novaSenha", "iconeNovaSenha"));
+      tabLogin.addEventListener("click", () => setTab(true));
+      tabCadastro.addEventListener("click", () => setTab(false));
+
+      const params = new URLSearchParams(window.location.search);
+      if (params.has("cadastro")) {
+        setTab(false);
+      }
+
+      if (params.get("erro") === "1") {
+        statusMsg.textContent = "Usuário ou senha incorretos.";
+        statusMsg.className = "mb-4 rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700";
+      } else if (params.get("erro") === "confirmacao") {
+        statusMsg.textContent = "Email não confirmado. Verifique seu email corporativo ou reenvie a confirmação.";
+        statusMsg.className = "mb-4 rounded-lg bg-yellow-50 border border-yellow-200 px-3 py-2 text-sm text-yellow-700";
+        formReenviarConfirmacao.classList.remove("hidden");
+      } else if (params.get("cadastro") === "ok") {
+        statusMsg.textContent = "Cadastro realizado com sucesso. Agora você pode entrar.";
+        statusMsg.className = "mb-4 rounded-lg bg-[#edf7e8] border border-[#cde5bd] px-3 py-2 text-sm text-[#315b2f]";
+      } else if (params.get("cadastro") === "pendente") {
+        statusMsg.textContent = "Cadastro recebido. Um link de confirmação foi enviado para seu e-mail corporativo.";
+        statusMsg.className = "mb-4 rounded-lg bg-[#edf7e8] border border-[#cde5bd] px-3 py-2 text-sm text-[#315b2f]";
+        formReenviarConfirmacao.classList.remove("hidden");
+      } else if (params.get("cadastro") === "existente") {
+        statusMsg.textContent = "Usuário já existe. Escolha outro usuário.";
+        statusMsg.className = "mb-4 rounded-lg bg-yellow-50 border border-yellow-200 px-3 py-2 text-sm text-yellow-700";
+      } else if (params.get("cadastro") === "emailexistente") {
+        statusMsg.textContent = "Este e-mail corporativo já está em uso.";
+        statusMsg.className = "mb-4 rounded-lg bg-yellow-50 border border-yellow-200 px-3 py-2 text-sm text-yellow-700";
+      } else if (params.get("cadastro") === "incompleto") {
+        statusMsg.textContent = "Preencha usuário, e-mail corporativo e senha para cadastrar.";
+        statusMsg.className = "mb-4 rounded-lg bg-[#fff6d8] border border-[#ead37c] px-3 py-2 text-sm text-[#6a5514]";
+      } else if (params.get("cadastro") === "dominio") {
+        statusMsg.textContent = "Use um e-mail com domínio @boasafrasementes.com.br";
+        statusMsg.className = "mb-4 rounded-lg bg-[#fff6d8] border border-[#ead37c] px-3 py-2 text-sm text-[#6a5514]";
+      } else if (params.get("cadastro") === "senha") {
+        statusMsg.textContent = "A senha deve ter no mínimo 4 caracteres.";
+        statusMsg.className = "mb-4 rounded-lg bg-[#fff6d8] border border-[#ead37c] px-3 py-2 text-sm text-[#6a5514]";
+      } else if (params.get("cadastro") === "emailenvio") {
+        statusMsg.textContent = "Não foi possível enviar o e-mail de confirmação. Verifique a configuração de SMTP do Supabase.";
+        statusMsg.className = "mb-4 rounded-lg bg-[#fff6d8] border border-[#ead37c] px-3 py-2 text-sm text-[#6a5514]";
+      } else if (params.get("cadastro") === "erro") {
+        statusMsg.textContent = "Não foi possível concluir o cadastro. Revise os dados e tente novamente.";
+        statusMsg.className = "mb-4 rounded-lg bg-[#fff6d8] border border-[#ead37c] px-3 py-2 text-sm text-[#6a5514]";
+      } else if (params.get("confirmado") === "ok") {
+        statusMsg.textContent = "Email confirmado com sucesso. Agora você pode entrar.";
+        statusMsg.className = "mb-4 rounded-lg bg-[#edf7e8] border border-[#cde5bd] px-3 py-2 text-sm text-[#315b2f]";
+      } else if (params.get("confirmado") === "erro") {
+        statusMsg.textContent = "Link de confirmação inválido ou expirado.";
+        statusMsg.className = "mb-4 rounded-lg bg-yellow-50 border border-yellow-200 px-3 py-2 text-sm text-yellow-700";
+        formReenviarConfirmacao.classList.remove("hidden");
+      }
+
+      formReenviarConfirmacao.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        statusReenvio.textContent = "Enviando...";
+        statusReenvio.className = "text-xs text-[#61713d]";
+
+        try {
+          const response = await fetch("/api/reenviar-confirmacao", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: emailConfirmacao.value })
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.erro || "Não foi possível reenviar a confirmação.");
+          statusReenvio.textContent = data.mensagem;
+          statusReenvio.className = "text-xs text-[#315b2f]";
+        } catch (error) {
+          statusReenvio.textContent = error.message;
+          statusReenvio.className = "text-xs text-red-700";
+        }
+      });
+
+      // Verifica se usuário já está autenticado
+      async function checkAuth() {
+        try {
+          const response = await fetch("/api/session");
+          if (response.ok) {
+            // Usuário já está logado, redireciona para o painel
+            window.location.href = "/painel.html";
+          }
+        } catch (_error) {
+          // Usuário não autenticado, fica na página de login
+        }
+      }
+
+      // Executa verificação ao carregar a página
+      checkAuth();
+    </script>
+  </body>
+</html>
