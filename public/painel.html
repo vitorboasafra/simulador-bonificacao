@@ -22,7 +22,7 @@
       <header class="rounded-lg border border-[#d8e5c6] bg-white/95 p-5 shadow-xl shadow-[#203a28]/10">
         <div class="flex flex-wrap items-center justify-between gap-4">
           <div class="flex items-center gap-4">
-            <img src="/assets/boa-safra-logo.png" alt="Boa Safra Sementes" class="h-auto w-36 shrink-0 rounded-2xl" />
+            <img src="/logo.png" alt="Boa Safra Sementes" class="h-auto w-36 shrink-0 rounded-2xl" />
             <div class="border-l border-[#d8e5c6] pl-4">
               <h1 class="text-2xl font-semibold text-[#1f4d2d]">Simulador de Bonificação</h1>
             </div>
@@ -188,6 +188,7 @@
                 <th class="px-3 py-2 text-left font-semibold text-[#38563f]">Peso Base</th>
                 <th class="px-3 py-2 text-left font-semibold text-[#38563f]">% Bonif</th>
                 <th class="px-3 py-2 text-left font-semibold text-[#38563f]">Sacas</th>
+                <th class="px-3 py-2 text-left font-semibold text-[#38563f]">Valor da Saca</th>
                 <th class="px-3 py-2 text-left font-semibold text-[#38563f]">Subtotal</th>
               </tr>
             </thead>
@@ -647,6 +648,7 @@
                 <td class="px-3 py-2 text-[#38563f]">${escapeHtml(d.pesoBaseFmt)} kg</td>
                 <td class="px-3 py-2 text-[#38563f]">${escapeHtml(d.perc)}%</td>
                 <td class="px-3 py-2 text-[#38563f]">${escapeHtml(d.sacasFmt)}</td>
+                <td class="px-3 py-2 text-[#38563f]">R$ ${escapeHtml(d.valorFmt)}</td>
                 <td class="px-3 py-2 font-semibold text-[#1f4d2d]">R$ ${escapeHtml(d.subtotalFmt)}</td>
               </tr>
             `

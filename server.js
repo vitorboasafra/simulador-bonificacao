@@ -1663,6 +1663,18 @@ function getItemQuantity(item) {
   return parsePtBrNumber(item.sacas ?? item.sacasFmt);
 }
 
+function getItemPesoLiquido(item) {
+  return parsePtBrNumber(item.pesoBase ?? item.pesoBaseFmt);
+}
+
+function getItemPesoBonificado(item) {
+  return parsePtBrNumber(item.pesoBonif ?? item.pesoBonifFmt);
+}
+
+function formatItemPesoValorResumo(item) {
+  return `Peso Liquido: ${formatNumberPtBr(getItemPesoLiquido(item))} kg | Peso Bonificado: ${formatNumberPtBr(getItemPesoBonificado(item))} kg | Valor: ${formatCurrencyPdf(getItemSubtotal(item))}`;
+}
+
 function splitUniqueList(value) {
   return [...new Set(String(value || "")
     .split(",")
@@ -1732,7 +1744,7 @@ function drawResumoBonificacao(doc, nfe, renderHeader) {
   const totalLabel = `Valor Total NF: ${formatCurrencyPdf(nfe.total)}`;
   const destinoTexto = ` Destinatário: ${destinatario.razaoSocial || "-"} | CNPJ: ${destinatario.cnpj || "-"}`;
   const linhasItens = nfe.itens.map(item =>
-    `Cultivar: ${item.cultivar || "-"} | Notas: ${item.nfs || "N/A"} | Valor: ${formatCurrencyPdf(getItemSubtotal(item))}`
+    `Cultivar: ${item.cultivar || "-"} | Notas: ${item.nfs || "N/A"} | ${formatItemPesoValorResumo(item)}`
   );
 
   doc.font("Helvetica-Bold").fontSize(12);
@@ -1918,6 +1930,8 @@ function drawSimulatedDanfe(doc, nfe, { produtorNome }) {
   const totalFmt = formatNumberPtBr(nfe.total);
   const cultivares = nfe.itens.map(item => item.cultivar).filter(Boolean).join("; ");
   const notas = nfe.nfsReferenciadas.join(", ") || "N/A";
+  const pesoLiquidoTotal = nfe.itens.reduce((sum, item) => sum + getItemPesoLiquido(item), 0);
+  const pesoBonificadoTotal = nfe.itens.reduce((sum, item) => sum + getItemPesoBonificado(item), 0);
 
   doc.font("Helvetica").fontSize(6).fillColor("#555555")
     .text(`Impresso em ${today.toLocaleString("pt-BR")} - DANFE simulado pelo Sistema de Bonificação Boa Safra`, margin, 12, { width });
@@ -1995,7 +2009,7 @@ function drawSimulatedDanfe(doc, nfe, { produtorNome }) {
 
   doc.font("Helvetica-Bold").fontSize(7).fillColor("#111111").text("DADOS ADICIONAIS", margin, 666);
   drawFieldBox(doc, margin, 676, 385, 128, "INFORMAÇÕES COMPLEMENTARES", "", { valueSize: 6 });
-  const complemento = `COMPLEMENTO DE VALOR REFERENTE BONIFICAÇÃO DAS SEGUINTES CULTIVARES: ${cultivares || "-"}.\nNOTAS FISCAIS REFERENCIADAS: ${notas}.\nOperação simulada com CFOP 5101. Documento sem validade fiscal; use apenas para conferência interna antes da emissão oficial.`;
+  const complemento = `COMPLEMENTO DE VALOR REFERENTE BONIFICAÇÃO DAS SEGUINTES CULTIVARES: ${cultivares || "-"}.\nNOTAS FISCAIS REFERENCIADAS: ${notas}.\nPESO LIQUIDO: ${formatNumberPtBr(pesoLiquidoTotal)} KG | PESO BONIFICADO: ${formatNumberPtBr(pesoBonificadoTotal)} KG | VALOR: ${formatCurrencyPdf(nfe.total)}.\nOperação simulada com CFOP 5101. Documento sem validade fiscal; use apenas para conferência interna antes da emissão oficial.`;
   doc.font("Helvetica").fontSize(6).fillColor("#111111").text(complemento, margin + 3, 690, { width: 379, height: 105 });
   drawFieldBox(doc, margin + 385, 676, 174, 128, "RESERVADO AO FISCO", "SIMULAÇÃO\nSEM VALIDADE FISCAL", { align: "center", bold: true, valueSize: 11 });
 }
