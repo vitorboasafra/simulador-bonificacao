@@ -40,6 +40,9 @@ const MODEL_PDF = path.join(ROOT_DIR, "NF MODELO BONIFICACAO.pdf");
 const LOGO_IMAGE = path.join(ROOT_DIR, "logo.png");
 const PUBLIC_LOGO_IMAGE = path.join(PUBLIC_DIR, "assets", "boa-safra-logo.png");
 const LOGIN_BACKGROUND = path.join(ROOT_DIR, "plano de fundo.png");
+const LETTERHEAD_IMAGE = path.join(ROOT_DIR, "Boa Safra - Papel Timbrado.png");
+const REPORT_CONTENT_TOP = 145;
+const REPORT_BOTTOM_MARGIN = 125;
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
 
@@ -1713,12 +1716,23 @@ function buildBonificacaoNfes(detalhes) {
 }
 
 function ensurePdfSpace(doc, heightNeeded, onNewPage) {
-  if (doc.y + heightNeeded <= doc.page.height - doc.page.margins.bottom) return;
+  const bottomLimit = doc.page.height - Math.max(doc.page.margins.bottom, REPORT_BOTTOM_MARGIN);
+  if (doc.y + heightNeeded <= bottomLimit) return;
   doc.addPage();
   if (onNewPage) onNewPage();
 }
 
+function drawReportLetterhead(doc) {
+  if (!fs.existsSync(LETTERHEAD_IMAGE)) return;
+  doc.image(LETTERHEAD_IMAGE, 0, 0, {
+    width: doc.page.width,
+    height: doc.page.height
+  });
+  doc.y = REPORT_CONTENT_TOP;
+}
+
 function drawResumoHeader(doc, { produtorNome, usuario, nfesCount }) {
+  drawReportLetterhead(doc);
   doc.font("Helvetica-Bold").fontSize(18).fillColor("#2f6b37")
     .text("RELATÓRIO DE BONIFICAÇÃO", { align: "center" });
   doc.moveDown(0.4);
