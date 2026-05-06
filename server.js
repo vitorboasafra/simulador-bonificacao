@@ -116,6 +116,16 @@ function sanitizeUsuario(usuario) {
   return String(usuario || "").trim();
 }
 
+function normalizeBoolean(value) {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value === 1;
+  return ["true", "1", "sim", "yes"].includes(String(value || "").trim().toLowerCase());
+}
+
+function isAdminProfile(profile) {
+  return normalizeBoolean(profile?.admin);
+}
+
 function requireAuth(req, res, next) {
   if (!req.session.user) {
     return res.status(401).json({ erro: "Não autenticado." });
@@ -131,7 +141,7 @@ async function isAdminUser(usuario) {
     .single();
 
   if (error || !data) return false;
-  return Boolean(data.admin);
+  return normalizeBoolean(data.admin);
 }
 
 function requireAdmin(req, res, next) {
@@ -274,7 +284,7 @@ async function findOrCreateUserProfile(email, usuario, senha = "", authUserId = 
     email: normalizedEmail,
     senha,
     confirmado: options.confirmado ?? true,
-    admin: Boolean(options.admin)
+    admin: normalizeBoolean(options.admin)
   };
 
   if (authUserId) {
@@ -856,7 +866,10 @@ async function listUserProfiles() {
     .order("usuario", { ascending: true });
 
   if (error) throw error;
-  return data || [];
+  return (data || []).map(profile => ({
+    ...profile,
+    admin: normalizeBoolean(profile.admin)
+  }));
 }
 
 async function getUserProfileByUsuario(usuario) {
@@ -951,7 +964,7 @@ app.post("/api/login", async (req, res) => {
 
     req.session.user = profile.usuario;
     req.session.userId = profile.id;
-    res.json({ usuario: profile.usuario, email: profile.email, admin: profile.admin });
+    res.json({ usuario: profile.usuario, email: profile.email, admin: isAdminProfile(profile) });
   } catch (error) {
     res.status(500).json({ erro: "Erro ao processar login." });
   }
@@ -1160,7 +1173,7 @@ app.get("/api/me", requireAuth, async (req, res) => {
       return res.status(404).json({ erro: "Usuário não encontrado." });
     }
 
-    res.json({ usuario: data.usuario, email: data.email, admin: data.admin });
+    res.json({ usuario: data.usuario, email: data.email, admin: isAdminProfile(data) });
   } catch (error) {
     res.status(500).json({ erro: "Erro ao buscar dados." });
   }
@@ -1174,7 +1187,7 @@ app.get("/api/session", requireAuth, async (req, res) => {
       return res.status(401).json({ erro: "Sessão inválida." });
     }
 
-    res.json({ usuario: data.usuario, email: data.email, admin: data.admin });
+    res.json({ usuario: data.usuario, email: data.email, admin: isAdminProfile(data) });
   } catch (error) {
     res.status(500).json({ erro: "Erro ao buscar sessão." });
   }
@@ -1536,7 +1549,8 @@ app.get("/api/historico", requireAuth, async (req, res) => {
       .order("createdAt", { ascending: false })
       .limit(20);
 
-    if (!profile.admin) {
+    const isAdmin = isAdminProfile(profile);
+    if (!isAdmin) {
       query = query.eq("usuario_id", profile.id);
     }
 
@@ -1557,7 +1571,8 @@ app.delete("/api/historico", requireAuth, async (req, res) => {
     }
 
     let query = supabaseAdmin.from("historico").delete();
-    if (!profile.admin) {
+    const isAdmin = isAdminProfile(profile);
+    if (!isAdmin) {
       query = query.eq("usuario_id", profile.id);
     } else {
       query = query.neq("id", "00000000-0000-0000-0000-000000000000");
@@ -2125,7 +2140,7 @@ app.post("/api/usuarios", requireAuth, requireAdmin, async (req, res) => {
   const usuario = sanitizeUsuario(req.body.usuario);
   const email = normalizeEmail(req.body.email);
   const senha = String(req.body.senha || "").trim();
-  const admin = Boolean(req.body.admin);
+  const admin = normalizeBoolean(req.body.admin);
 
   if (!usuario || !email || !senha) {
     return res.status(400).json({ erro: "Informe usuario, email e senha." });
@@ -2190,7 +2205,7 @@ app.put("/api/usuarios/:usuario/senha", requireAuth, async (req, res) => {
       return res.status(401).json({ erro: "Sessão inválida." });
     }
 
-    if (currentProfile.usuario !== usuario && !currentProfile.admin) {
+    if (currentProfile.usuario !== usuario && !isAdminProfile(currentProfile)) {
       return res.status(403).json({ erro: "Sem permissao para alterar esta senha." });
     }
 
@@ -2229,7 +2244,7 @@ app.put("/api/usuarios/:usuario/senha", requireAuth, async (req, res) => {
 app.put("/api/usuarios/:usuario/admin", requireAuth, requireAdmin, async (req, res) => {
   const usuario = sanitizeUsuario(req.params.usuario);
   const email = normalizeEmail(req.body.email);
-  const admin = Boolean(req.body.admin);
+  const admin = normalizeBoolean(req.body.admin);
 
   try {
     const profile = await getUserProfileByUsuario(usuario);

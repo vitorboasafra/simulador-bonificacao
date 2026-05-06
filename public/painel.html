@@ -377,6 +377,31 @@
       let fornecedoresDisponiveis = [];
       let fornecedorAtualSelecionado = "";
       const configsLocais = {};
+      const APP_TIME_ZONE = "America/Sao_Paulo";
+      const APP_DATE_TIME_OPTIONS = { timeZone: APP_TIME_ZONE };
+
+      function normalizeBoolean(value) {
+        if (typeof value === "boolean") return value;
+        if (typeof value === "number") return value === 1;
+        return ["true", "1", "sim", "yes"].includes(String(value || "").trim().toLowerCase());
+      }
+
+      function parseAppDateTime(value) {
+        if (!value) return null;
+        const text = String(value).trim();
+        if (!text) return null;
+
+        const hasTimeZone = /(?:z|[+-]\d{2}:?\d{2})$/i.test(text);
+        const looksLikeDateTime = /^\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}/.test(text);
+        const normalized = looksLikeDateTime && !hasTimeZone ? `${text.replace(" ", "T")}Z` : text;
+        const date = new Date(normalized);
+        return Number.isNaN(date.getTime()) ? null : date;
+      }
+
+      function formatAppDateTime(value, fallback = "data nao registrada") {
+        const date = parseAppDateTime(value);
+        return date ? date.toLocaleString("pt-BR", APP_DATE_TIME_OPTIONS) : fallback;
+      }
 
       function selectedValues(containerEl, inputName) {
         return Array.from(containerEl.querySelectorAll(`input[name="${inputName}"]:checked`)).map((el) => el.value);
@@ -867,7 +892,7 @@
         }
 
         const origem = data.origem === "upload" ? "upload manual" : "planilha padrão";
-        const dataUpload = data.enviadoEm ? ` em ${new Date(data.enviadoEm).toLocaleString("pt-BR")}` : "";
+        const dataUpload = data.enviadoEm ? ` em ${formatAppDateTime(data.enviadoEm)}` : "";
         planilhaAtualEl.textContent = `Atual: ${data.arquivo} (${origem}${dataUpload})`;
       }
 
@@ -890,8 +915,9 @@
         listaUsuariosAdminEl.innerHTML = usuarios
           .map((user) => {
             const usuario = user.usuario || "";
-            const adminLabel = user.admin ? "Remover admin" : "Tornar admin";
-            const adminValue = user.admin ? "false" : "true";
+            const userAdmin = normalizeBoolean(user.admin);
+            const adminLabel = userAdmin ? "Remover admin" : "Tornar admin";
+            const adminValue = userAdmin ? "false" : "true";
             const email = user.email || "";
             const removeDisabled = usuario === usuarioAtual ? "disabled" : "";
             const passwordDisabled = usuario === usuarioAtual ? "disabled" : "";
@@ -899,7 +925,7 @@
               <div class="rounded-lg border border-[#d8e5c6] bg-white p-3">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p class="font-semibold text-[#1f4d2d]">${escapeHtml(usuario)} ${user.admin ? "<span class=\"text-xs text-[#6f5428]\">Administrador</span>" : ""}</p>
+                    <p class="font-semibold text-[#1f4d2d]">${escapeHtml(usuario)} ${userAdmin ? "<span class=\"text-xs text-[#6f5428]\">Administrador</span>" : ""}</p>
                     <p class="text-xs text-[#61713d]">${escapeHtml(email || "Email nao informado")} | ${user.confirmado ? "Confirmado" : "Pendente"}</p>
                   </div>
                   <div class="flex flex-wrap gap-2">
@@ -932,7 +958,7 @@
               <div class="rounded-lg border border-[#d8e5c6] bg-white px-3 py-2">
                 <p class="font-semibold text-[#1f4d2d]">R$ ${escapeHtml(item.totalGeralFmt)}</p>
                 <p class="text-[#38563f]">${escapeHtml(item.produtorNome)}</p>
-                <p class="text-xs text-[#61713d]">${escapeHtml(item.usuario)} | ${new Date(item.createdAt).toLocaleString("pt-BR")} | ${escapeHtml(item.itens)} item(ns)</p>
+                <p class="text-xs text-[#61713d]">${escapeHtml(item.usuario)} | ${formatAppDateTime(item.createdAt)} | ${escapeHtml(item.itens)} item(ns)</p>
               </div>
             `
           )
@@ -1178,7 +1204,7 @@
         try {
           const session = await fetchJson("/api/session");
           usuarioAtual = session.usuario;
-          usuarioAdminAtual = Boolean(session.admin);
+          usuarioAdminAtual = normalizeBoolean(session.admin);
           usuarioLogadoEl.textContent = `Usuário: ${session.usuario}`;
           await carregarFornecedores();
           await carregarInfoPlanilha();

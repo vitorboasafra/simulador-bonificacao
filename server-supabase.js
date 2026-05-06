@@ -83,6 +83,16 @@ function isEmailValid(email) {
   return /^[^\s@]+@boasafrasementes\.com\.br$/i.test(String(email || "").trim());
 }
 
+function normalizeBoolean(value) {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value === 1;
+  return ["true", "1", "sim", "yes"].includes(String(value || "").trim().toLowerCase());
+}
+
+function isAdminProfile(profile) {
+  return normalizeBoolean(profile?.admin);
+}
+
 function requireAuth(req, res, next) {
   if (!req.session.user) {
     return res.status(401).json({ erro: "Não autenticado." });
@@ -98,7 +108,7 @@ async function isAdminUser(usuario) {
     .single();
 
   if (error || !data) return false;
-  return Boolean(data.admin);
+  return normalizeBoolean(data.admin);
 }
 
 function requireAdmin(req, res, next) {
@@ -169,6 +179,22 @@ async function findOrCreateUserProfile(email, usuario, senha = "") {
   }).select("*").maybeSingle();
 
   if (error) return null;
+  return data;
+}
+
+async function getCurrentProfile(req) {
+  let query = supabase.from("usuarios").select("*");
+  if (req.session.userId) {
+    query = query.eq("id", req.session.userId);
+  } else {
+    query = query.eq("usuario", req.session.user);
+  }
+
+  const { data, error } = await query.maybeSingle();
+  if (error || !data) return null;
+
+  req.session.user = data.usuario;
+  req.session.userId = data.id;
   return data;
 }
 
@@ -307,7 +333,7 @@ app.post("/api/login", async (req, res) => {
 
     req.session.user = profile.usuario;
     req.session.userId = profile.id;
-    res.json({ usuario: profile.usuario, email: profile.email, admin: profile.admin });
+    res.json({ usuario: profile.usuario, email: profile.email, admin: isAdminProfile(profile) });
   } catch (error) {
     res.status(500).json({ erro: "Erro ao processar login." });
   }
@@ -426,7 +452,7 @@ app.get("/api/me", requireAuth, async (req, res) => {
       return res.status(404).json({ erro: "Usuário não encontrado." });
     }
 
-    res.json({ usuario: data.usuario, email: data.email, admin: data.admin });
+    res.json({ usuario: data.usuario, email: data.email, admin: isAdminProfile(data) });
   } catch (error) {
     res.status(500).json({ erro: "Erro ao buscar dados." });
   }
@@ -536,9 +562,14 @@ app.post("/api/historico", requireAuth, async (req, res) => {
   const { totalGeralFmt, detalhes, itens } = req.body;
 
   try {
+    const profile = await getCurrentProfile(req);
+    if (!profile) {
+      return res.status(401).json({ erro: "Sessao invalida." });
+    }
+
     const { error } = await supabase.from("historico").insert({
-      usuario_id: req.session.userId || req.session.user,
-      usuario: req.session.user,
+      usuario_id: profile.id,
+      usuario: profile.usuario,
       produtorNome: "Cálculo de Bonificação",
       totalGeralFmt,
       detalhes,
@@ -553,13 +584,25 @@ app.post("/api/historico", requireAuth, async (req, res) => {
   }
 });
 
-app.get("/api/historico", requireAuth, async (_req, res) => {
+app.get("/api/historico", requireAuth, async (req, res) => {
   try {
-    const { data } = await supabase
+    const profile = await getCurrentProfile(req);
+    if (!profile) {
+      return res.status(401).json({ erro: "Sessao invalida." });
+    }
+
+    let query = supabase
       .from("historico")
       .select("*")
       .order("createdAt", { ascending: false })
       .limit(20);
+
+    if (!isAdminProfile(profile)) {
+      query = query.eq("usuario_id", profile.id);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
 
     res.json({ historico: data || [] });
   } catch (error) {
