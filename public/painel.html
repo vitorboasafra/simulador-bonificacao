@@ -1,10 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Simulador de Bonificação</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
@@ -15,11 +16,117 @@
       body {
         background: #E7E7E7;
       }
+      .lucide {
+        height: 16px;
+        width: 16px;
+        stroke-width: 2;
+      }
+      .zero-value-input {
+        border-color: #fca5a5 !important;
+        background: #fef2f2 !important;
+        color: #991b1b !important;
+      }
+      .zero-value-input:focus {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.18) !important;
+      }
     </style>
   </head>
-  <body class="min-h-screen py-6 px-4 text-[#203a28]">
-    <main class="mx-auto w-full max-w-6xl space-y-6">
-      <header class="rounded-lg border border-[#d8e5c6] bg-white/95 p-5 shadow-xl shadow-[#203a28]/10">
+  <body class="min-h-screen bg-[#E7E7E7] text-[#203a28]">
+    <div class="min-h-screen">
+      <aside class="fixed left-0 top-0 z-50 h-screen w-[240px] overflow-y-auto bg-[#1f4d2d] text-white">
+        <div class="flex items-center gap-3 border-b border-white/10 px-4 py-5">
+          <div id="sidebarInitials" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#7FB23D] text-sm font-bold text-white">BS</div>
+          <div class="min-w-0">
+            <p id="sidebarUserName" class="break-words text-sm font-bold leading-tight">Carregando...</p>
+            <p id="usuarioLogado" class="break-all text-xs text-white/70 leading-tight mt-0.5"></p>
+          </div>
+        </div>
+        <div class="border-b border-white/10 px-4 py-3">
+          <button id="btnLogout" type="button" class="inline-flex items-center gap-2 text-xs text-white/70 hover:text-white">
+            <i class="fa-solid fa-arrow-right-from-bracket text-[11px]"></i>
+            Sair
+          </button>
+        </div>
+        <nav class="px-3 py-5">
+          <p class="px-2 text-[10px] font-bold uppercase tracking-[0.14em] text-white/35">Principal</p>
+          <div class="mt-2 space-y-1">
+            <button type="button" data-nav-view="inicio" class="nav-link flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-white/80 transition-colors hover:bg-white/10"><i data-lucide="home"></i>In&iacute;cio</button>
+            <button type="button" data-nav-view="simulador" class="nav-link flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-white/80 transition-colors hover:bg-white/10"><i data-lucide="calculator"></i>Simula&ccedil;&atilde;o de Bonifica&ccedil;&atilde;o</button>
+            <button type="button" data-nav-view="resumo" class="nav-link flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-white/80 transition-colors hover:bg-white/10"><i data-lucide="line-chart"></i>Resumo Operacional</button>
+          </div>
+          <p class="mt-6 px-2 text-[10px] font-bold uppercase tracking-[0.14em] text-white/35">M&oacute;dulos</p>
+          <div class="mt-2 space-y-1">
+            <button id="rankingLink" type="button" data-nav-view="ranking" class="nav-link flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-white/80 transition-colors hover:bg-white/10"><i data-lucide="trophy"></i>Qualidade</button>
+            <button type="button" data-nav-view="fornecedores" class="nav-link flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-white/80 transition-colors hover:bg-white/10"><i data-lucide="users"></i>Fornecedores</button>
+            <button type="button" data-nav-view="unidades" class="nav-link flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-white/80 transition-colors hover:bg-white/10"><i data-lucide="warehouse"></i>Unidades</button>
+            <button type="button" data-nav-view="historico" class="nav-link flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-white/80 transition-colors hover:bg-white/10"><i data-lucide="history"></i>Hist&oacute;rico</button>
+            <button id="btnConfiguracoes" type="button" class="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-white/80 transition-colors hover:bg-white/10"><i data-lucide="settings"></i>Configura&ccedil;&otilde;es</button>
+          </div>
+        </nav>
+      </aside>
+
+      <div class="min-w-0 ml-[240px]">
+        <header class="sticky top-0 z-40 border-b border-[#dfdfd8] bg-white/95 px-5 py-4 backdrop-blur">
+          <div class="mx-auto flex max-w-[1600px] items-center justify-between gap-4">
+            <div class="flex items-center gap-3 text-sm">
+              <span class="h-6 border-l-2 border-[#7FB23D]"></span>
+              <span id="breadcrumbAtual" class="font-semibold text-[#1f4d2d]">Início</span>
+              <span class="rounded-full bg-[#fff3c4] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#6f5428]">Teste</span>
+            </div>
+            <span id="statusTopo" class="hidden rounded-md border border-[#cde5bd] bg-[#edf7e8] px-3 py-2 text-sm text-[#315b2f]"></span>
+          </div>
+        </header>
+
+        <main class="mx-auto w-full max-w-[1600px] space-y-6 px-4 py-6 lg:px-8">
+          <section id="viewInicio" data-app-view="inicio" class="space-y-6">
+            <div class="mx-auto max-w-2xl rounded-lg border border-[#d8d8cf] bg-white p-6 shadow-sm">
+              <div class="h-1 w-10 rounded-full bg-[#7FB23D]"></div>
+              <h1 id="welcomeTitle" class="mt-4 text-xl font-bold text-[#1f4d2d]">Bem-vindo</h1>
+              <p class="mt-1 text-xs font-semibold text-[#6f5428]">Simulador de Bonificação - Boa Safra Sementes - Safra 2026</p>
+              <p class="mt-5 border-b border-[#e5e3da] pb-5 text-sm leading-6 text-[#27382d]">Aqui você calcula e acompanha as bonificações de cada produtor com base nos dados reais do ZMM113. Tudo em um só lugar: rápido, preciso e direto ao ponto.</p>
+              <div class="mt-5">
+                <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-[#1f4d2d]">O que você encontra aqui</p>
+                <ul class="mt-3 space-y-3 text-sm text-[#27382d]">
+                  <li class="flex gap-3"><span class="mt-0.5 text-[#7FB23D]"><i class="fa-solid fa-circle-check"></i></span>Cálculo automático de bonificação por cultivar e unidade</li>
+                  <li class="flex gap-3"><span class="mt-0.5 text-[#7FB23D]"><i class="fa-solid fa-circle-check"></i></span>Relatório em PDF com todos os detalhes da simulação</li>
+                  <li class="flex gap-3"><span class="mt-0.5 text-[#7FB23D]"><i class="fa-solid fa-circle-check"></i></span>Envio do resumo direto pelo WhatsApp</li>
+                  <li class="flex gap-3"><span class="mt-0.5 text-[#7FB23D]"><i class="fa-solid fa-circle-check"></i></span>Dashboard com visão consolidada por unidade e região</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="mx-auto max-w-2xl overflow-hidden rounded-lg border border-[#d8d8cf] bg-white shadow-sm">
+              <div class="border-b border-[#e5e3da] px-5 py-4">
+                <h2 class="text-sm font-bold text-[#1f4d2d]">Referência de Mercado - Safra 2026</h2>
+                <p class="mt-1 text-xs text-[#79836f]">Valor médio da saca por localidade. Base: Compilado Boa Safra 2026</p>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                  <thead class="bg-[#1f4d2d] text-white">
+                    <tr>
+                      <th class="px-5 py-3 text-left text-xs font-bold uppercase">Localidade / Região</th>
+                      <th class="px-5 py-3 text-right text-xs font-bold uppercase">Valor médio (R$/sc)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="homeMarketBody" class="divide-y divide-[#e6e5dc]"></tbody>
+                </table>
+              </div>
+              <div id="homeMarketFooter" class="flex items-center justify-between border-t border-[#e5e3da] px-5 py-3 text-xs text-[#8b927f]"></div>
+            </div>
+
+            <div class="mx-auto max-w-2xl text-center">
+              <p class="text-xs text-[#7c8373]">Tudo pronto? Acesse o simulador e calcule a bonificação agora.</p>
+              <button id="btnIrSimulador" type="button" class="mt-4 inline-flex items-center justify-center gap-2 rounded-md bg-[#2f6b37] px-8 py-3 text-sm font-bold text-white transition-colors hover:bg-[#25572d]">
+                <i class="fa-solid fa-seedling text-[#7FB23D]"></i>
+                Iniciar Simulação
+                <i class="fa-solid fa-arrow-right text-xs"></i>
+              </button>
+            </div>
+          </section>
+
+          <section id="viewSimulador" data-app-view="simulador" class="hidden space-y-6">
+      <header class="hidden">
         <div class="flex flex-wrap items-center justify-between gap-4">
           <div class="flex items-center gap-4">
             <img src="/logo.png" alt="Boa Safra Sementes" class="h-auto w-36 shrink-0 rounded-2xl" />
@@ -30,25 +137,15 @@
 
           <div class="flex flex-wrap items-center gap-3">
             <span
-              id="statusTopo"
+              id="statusTopoLegacy"
               class="hidden rounded-lg border border-[#cde5bd] bg-[#edf7e8] px-3 py-2 text-sm text-[#315b2f]"
             ></span>
             <span
-              id="usuarioLogado"
+              id="usuarioLogadoLegacy"
               class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] px-3 py-2 text-sm text-[#38563f]"
             ></span>
             <button
-              id="btnUploadPlanilha"
-              type="button"
-              title="Upload da planilha"
-              aria-label="Upload da planilha"
-              class="flex h-10 w-10 items-center justify-center rounded-lg border border-[#d8e5c6] bg-[#f8faf4] text-[#38563f] transition-colors duration-200 hover:bg-[#edf4e2] hover:text-[#1f4d2d]"
-            >
-              <i class="fa-solid fa-file-arrow-up"></i>
-            </button>
-            <input id="uploadPlanilhaTopo" type="file" accept=".xlsx,.xls" class="hidden" />
-            <button
-              id="btnConfiguracoes"
+              id="btnConfiguracoesLegacy"
               type="button"
               title="Configurações"
               aria-label="Configurações"
@@ -57,7 +154,7 @@
               <i class="fa-solid fa-gear"></i>
             </button>
             <a
-              id="dashboardCard"
+              id="dashboardCardLegacy"
               href="#"
               target="_blank"
               rel="noopener noreferrer"
@@ -65,8 +162,15 @@
             >
               Acesso ao Dashboard
             </a>
+            <a
+              id="rankingLinkLegacy"
+              href="#"
+              class="hidden rounded-lg border border-[#cde5bd] bg-white px-4 py-2 text-sm font-bold uppercase tracking-[0.02em] text-[#1f4d2d] transition-colors duration-200 hover:bg-[#edf7e8]"
+            >
+              Ranking
+            </a>
             <button
-              id="btnLogout"
+              id="btnLogoutLegacy"
               type="button"
               class="rounded-lg bg-[#6f5428] px-4 py-2 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#5c451f]"
             >
@@ -76,68 +180,97 @@
         </div>
       </header>
 
-      <section class="rounded-lg border border-[#d8e5c6] bg-white/95 p-6 shadow-xl shadow-[#203a28]/10 space-y-5">
-        <h2 class="text-lg font-semibold text-[#1f4d2d]">Preencha os Dados</h2>
+      <section class="rounded-lg border border-[#d8e5c6] bg-white p-6 shadow-sm space-y-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between border-b border-[#eee] pb-4">
+          <div>
+            <h2 class="text-lg font-black text-[#1f4d2d]">Dados da Simulação</h2>
+            <p class="mt-0.5 text-xs text-[#74835d]">Preencha os campos abaixo para calcular a bonificação</p>
+          </div>
+          <span id="contadorFornecedores" class="hidden rounded-full bg-[#edf7e8] px-3 py-1 text-xs font-bold text-[#1f4d2d]"></span>
+        </div>
 
         <div class="space-y-5">
+          <!-- Step 1: Fornecedor -->
           <div>
-            <label for="fornecedor" class="mb-2 block text-sm font-medium text-[#38563f]">1. Fornecedor</label>
+            <div class="mb-2 flex items-center gap-2">
+              <span class="flex h-5 w-5 items-center justify-center rounded-full bg-[#1f4d2d] text-[10px] font-black text-white shrink-0">1</span>
+              <span class="text-xs font-bold uppercase tracking-widest text-[#8b927f]">Fornecedor</span>
+              <span id="contadorFornecedoresLabel" class="text-xs text-[#a8b89a]"></span>
+            </div>
             <div class="relative">
+              <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+                <i class="fa-solid fa-magnifying-glass text-sm text-[#a8b89a]"></i>
+              </span>
               <input
                 id="fornecedor"
                 type="text"
-                class="w-full rounded-lg border border-[#cfdcbd] bg-[#f8faf4] px-3 py-2 text-[#203a28] focus:ring-[#7FB23D] focus:border-[#7FB23D] outline-none"
-                placeholder="Digite ou selecione um fornecedor"
+                class="w-full rounded-lg border border-[#cfdcbd] bg-[#f8faf4] pl-9 pr-3 py-2.5 text-[#1f4d2d] font-medium placeholder-[#a8b89a] focus:border-[#38c96b] focus:ring-2 focus:ring-[#38c96b]/20 outline-none transition-colors"
+                placeholder="Buscar fornecedor..."
                 autocomplete="off"
               />
               <div
                 id="listaFornecedores"
-                class="absolute left-0 right-0 top-full z-30 mt-1 hidden max-h-72 overflow-auto rounded-lg border border-[#cfdcbd] bg-white shadow-xl"
+                class="absolute left-0 right-0 top-full z-30 mt-1 hidden max-h-80 overflow-auto rounded-xl border border-[#d8e5c6] bg-white shadow-2xl"
               ></div>
             </div>
           </div>
 
+          <!-- Step 2: Centros -->
           <div id="etapaCentros" class="hidden">
-            <label class="mb-2 block text-sm font-medium text-[#38563f]">2. Centros</label>
+            <div class="mb-2 flex items-center gap-2">
+              <span class="flex h-5 w-5 items-center justify-center rounded-full bg-[#1f4d2d] text-[10px] font-black text-white shrink-0">2</span>
+              <span class="text-xs font-bold uppercase tracking-widest text-[#8b927f]">Centros de Recebimento</span>
+            </div>
             <div
               id="listaCentros"
-              class="max-h-56 overflow-auto rounded-lg border border-[#cfdcbd] bg-[#f8faf4] p-3 text-sm text-[#203a28]"
+              class="max-h-48 overflow-auto rounded-lg border border-[#cfdcbd] bg-[#f8faf4] p-3 text-sm text-[#203a28]"
             ></div>
           </div>
 
+          <!-- Step 3: Cultivares -->
           <div id="etapaCultivares" class="hidden">
-            <label class="mb-2 block text-sm font-medium text-[#38563f]">3. Selecione a Cultivar</label>
+            <div class="mb-2 flex items-center gap-2">
+              <span class="flex h-5 w-5 items-center justify-center rounded-full bg-[#1f4d2d] text-[10px] font-black text-white shrink-0">3</span>
+              <span class="text-xs font-bold uppercase tracking-widest text-[#8b927f]">Cultivares</span>
+            </div>
             <div
               id="listaCultivares"
-              class="max-h-56 overflow-auto rounded-lg border border-[#cfdcbd] bg-[#f8faf4] p-3 text-sm text-[#203a28]"
+              class="max-h-48 overflow-auto rounded-lg border border-[#cfdcbd] bg-[#f8faf4] p-3 text-sm text-[#203a28]"
             ></div>
           </div>
         </div>
       </section>
 
-      <section id="secaoResumo" class="hidden rounded-lg border border-[#d8e5c6] bg-white/95 p-6 shadow-xl shadow-[#203a28]/10 space-y-5">
-        <h2 class="text-lg font-semibold text-[#1f4d2d]">Resumo</h2>
+      <section id="secaoResumo" class="hidden rounded-lg border border-[#d8e5c6] bg-white p-6 shadow-sm space-y-4">
+        <div class="flex items-center gap-2 border-b border-[#eee] pb-3">
+          <span class="flex h-5 w-5 items-center justify-center rounded-full bg-[#7FB23D] text-[10px] font-black text-white shrink-0">✓</span>
+          <h2 class="text-base font-black text-[#1f4d2d]">Resumo da Seleção</h2>
+        </div>
         <div id="resumoCombinacoes" class="rounded-lg border border-[#cfdcbd] bg-[#f8faf4] p-4 text-sm text-[#38563f]">
           Aguardando seleção.
         </div>
       </section>
 
-      <section id="secaoParametros" class="hidden rounded-lg border border-[#d8e5c6] bg-white/95 p-6 shadow-xl shadow-[#203a28]/10 space-y-5">
-        <h2 class="text-lg font-semibold text-[#1f4d2d]">Parâmetros de Bonificação</h2>
+      <section id="secaoParametros" class="hidden rounded-lg border border-[#d8e5c6] bg-white p-6 shadow-sm space-y-5">
+        <div class="flex items-center gap-2 border-b border-[#eee] pb-3">
+          <i class="fa-solid fa-sliders text-[#7FB23D]"></i>
+          <h2 class="text-base font-black text-[#1f4d2d]">Parâmetros de Bonificação</h2>
+        </div>
 
         <label class="inline-flex items-center gap-2 text-sm font-medium text-[#38563f]">
-          <input id="modoGlobal" type="checkbox" checked class="h-4 w-4 rounded border-[#cfdcbd] text-[#7FB23D]" />
+          <input id="modoGlobal" type="checkbox" class="h-4 w-4 rounded border-[#cfdcbd] text-[#7FB23D]" />
           Aplicar os mesmos valores para todas as inscrições estaduais/materiais
         </label>
 
-        <div id="configGlobal" class="grid gap-4 md:grid-cols-2">
+        <div id="configGlobal" class="hidden grid gap-4 md:grid-cols-2">
           <div>
             <label for="globalPerc" class="mb-2 block text-sm font-medium text-[#38563f]">Porcentagem (%)</label>
             <input
               id="globalPerc"
               type="number"
               step="0.1"
-              value="10"
+              value="0"
               class="w-full rounded-lg border border-[#cfdcbd] bg-[#f8faf4] px-3 py-2 text-[#203a28] focus:ring-[#7FB23D] focus:border-[#7FB23D] outline-none"
             />
           </div>
@@ -173,23 +306,28 @@
         </div>
       </section>
 
-      <section id="secaoResultado" class="hidden rounded-lg border border-[#d8e5c6] bg-white/95 p-6 shadow-xl shadow-[#203a28]/10 space-y-5">
-        <h2 class="text-lg font-semibold text-[#1f4d2d]">Resultado</h2>
-        <div id="totalGeral" class="rounded-lg bg-[#edf7e8] border border-[#cde5bd] px-4 py-3 text-[#1f4d2d] font-semibold">
-          Total Geral: R$ 0,00
+      <section id="secaoResultado" class="hidden rounded-lg border border-[#d8e5c6] bg-white p-6 shadow-sm space-y-4">
+        <div class="flex items-center justify-between border-b border-[#eee] pb-3">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-calculator text-[#7FB23D]"></i>
+            <h2 class="text-base font-black text-[#1f4d2d]">Resultado</h2>
+          </div>
+          <div id="totalGeral" class="rounded-lg bg-[#edf7e8] border border-[#cde5bd] px-4 py-2 text-[#1f4d2d] font-black text-lg">
+            R$ 0,00
+          </div>
         </div>
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto rounded-lg border border-[#d8e5c6]">
           <table class="min-w-full divide-y divide-[#d8e5c6] text-sm">
-            <thead class="bg-[#edf4e2]">
-              <tr>
-                <th class="px-3 py-2 text-left font-semibold text-[#38563f]">Centro</th>
-                <th class="px-3 py-2 text-left font-semibold text-[#38563f]">Inscrição Estadual</th>
-                <th class="px-3 py-2 text-left font-semibold text-[#38563f]">Material</th>
-                <th class="px-3 py-2 text-left font-semibold text-[#38563f]">Peso Base</th>
-                <th class="px-3 py-2 text-left font-semibold text-[#38563f]">% Bonif</th>
-                <th class="px-3 py-2 text-left font-semibold text-[#38563f]">Sacas</th>
-                <th class="px-3 py-2 text-left font-semibold text-[#38563f]">Valor da Saca</th>
-                <th class="px-3 py-2 text-left font-semibold text-[#38563f]">Subtotal</th>
+            <thead>
+              <tr class="bg-[#1f4d2d] text-white">
+                <th class="px-3 py-2.5 text-left text-xs font-bold uppercase tracking-wider">Centro</th>
+                <th class="px-3 py-2.5 text-left text-xs font-bold uppercase tracking-wider">Insc. Estadual</th>
+                <th class="px-3 py-2.5 text-left text-xs font-bold uppercase tracking-wider">Cultivar</th>
+                <th class="px-3 py-2.5 text-right text-xs font-bold uppercase tracking-wider">Peso Base</th>
+                <th class="px-3 py-2.5 text-right text-xs font-bold uppercase tracking-wider">% Bonif</th>
+                <th class="px-3 py-2.5 text-right text-xs font-bold uppercase tracking-wider">Sacas</th>
+                <th class="px-3 py-2.5 text-right text-xs font-bold uppercase tracking-wider">Vl. Saca</th>
+                <th class="px-3 py-2.5 text-right text-xs font-bold uppercase tracking-wider">Subtotal</th>
               </tr>
             </thead>
             <tbody id="resultadoBody" class="divide-y divide-[#e6edd8] bg-white"></tbody>
@@ -200,7 +338,7 @@
           type="button"
           class="hidden w-full rounded-lg bg-[#6f5428] px-4 py-3 text-white font-semibold transition-colors duration-200 hover:bg-[#5c451f]"
         >
-          Emitir PDF de bonificação
+          <i class="fa-solid fa-file-pdf mr-2"></i>Emitir PDF de Bonificação
         </button>
       </section>
 
@@ -213,14 +351,150 @@
           <!-- Conteúdo injetado dinamicamente -->
         </div>
       </section>
-    </main>
+          </section>
+
+          <section id="viewResumo" data-app-view="resumo" class="hidden space-y-6">
+            <div class="rounded-lg border border-[#d8d8cf] bg-white p-6 shadow-sm">
+              <div class="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <h1 class="text-xl font-bold text-[#1f4d2d]">Resumo Operacional</h1>
+                  <p class="mt-1 text-sm text-[#61713d]">Visão consolidada para acompanhamento da operação.</p>
+                </div>
+                <a id="dashboardCard" href="#" target="_blank" rel="noopener noreferrer" class="hidden inline-flex items-center gap-2 rounded-md bg-[#2f6b37] px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-[#25572d]">
+                  <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                  Abrir Dashboard
+                </a>
+              </div>
+
+              <div id="resumoDashboardVazio" class="mt-6 rounded-lg border border-dashed border-[#cfdcbd] bg-[#f8faf4] p-8 text-center">
+                <i class="fa-solid fa-chart-simple text-3xl text-[#7FB23D]"></i>
+                <p class="mt-3 font-semibold text-[#1f4d2d]">Dashboard ainda não configurado</p>
+                <p class="mt-1 text-sm text-[#61713d]">Um administrador pode inserir o link nas configurações.</p>
+              </div>
+
+              <iframe id="resumoDashboardFrame" title="Resumo Operacional" class="mt-6 hidden h-[70vh] w-full rounded-lg border border-[#d8e5c6] bg-[#f8faf4]"></iframe>
+            </div>
+          </section>
+
+          <section id="viewRanking" data-app-view="ranking" class="hidden space-y-6">
+            <div class="rounded-lg border border-[#d8e5c6] bg-white p-6 shadow-sm">
+              <div class="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <h1 class="text-xl font-bold text-[#1f4d2d]">Qualidade</h1>
+                  <p class="mt-1 text-sm text-[#61713d]">Ranking de qualidade por produtor, unidade e cultivar com base na classificação atual.</p>
+                </div>
+                <button id="btnAtualizarRankingModulo" type="button" class="rounded-lg border border-[#cfdcbd] bg-white px-4 py-2 text-sm font-semibold text-[#1f4d2d] hover:bg-[#edf7e8]">
+                  Atualizar
+                </button>
+              </div>
+              <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+                <div id="rankingQualityFilters" class="flex flex-wrap items-center gap-2">
+                  <button type="button" data-ranking-quality="produtores" class="rounded-full border border-[#cfdcbd] bg-[#f8faf4] px-4 py-2 text-sm font-semibold text-[#1f4d2d] transition-colors hover:bg-[#edf7e8]">Produtor</button>
+                  <button type="button" data-ranking-quality="unidades" class="rounded-full border border-[#cfdcbd] bg-[#f8faf4] px-4 py-2 text-sm font-semibold text-[#1f4d2d] transition-colors hover:bg-[#edf7e8]">Centro</button>
+                  <button type="button" data-ranking-quality="cultivares" class="rounded-full border border-[#cfdcbd] bg-[#f8faf4] px-4 py-2 text-sm font-semibold text-[#1f4d2d] transition-colors hover:bg-[#edf7e8]">Cultivar</button>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="flex items-center gap-1.5 rounded-lg border border-[#d8e5c6] bg-[#f8faf4] px-3 py-2">
+                    <i class="fa-solid fa-magnifying-glass text-xs text-[#74835d]"></i>
+                    <input id="rankingSearchInput" type="search" placeholder="Pesquisar..." autocomplete="off"
+                           class="w-52 bg-transparent text-sm text-[#1f4d2d] placeholder-[#a8b89a] outline-none" />
+                  </span>
+                  <span id="rankingSearchCount" class="hidden text-xs text-[#74835d]"></span>
+                </div>
+              </div>
+              <div id="rankingModuloStatus" class="mt-5 rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4 text-sm text-[#61713d]">Carregando ranking...</div>
+              <div id="rankingModuloGrid" class="mt-5"></div>
+            </div>
+          </section>
+
+          <section id="viewFornecedores" data-app-view="fornecedores" class="hidden space-y-5">
+            <!-- Stat cards -->
+            <div class="grid gap-4 sm:grid-cols-3">
+              <div class="flex items-center gap-4 rounded-lg border border-[#d8e5c6] bg-white p-5 shadow-sm">
+                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#edf7e8] text-[#2f6b37]">
+                  <i class="fa-solid fa-users text-lg"></i>
+                </span>
+                <div>
+                  <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-[#8b927f]">Fornecedores Ativos</p>
+                  <p id="statFornecedoresAtivos" class="mt-0.5 text-3xl font-bold text-[#1f4d2d]">—</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-4 rounded-lg border border-[#d8e5c6] bg-white p-5 shadow-sm">
+                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#edf7e8] text-[#2f6b37]">
+                  <i class="fa-solid fa-seedling text-lg"></i>
+                </span>
+                <div>
+                  <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-[#8b927f]">Volume Total</p>
+                  <p id="statVolumeTotal" class="mt-0.5 text-3xl font-bold text-[#1f4d2d]">—</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-4 rounded-lg border border-red-200 bg-white p-5 shadow-sm">
+                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-500">
+                  <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+                </span>
+                <div>
+                  <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-[#8b927f]">Com Divergência</p>
+                  <p id="statComDivergencia" class="mt-0.5 text-3xl font-bold text-red-600">—</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ranking table -->
+            <div class="rounded-lg border border-[#d8e5c6] bg-white shadow-sm">
+              <div class="flex items-center justify-between border-b border-[#d8e5c6] px-5 py-4">
+                <div class="flex items-center gap-2">
+                  <span class="h-4 w-[3px] rounded-full bg-[#1f4d2d]"></span>
+                  <p class="text-sm font-bold text-[#1f4d2d]">Ranking de Fornecedores por Volume</p>
+                </div>
+                <button id="btnImportarXlsxFornecedores" type="button" class="inline-flex items-center gap-2 rounded-lg bg-[#1f4d2d] px-4 py-2 text-sm font-semibold text-white hover:bg-[#163b21]">
+                  <i class="fa-solid fa-file-arrow-up"></i> Importar XLSX
+                </button>
+              </div>
+              <div id="listaFornecedoresModulo" class="overflow-x-auto"></div>
+            </div>
+            <span id="fornecedoresModuloTotal" class="hidden">0</span>
+            <div id="produtoresResumoModulo" class="hidden"></div>
+          </section>
+
+          <section id="viewUnidades" data-app-view="unidades" class="hidden space-y-6">
+            <div class="rounded-lg border border-[#d8e5c6] bg-white p-6 shadow-sm">
+              <div class="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <h1 class="text-xl font-bold text-[#1f4d2d]">Unidades</h1>
+                  <p class="mt-1 text-sm text-[#61713d]">Resumo dos centros calculado a partir da ZMM113 atual enviada pelo administrador.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span id="unidadesModuloTotal" class="rounded-full bg-[#edf7e8] px-3 py-1 text-xs font-bold text-[#1f4d2d]">0 centros</span>
+                  <button id="btnAtualizarUnidades" type="button" class="rounded-lg border border-[#cfdcbd] bg-white px-4 py-2 text-sm font-semibold text-[#1f4d2d] hover:bg-[#edf7e8] transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-rotate-right text-xs"></i> Atualizar
+                  </button>
+                </div>
+              </div>
+              <div id="listaUnidadesModulo" class="mt-5 grid gap-3 md:grid-cols-2 lg:grid-cols-3"></div>
+              <div id="resumoGeralUnidadesModulo" class="mt-6 hidden"></div>
+              <div id="unidadeDetalheModulo" class="mt-6 hidden space-y-5"></div>
+            </div>
+          </section>
+
+          <section id="viewHistorico" data-app-view="historico" class="hidden space-y-6">
+            <div class="rounded-lg border border-[#d8e5c6] bg-white p-6 shadow-sm">
+              <div>
+                <h1 class="text-xl font-bold text-[#1f4d2d]">Histórico</h1>
+                <p class="mt-1 text-sm text-[#61713d]">Registro das simulações realizadas no sistema.</p>
+              </div>
+              <div id="listaHistoricoModulo" class="mt-5 space-y-2"></div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
 
     <div id="modalConfiguracoes" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 px-4">
       <section class="max-h-[90vh] w-full max-w-4xl overflow-auto rounded-lg border border-[#d8e5c6] bg-white p-6 shadow-xl">
         <div class="mb-5 flex items-center justify-between gap-4">
           <div>
             <h2 class="text-lg font-semibold text-[#1f4d2d]">Configurações</h2>
-            <p id="planilhaAtual" class="mt-1 text-sm text-[#61713d]">Carregando planilha atual...</p>
+            <p class="mt-1 text-sm text-[#61713d]">Ajustes da conta e preferências do simulador.</p>
           </div>
           <button
             id="btnFecharConfiguracoes"
@@ -264,6 +538,20 @@
         </div>
 
         <div id="adminConfiguracoes" class="mt-5 hidden grid gap-5 lg:grid-cols-2">
+          <section class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4">
+            <h3 class="font-semibold text-[#1f4d2d]">Planilha do simulador</h3>
+            <p id="planilhaAtual" class="mt-3 text-sm text-[#61713d]">Carregando planilha atual...</p>
+            <button
+              id="btnUploadPlanilha"
+              type="button"
+              class="mt-4 inline-flex items-center justify-center gap-2 rounded-lg bg-[#2f6b37] px-4 py-2 text-sm font-semibold text-white hover:bg-[#25572d]"
+            >
+              <i class="fa-solid fa-file-arrow-up"></i>
+              Enviar planilha
+            </button>
+            <input id="uploadPlanilhaTopo" type="file" accept=".xlsx,.xls" class="hidden" />
+          </section>
+
           <section class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4">
             <h3 class="font-semibold text-[#1f4d2d]">Dashboard Power BI</h3>
             <form id="formDashboard" class="mt-4 grid gap-3">
@@ -325,6 +613,7 @@
       const usuarioLogadoEl = document.getElementById("usuarioLogado");
       const statusTopoEl = document.getElementById("statusTopo");
       const dashboardCardEl = document.getElementById("dashboardCard");
+      const rankingLinkEl = document.getElementById("rankingLink");
       const btnUploadPlanilhaEl = document.getElementById("btnUploadPlanilha");
       const uploadPlanilhaTopoEl = document.getElementById("uploadPlanilhaTopo");
       const btnConfiguracoesEl = document.getElementById("btnConfiguracoes");
@@ -369,16 +658,750 @@
       const btnNovaCotacaoEl = document.getElementById("btnNovaCotacao");
       const btnCalcularEl = document.getElementById("btnCalcular");
       const btnPdfEl = document.getElementById("btnPdf");
+      const navLinksEls = Array.from(document.querySelectorAll("[data-nav-view]"));
+      const appViewEls = Array.from(document.querySelectorAll("[data-app-view]"));
+      const breadcrumbAtualEl = document.getElementById("breadcrumbAtual");
+      const sidebarInitialsEl = document.getElementById("sidebarInitials");
+      const sidebarUserNameEl = document.getElementById("sidebarUserName");
+      const welcomeTitleEl = document.getElementById("welcomeTitle");
+      const btnIrSimuladorEl = document.getElementById("btnIrSimulador");
+      const homeMarketBodyEl = document.getElementById("homeMarketBody");
+      const homeMarketFooterEl = document.getElementById("homeMarketFooter");
+      const resumoDashboardFrameEl = document.getElementById("resumoDashboardFrame");
+      const resumoDashboardVazioEl = document.getElementById("resumoDashboardVazio");
+      const listaFornecedoresModuloEl = document.getElementById("listaFornecedoresModulo");
+      const produtoresResumoModuloEl = document.getElementById("produtoresResumoModulo");
+      const fornecedoresModuloTotalEl = document.getElementById("fornecedoresModuloTotal");
+      const listaUnidadesModuloEl = document.getElementById("listaUnidadesModulo");
+      const unidadesModuloTotalEl = document.getElementById("unidadesModuloTotal");
+      const unidadeDetalheModuloEl = document.getElementById("unidadeDetalheModulo");
+      const resumoGeralUnidadesModuloEl = document.getElementById("resumoGeralUnidadesModulo");
+      const listaHistoricoModuloEl = document.getElementById("listaHistoricoModulo");
+      const rankingModuloStatusEl = document.getElementById("rankingModuloStatus");
+      const rankingModuloGridEl = document.getElementById("rankingModuloGrid");
+      const btnAtualizarRankingModuloEl = document.getElementById("btnAtualizarRankingModulo");
+      const rankingSearchInputEl = document.getElementById("rankingSearchInput");
+      const rankingSearchCountEl = document.getElementById("rankingSearchCount");
 
       let usuarioAtual = "";
       let usuarioAdminAtual = false;
       let combinacoesAtuais = [];
       let ultimoPayloadPdf = null;
       let fornecedoresDisponiveis = [];
+      let fornecedoresResumo = [];
+      let cultivaresResumo = [];
+      let unidadesResumoGlobal = { unidades: [], totais: null };
       let fornecedorAtualSelecionado = "";
+      let pracaOptions = [];
       const configsLocais = {};
       const APP_TIME_ZONE = "America/Sao_Paulo";
       const APP_DATE_TIME_OPTIONS = { timeZone: APP_TIME_ZONE };
+      const VIEW_LABELS = {
+        inicio: "Início",
+        simulador: "Simulação de Bonificação",
+        resumo: "Resumo Operacional",
+        ranking: "Qualidade",
+        fornecedores: "Fornecedores",
+        unidades: "Unidades",
+        historico: "Histórico"
+      };
+      let rankingModuloCarregado = false;
+      let rankingQualityView = "produtores";
+      let rankingAllRows = [];
+      let rankingDataCache = {};
+      const rankingQualityFiltersEl = document.getElementById("rankingQualityFilters");
+
+      function getInitials(name) {
+        const words = String(name || "Boa Safra").trim().split(/\s+/).filter(Boolean);
+        return words.slice(0, 2).map(word => word[0]).join("").toUpperCase() || "BS";
+      }
+
+      function setActiveView(view) {
+        const activeView = VIEW_LABELS[view] ? view : "inicio";
+        appViewEls.forEach((section) => {
+          section.classList.toggle("hidden", section.dataset.appView !== activeView);
+        });
+        navLinksEls.forEach((link) => {
+          const active = link.dataset.navView === activeView;
+          link.classList.toggle("bg-[#2f6b37]", active);
+          link.classList.toggle("text-white", active);
+          link.classList.toggle("text-white/80", !active);
+        });
+        if (breadcrumbAtualEl) breadcrumbAtualEl.textContent = VIEW_LABELS[activeView];
+        if (activeView === "ranking") carregarRankingModulo();
+        if (activeView === "unidades") carregarUnidadesResumo();
+        if (activeView === "historico") carregarHistorico().catch(() => renderHistoricoModulo([]));
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function updateShellUser(session) {
+        const name = session?.usuario || "Usuário";
+        if (sidebarUserNameEl) sidebarUserNameEl.textContent = name;
+        if (sidebarInitialsEl) sidebarInitialsEl.textContent = getInitials(name);
+        if (welcomeTitleEl) welcomeTitleEl.textContent = `Bem-vindo, ${name}`;
+        usuarioLogadoEl.textContent = session?.email || "";
+      }
+
+      function renderMarketReference() {
+        if (!homeMarketBodyEl || !homeMarketFooterEl) return;
+
+        const rows = pracaOptions
+          .filter(option => Number(option.valor) > 0)
+          .slice()
+          .sort((a, b) => Number(a.valor) - Number(b.valor));
+
+        if (!rows.length) {
+          homeMarketBodyEl.innerHTML = `<tr><td colspan="2" class="px-5 py-5 text-center text-sm text-[#79836f]">Referência de mercado indisponível.</td></tr>`;
+          homeMarketFooterEl.textContent = "";
+          return;
+        }
+
+        const selected = rows.slice(0, 13);
+        const min = rows[0];
+        const max = rows[rows.length - 1];
+        homeMarketBodyEl.innerHTML = selected
+          .map((item, index) => {
+            const isMin = item.key === min.key;
+            const isMax = item.key === max.key;
+            const rowClass = isMin ? "bg-[#ecfff5]" : isMax ? "bg-[#fff8e8]" : index % 2 ? "bg-[#fafaf7]" : "bg-white";
+            const badge = isMin
+              ? `<span class="ml-2 rounded bg-[#b9f2d2] px-2 py-0.5 text-[10px] font-bold text-[#1f4d2d]">MENOR</span>`
+              : isMax
+                ? `<span class="ml-2 rounded bg-[#f3cc4b] px-2 py-0.5 text-[10px] font-bold text-[#1f4d2d]">MAIOR</span>`
+                : "";
+            return `
+              <tr class="${rowClass}">
+                <td class="px-5 py-3 font-medium text-[#22372a]">${escapeHtml(item.praca)}${badge}</td>
+                <td class="px-5 py-3 text-right font-semibold text-[#1f4d2d]">R$ ${escapeHtml(item.valorFmt)}</td>
+              </tr>
+            `;
+          })
+          .join("");
+        homeMarketFooterEl.innerHTML = `<span>${rows.length} localidades mapeadas</span><span>Min. R$ ${escapeHtml(min.valorFmt)} - Max. R$ ${escapeHtml(max.valorFmt)}</span>`;
+      }
+
+      function updateResumoDashboard(link) {
+        const hasLink = Boolean(link);
+        if (resumoDashboardFrameEl) {
+          resumoDashboardFrameEl.src = hasLink ? link : "about:blank";
+          resumoDashboardFrameEl.classList.toggle("hidden", !hasLink);
+        }
+        if (resumoDashboardVazioEl) resumoDashboardVazioEl.classList.toggle("hidden", hasLink);
+      }
+
+      function renderFornecedoresModulo() {
+        if (!listaFornecedoresModuloEl) return;
+
+        const rows = fornecedoresResumo;
+        const totalFornecedores = rows.length;
+        const totalPesoLiquido = rows.reduce((sum, item) => sum + Number(item.pesoLiquido || 0), 0);
+        const comDivergencia = rows.filter(item => !item.codigo || item.codigo === "-").length;
+
+        const statAtivosEl = document.getElementById("statFornecedoresAtivos");
+        const statVolumeEl = document.getElementById("statVolumeTotal");
+        const statDivEl = document.getElementById("statComDivergencia");
+        const btnImportarEl = document.getElementById("btnImportarXlsxFornecedores");
+        if (statAtivosEl) statAtivosEl.textContent = totalFornecedores;
+        if (statVolumeEl) statVolumeEl.textContent = formatCompactWeight(totalPesoLiquido);
+        if (statDivEl) statDivEl.textContent = comDivergencia;
+        if (btnImportarEl) btnImportarEl.classList.toggle("hidden", !usuarioAdminAtual);
+
+        if (!rows.length) {
+          listaFornecedoresModuloEl.innerHTML = `<p class="p-5 text-sm text-[#61713d]">Nenhum fornecedor carregado.</p>`;
+          return;
+        }
+
+        const top3Badges = [
+          "bg-[#e8c15f] text-[#3b2a08]",
+          "bg-[#a7adb7] text-white",
+          "bg-[#c5864a] text-white"
+        ];
+
+        listaFornecedoresModuloEl.innerHTML = `
+          <table class="w-full min-w-[800px] text-sm">
+            <thead>
+              <tr class="bg-[#1f4d2d] text-white">
+                <th class="px-4 py-3 text-left w-14">#</th>
+                <th class="px-4 py-3 text-left">Fornecedor</th>
+                <th class="px-4 py-3 text-left">Centro(s)</th>
+                <th class="px-4 py-3 text-right">Peso (kg)</th>
+                <th class="px-4 py-3 text-right">% do Total</th>
+                <th class="px-4 py-3 text-right">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#e5e3da]">
+              ${rows.map((item, index) => {
+                const peso = Number(item.pesoLiquido || 0);
+                const percent = totalPesoLiquido > 0 ? (peso / totalPesoLiquido) * 100 : 0;
+                const rowIndex = index + 1;
+                const badgeClass = top3Badges[index] || null;
+                let statusHtml;
+                if (rowIndex <= 3) {
+                  statusHtml = `<span class="rounded-full bg-[#d4edbc] px-2 py-1 text-[11px] font-bold text-[#2f6b37]">Top</span>`;
+                } else if (rowIndex <= 8) {
+                  statusHtml = `<span class="text-xs font-semibold text-[#2f6b37]">Ativo</span>`;
+                } else {
+                  statusHtml = `<span class="text-xs text-[#8b927f]">Regular</span>`;
+                }
+                return `
+                  <tr class="hover:bg-[#f8faf4] transition-colors">
+                    <td class="px-4 py-3">
+                      ${badgeClass
+                        ? `<span class="inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${badgeClass}">${rowIndex}</span>`
+                        : `<span class="text-sm font-semibold text-[#8b927f]">${rowIndex}</span>`
+                      }
+                    </td>
+                    <td class="px-4 py-3 font-semibold text-[#1f4d2d]">${escapeHtml(item.produtor || item.label || "-")}</td>
+                    <td class="px-4 py-3">${renderCenterBadges(item.centros)}</td>
+                    <td class="px-4 py-3 text-right font-medium text-[#1f4d2d]">${formatNumberDisplay(peso)}</td>
+                    <td class="px-4 py-3 text-right">
+                      <div class="flex items-center justify-end gap-2">
+                        <div class="h-1.5 w-16 overflow-hidden rounded-full bg-[#e5e7eb]">
+                          <div class="h-full rounded-full bg-[#7FB23D]" style="width:${Math.min(percent, 100).toFixed(1)}%"></div>
+                        </div>
+                        <span class="w-10 text-right text-xs font-semibold text-[#1f4d2d]">${percent.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 text-right">${statusHtml}</td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+          </table>
+        `;
+      }
+
+      function getRankTheme(index) {
+        const themes = [
+          {
+            label: "1º",
+            icon: "fa-trophy",
+            card: "border-[#e8c15f] bg-[#fff8e3]",
+            badge: "bg-[#e8c15f] text-[#3b2a08]",
+            value: "text-[#7b4d00]",
+            podium: "#e8c15f"
+          },
+          {
+            label: "2º",
+            icon: "fa-medal",
+            card: "border-[#a7adb7] bg-[#f3f5f7]",
+            badge: "bg-[#a7adb7] text-white",
+            value: "text-[#4b5563]",
+            podium: "#a7adb7"
+          },
+          {
+            label: "3º",
+            icon: "fa-medal",
+            card: "border-[#c5864a] bg-[#fff1e5]",
+            badge: "bg-[#c5864a] text-white",
+            value: "text-[#7c3f0f]",
+            podium: "#c5864a"
+          }
+        ];
+
+        return themes[index] || {
+          label: `${index + 1}º`,
+          icon: "",
+          card: "border-transparent bg-white",
+          badge: "bg-[#edf4e2] text-[#1f4d2d]",
+          value: "text-[#6f5428]",
+          podium: "#7f967c"
+        };
+      }
+
+      function formatCompactWeight(value) {
+        const numeric = Number(value) || 0;
+        if (numeric >= 1000000) {
+          return `${(numeric / 1000000).toLocaleString("pt-BR", { maximumFractionDigits: 2 })} M kg`;
+        }
+        if (numeric >= 1000) {
+          return `${(numeric / 1000).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} t`;
+        }
+        return `${formatNumberDisplay(numeric)} kg`;
+      }
+
+      function renderMiniMetric(icon, label, value, tone = "green") {
+        const tones = {
+          green: "bg-[#edf7e8] text-[#2f6b37]",
+          blue: "bg-[#edf3ff] text-[#315cc5]",
+          purple: "bg-[#f1ecff] text-[#7547d8]"
+        };
+
+        return `
+          <div class="rounded-lg border border-[#d8e5c6] bg-white p-4 shadow-sm">
+            <div class="flex items-center gap-3">
+              <span class="flex h-10 w-10 items-center justify-center rounded-lg ${tones[tone] || tones.green}">
+                <i class="fa-solid ${icon}"></i>
+              </span>
+              <div>
+                <p class="text-xs text-[#61713d]">${escapeHtml(label)}</p>
+                <p class="text-xl font-black text-[#0d1b2a]">${escapeHtml(value)}</p>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderMiniMetricLink(icon, label, value, tone, href) {
+        const tones = {
+          green: "bg-[#edf7e8] text-[#2f6b37]",
+          blue: "bg-[#edf3ff] text-[#315cc5]",
+          purple: "bg-[#f1ecff] text-[#7547d8]"
+        };
+
+        return `
+          <a href="${escapeHtml(href)}" target="_blank" rel="noopener"
+             class="rounded-lg border border-[#d8e5c6] bg-white p-4 shadow-sm flex items-center gap-3 group hover:border-[#38c96b] hover:shadow-md transition-all cursor-pointer no-underline">
+            <span class="flex h-10 w-10 items-center justify-center rounded-lg ${tones[tone] || tones.green}">
+              <i class="fa-solid ${icon}"></i>
+            </span>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-[#61713d]">${escapeHtml(label)}</p>
+              <p class="text-xl font-black text-[#0d1b2a]">${escapeHtml(String(value))}</p>
+            </div>
+            <i class="fa-solid fa-arrow-up-right-from-square text-xs text-[#c0cdb4] group-hover:text-[#38c96b] transition-colors"></i>
+          </a>
+        `;
+      }
+
+      function renderResumoGeralUnidades(unidades = [], totais = null) {
+        if (!resumoGeralUnidadesModuloEl) return;
+
+        const totalPesoLiquido = unidades.reduce((s, u) => s + Number(u.pesoLiquido || 0), 0);
+        const totalEntradas = Number(totais?.entradas ?? unidades.reduce((s, u) => s + Number(u.entradas || 0), 0));
+        const totalProdutores = unidades.reduce((s, u) => s + Number(u.produtores || 0), 0);
+        const topCultivares = cultivaresResumo.slice(0, 5);
+        const topProdutores = fornecedoresResumo.slice(0, 5);
+
+        resumoGeralUnidadesModuloEl.innerHTML = `
+          <div class="rounded-lg border border-[#d8e5c6] bg-[#fbfcfa] p-5 shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+              <div class="flex items-center gap-3">
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#1f4d2d] text-sm font-black text-white">
+                  <i class="fa-solid fa-warehouse"></i>
+                </div>
+                <div>
+                  <h2 class="text-xl font-black text-[#0d1b2a]">Resumo Geral</h2>
+                  <p class="text-sm text-[#61713d]">Consolidado de todas as unidades</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-5 grid gap-3 lg:grid-cols-3">
+              ${renderMiniMetric("fa-building-columns", "Volume Total (ZMM113)", `${formatNumberDisplay(totalPesoLiquido)} kg`, "green")}
+              ${renderMiniMetric("fa-copy", "Entradas", totalEntradas, "blue")}
+              ${renderMiniMetric("fa-users", "Produtores", totalProdutores, "purple")}
+            </div>
+
+            ${topCultivares.length ? `
+              <div class="mt-5 rounded-lg border border-[#d8e5c6] bg-white p-5">
+                <h3 class="font-bold text-[#1f4d2d]">Top Cultivares — Geral</h3>
+                <div class="mt-5 overflow-x-auto">${renderCultivarBars(topCultivares)}</div>
+              </div>
+            ` : ""}
+
+            ${topProdutores.length ? `
+              <div class="mt-5 rounded-lg border border-[#d8e5c6] bg-white p-5">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                  <h3 class="font-bold text-[#1f4d2d]"><span class="text-[#c99022]"><i class="fa-solid fa-trophy"></i></span> Top 5 Produtores — Geral</h3>
+                  <button type="button" data-nav-ranking-detalhe class="text-sm font-semibold text-[#1f4d2d] underline-offset-4 hover:underline">Ver ranking completo →</button>
+                </div>
+                ${renderProdutorPodio(topProdutores)}
+              </div>
+            ` : ""}
+          </div>
+        `;
+        resumoGeralUnidadesModuloEl.classList.remove("hidden");
+      }
+
+      function renderUnidadesModulo(unidades = [], totais = null) {
+        if (!listaUnidadesModuloEl) return;
+
+        unidadesResumoGlobal = { unidades, totais };
+
+        if (unidadesModuloTotalEl) {
+          const centros = Number(totais?.centros ?? unidades.length);
+          const entradas = Number(totais?.entradas ?? 0);
+          unidadesModuloTotalEl.textContent = entradas ? `${centros} centros | ${entradas} entradas` : `${centros} centros`;
+        }
+
+        if (!unidades.length) {
+          if (unidadeDetalheModuloEl) unidadeDetalheModuloEl.classList.add("hidden");
+          if (resumoGeralUnidadesModuloEl) resumoGeralUnidadesModuloEl.classList.add("hidden");
+          listaUnidadesModuloEl.innerHTML = `<p class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4 text-sm text-[#61713d]">Nenhum centro encontrado na planilha atual.</p>`;
+          return;
+        }
+
+        listaUnidadesModuloEl.innerHTML = unidades
+          .map((unidade) => `
+            <button type="button" data-unidade-id="${escapeHtml(unidade.id || unidade.centroCode || unidade.centro)}" class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4 text-left transition-all hover:-translate-y-0.5 hover:border-[#7FB23D] hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#7FB23D]">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-sm font-bold text-[#1f4d2d]">${escapeHtml(unidade.unidade || unidade.centro)}</p>
+                  <p class="mt-1 text-xs text-[#61713d]">${escapeHtml(unidade.local || unidade.centroCode || "Centro sem localidade")}</p>
+                </div>
+                <span class="rounded bg-[#dff0d6] px-2 py-1 text-[10px] font-bold text-[#1f4d2d]">${escapeHtml(unidade.entradas)} entradas</span>
+              </div>
+              <div class="mt-4 grid grid-cols-2 gap-3 text-xs">
+                <div>
+                  <p class="text-[#61713d]">Peso líquido</p>
+                  <p class="font-bold text-[#1f4d2d]">${escapeHtml(unidade.pesoLiquidoFmt)} kg</p>
+                </div>
+                <div>
+                  <p class="text-[#61713d]">Peso bruto</p>
+                  <p class="font-bold text-[#1f4d2d]">${escapeHtml(unidade.pesoBrutoFmt)} kg</p>
+                </div>
+                <div>
+                  <p class="text-[#61713d]">Produtores</p>
+                  <p class="font-bold text-[#6f5428]">${escapeHtml(unidade.produtores)}</p>
+                </div>
+                <div>
+                  <p class="text-[#61713d]">Cultivares</p>
+                  <p class="font-bold text-[#6f5428]">${escapeHtml(unidade.cultivares)}</p>
+                </div>
+              </div>
+              <p class="mt-4 border-t border-[#d8e5c6] pt-3 text-xs font-bold text-[#2f6b37]">Abrir resumo da unidade →</p>
+            </button>
+          `)
+          .join("");
+
+        renderResumoGeralUnidades(unidades, totais);
+      }
+
+      function renderCultivarBars(cultivares = []) {
+        const rows = cultivares.slice(0, 5);
+        if (!rows.length) {
+          return `<p class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4 text-sm text-[#61713d]">Sem cultivares para exibir.</p>`;
+        }
+
+        const max = Math.max(...rows.map(item => Number(item.pesoLiquido) || 0), 1);
+        const colors = ["#1f4d2d", "#90a844", "#2f6b37", "#a8c545", "#5a8a62"];
+
+        return `
+          <div class="space-y-3">
+            ${rows.map((item, index) => {
+              const percent = Math.max(5, Math.round(((Number(item.pesoLiquido) || 0) / max) * 100));
+              return `
+                <div class="flex flex-col gap-1">
+                  <div class="flex items-center justify-between gap-2">
+                    <p class="text-xs text-[#61713d] break-words">${escapeHtml(item.label || item.cultivar || "-")}</p>
+                    <p class="shrink-0 text-xs font-bold text-[#6f5428]">${escapeHtml(formatCompactWeight(item.pesoLiquido))}</p>
+                  </div>
+                  <div class="h-6 w-full rounded bg-[#edf4e2]">
+                    <div class="h-6 rounded" style="width: ${percent}%; background: ${colors[index]};"></div>
+                  </div>
+                </div>
+              `;
+            }).join("")}
+          </div>
+        `;
+      }
+
+      function renderProdutorPodio(produtores = []) {
+        const top = produtores.slice(0, 5);
+        if (!top.length) {
+          return `<p class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4 text-sm text-[#61713d]">Sem produtores para exibir.</p>`;
+        }
+
+        const podium = [
+          { rank: 2, item: top[1], height: 86 },
+          { rank: 1, item: top[0], height: 116 },
+          { rank: 3, item: top[2], height: 72 }
+        ].filter(entry => entry.item);
+
+        const max = Math.max(...top.map(item => Number(item.pesoLiquido) || 0), 1);
+        const remaining = top.slice(3);
+
+        return `
+          <div class="pt-3">
+            <div class="flex items-end justify-center gap-4">
+              ${podium.map(({ rank, item, height }) => {
+                const theme = getRankTheme(rank - 1);
+                return `
+                  <div class="w-44 text-center">
+                    <div class="mb-2 text-lg ${theme.value}"><i class="fa-solid ${theme.icon}"></i></div>
+                    <p class="mx-auto text-xs font-bold uppercase text-[#0d1b2a] break-words leading-tight">${escapeHtml(item.label || item.produtor || "-")}</p>
+                    <p class="mt-1 text-xs text-[#61713d]">${escapeHtml(formatCompactWeight(item.pesoLiquido))}</p>
+                    <div class="mt-3 flex items-center justify-center rounded-t-lg text-lg font-black text-white" style="height: ${height}px; background: ${theme.podium};">
+                      ${rank}º
+                    </div>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+            ${remaining.length ? `
+              <div class="mt-5 border-t border-[#e5e3da] pt-4">
+                ${remaining.map((item, index) => {
+                  const rank = index + 4;
+                  const percent = Math.max(6, Math.round(((Number(item.pesoLiquido) || 0) / max) * 100));
+                  return `
+                    <div class="grid items-center gap-3 py-2 text-sm md:grid-cols-[32px_1fr_170px_110px]">
+                      <p class="font-black text-[#8b927f]">${rank}º</p>
+                      <p class="break-words text-[#203a28]">${escapeHtml(item.label || item.produtor || "-")}</p>
+                      <div class="h-2 rounded-full bg-[#edf0e8]">
+                        <div class="h-2 rounded-full bg-[#7f967c]" style="width: ${percent}%;"></div>
+                      </div>
+                      <p class="text-right text-xs font-bold text-[#6f5428]">${escapeHtml(formatCompactWeight(item.pesoLiquido))}</p>
+                    </div>
+                  `;
+                }).join("")}
+              </div>
+            ` : ""}
+          </div>
+        `;
+      }
+
+      function renderUnidadeDetalhe(data) {
+        if (!unidadeDetalheModuloEl) return;
+        const unidade = data.unidade || {};
+        const codigo = unidade.centroCode || unidade.id || "UN";
+        const titulo = unidade.label || unidade.unidade || unidade.centro || codigo;
+
+        unidadeDetalheModuloEl.innerHTML = `
+          <div class="rounded-lg border border-[#d8e5c6] bg-[#fbfcfa] p-5 shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+              <div class="flex items-center gap-3">
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#38c96b] text-sm font-black text-white">${escapeHtml(codigo)}</div>
+                <div>
+                  <h2 class="text-xl font-black text-[#0d1b2a]">${escapeHtml(titulo)}</h2>
+                  <p class="text-sm text-[#61713d]">${escapeHtml(unidade.local || "Unidade Boa Safra Sementes")}</p>
+                </div>
+              </div>
+              <button type="button" data-fechar-unidade-detalhe class="rounded-lg border border-[#cfdcbd] bg-white px-4 py-2 text-sm font-semibold text-[#1f4d2d] hover:bg-[#edf7e8]">
+                Voltar para unidades
+              </button>
+            </div>
+
+            <div class="mt-5 grid gap-3 lg:grid-cols-3">
+              ${renderMiniMetricLink("fa-building-columns", "Volume (dados ZMM113)", `${unidade.pesoLiquidoFmt || formatNumberDisplay(unidade.pesoLiquido)} kg`, "green", `/unidade-lista.html?unidade=${encodeURIComponent(codigo)}&tipo=cultivares&titulo=${encodeURIComponent(titulo)}`)}
+              ${renderMiniMetricLink("fa-copy", "NFs", unidade.nfs || unidade.romaneios || 0, "blue", `/unidade-lista.html?unidade=${encodeURIComponent(codigo)}&tipo=nfs&titulo=${encodeURIComponent(titulo)}`)}
+              ${renderMiniMetricLink("fa-users", "Produtores", unidade.produtores || 0, "purple", `/unidade-lista.html?unidade=${encodeURIComponent(codigo)}&tipo=produtores&titulo=${encodeURIComponent(titulo)}`)}
+            </div>
+
+            <div class="mt-5 rounded-lg border border-[#d8e5c6] bg-white p-5">
+              <h3 class="font-bold text-[#1f4d2d]">Top Cultivares — ${escapeHtml(codigo)}</h3>
+              <div class="mt-5 overflow-x-auto">${renderCultivarBars(data.topCultivares || [])}</div>
+            </div>
+
+            <div class="mt-5 rounded-lg border border-[#d8e5c6] bg-white p-5">
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <h3 class="font-bold text-[#1f4d2d]"><span class="text-[#c99022]"><i class="fa-solid fa-trophy"></i></span> Top 5 Produtores — ${escapeHtml(codigo)}</h3>
+                <button type="button" data-nav-ranking-detalhe class="text-sm font-semibold text-[#1f4d2d] underline-offset-4 hover:underline">Ver ranking completo →</button>
+              </div>
+              ${renderProdutorPodio(data.topProdutores || [])}
+            </div>
+          </div>
+        `;
+        if (resumoGeralUnidadesModuloEl) resumoGeralUnidadesModuloEl.classList.add("hidden");
+        unidadeDetalheModuloEl.classList.remove("hidden");
+        unidadeDetalheModuloEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      async function carregarUnidadeDetalhe(unidadeId) {
+        if (!unidadeDetalheModuloEl || !unidadeId) return;
+        if (resumoGeralUnidadesModuloEl) resumoGeralUnidadesModuloEl.classList.add("hidden");
+        unidadeDetalheModuloEl.classList.remove("hidden");
+        unidadeDetalheModuloEl.innerHTML = `<div class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-5 text-sm text-[#61713d]">Carregando resumo da unidade...</div>`;
+
+        try {
+          const data = await fetchJson(`/api/unidades-resumo/${encodeURIComponent(unidadeId)}`);
+          renderUnidadeDetalhe(data);
+        } catch (error) {
+          unidadeDetalheModuloEl.innerHTML = `<div class="rounded-lg border border-red-200 bg-red-50 p-5 text-sm text-red-700">${escapeHtml(error.message)}</div>`;
+        }
+      }
+
+      async function carregarUnidadesResumo() {
+        if (!listaUnidadesModuloEl) return;
+        listaUnidadesModuloEl.innerHTML = `<p class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4 text-sm text-[#61713d]">Carregando resumo dos centros...</p>`;
+        try {
+          const data = await fetchJson("/api/unidades-resumo");
+          renderUnidadesModulo(data.unidades || [], data.totais || null);
+        } catch (error) {
+          listaUnidadesModuloEl.innerHTML = `<p class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">${escapeHtml(error.message)}</p>`;
+        }
+      }
+
+      function renderCenterBadges(centros) {
+        if (!Array.isArray(centros) || !centros.length) return "-";
+        return centros
+          .map((centro) => `<span class="inline-flex items-center rounded-full bg-[#edf7e8] px-2 py-1 text-[11px] font-semibold text-[#37553a] mr-1">${escapeHtml(centro)}</span>`)
+          .join("");
+      }
+
+      function formatPercent(value) {
+        const numeric = Number(value) || 0;
+        return `${numeric.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
+      }
+
+      function renderRankingLista(titulo, itens = []) {
+        const rows = Array.isArray(itens) ? itens : [];
+        if (!rows.length) {
+          return `
+            <div class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-5">
+              <h2 class="text-sm font-bold text-[#1f4d2d]">${escapeHtml(titulo)}</h2>
+              <p class="mt-4 text-sm text-[#61713d]">Sem dados para exibir.</p>
+            </div>
+          `;
+        }
+
+        const isCultivares = titulo === "Cultivares";
+        const totalPesoLiquido = rows.reduce((sum, item) => sum + (Number(item.pesoLiquido) || 0), 0);
+        const hasQuality = rows.some((item) => item.percentualA != null);
+
+        const top3Badges = [
+          "bg-[#e8c15f] text-[#3b2a08]",
+          "bg-[#a7adb7] text-white",
+          "bg-[#c5864a] text-white"
+        ];
+
+        return `
+          <div class="rounded-lg border border-[#d8e5c6] bg-white shadow-sm">
+            <div class="flex items-center justify-between border-b border-[#d8e5c6] px-5 py-4">
+              <p class="text-xs font-bold uppercase tracking-[0.12em] text-[#61713d]">Ranking de ${escapeHtml(titulo)} por Volume</p>
+              <p class="text-xs text-[#74835d]">${rows.length} ${rows.length === 1 ? "registro" : "registros"}</p>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[800px] text-sm">
+                <thead>
+                  <tr class="bg-[#1f4d2d] text-white">
+                    <th class="px-4 py-3 text-left w-14">#</th>
+                    <th class="px-4 py-3 text-left">${escapeHtml(titulo === "Unidades" ? "Centro" : isCultivares ? "Cultivar" : "Produtor")}</th>
+                    ${titulo === "Produtores" ? `<th class="px-4 py-3 text-left">Centro(s)</th>` : ``}
+                    ${titulo === "Unidades" ? `<th class="px-4 py-3 text-left">Local</th>` : ``}
+                    ${!isCultivares ? `<th class="px-4 py-3 text-left">Código</th>` : ``}
+                    <th class="px-4 py-3 text-right">Peso líquido</th>
+                    ${!isCultivares ? `<th class="px-4 py-3 text-right">Peso bruto</th>` : ``}
+                    ${isCultivares ? `<th class="px-4 py-3 text-right">Amostras</th>` : ``}
+                    ${isCultivares ? `<th class="px-4 py-3 text-right">Peso Grau A</th>` : ``}
+                    <th class="px-4 py-3 text-right">${escapeHtml(hasQuality ? "% Qualidade" : "% do Total")}</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-[#e5e3da]">
+                  ${rows.map((item, index) => {
+                    const value = Number(item.pesoLiquido) || 0;
+                    const percent = hasQuality && item.percentualA != null
+                      ? Number(item.percentualA)
+                      : totalPesoLiquido > 0
+                        ? (value / totalPesoLiquido) * 100
+                        : 0;
+                    const rowIndex = index + 1;
+                    const badgeClass = top3Badges[index] || null;
+                    return `
+                      <tr class="hover:bg-[#f8faf4] transition-colors">
+                        <td class="px-4 py-3">
+                          ${badgeClass
+                            ? `<span class="inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${badgeClass}">${rowIndex}</span>`
+                            : `<span class="text-sm font-semibold text-[#8b927f]">${rowIndex}</span>`
+                          }
+                        </td>
+                        <td class="px-4 py-3 font-semibold text-[#1f4d2d]">
+                          ${escapeHtml(item.produtor || item.unidade || item.cultivar || item.label || "-")}
+                        </td>
+                        ${titulo === "Produtores" ? `<td class="px-4 py-3">${renderCenterBadges(item.centros)}</td>` : ``}
+                        ${titulo === "Unidades" ? `<td class="px-4 py-3 text-[#61713d]">${escapeHtml(item.local || "-")}</td>` : ``}
+                        ${!isCultivares ? `<td class="px-4 py-3 text-[#61713d]">${escapeHtml(item.codigo || item.centroCode || item.centro || "-")}</td>` : ``}
+                        <td class="px-4 py-3 text-right font-medium text-[#1f4d2d]">${formatNumberDisplay(item.pesoLiquido)} kg</td>
+                        ${!isCultivares ? `<td class="px-4 py-3 text-right font-medium text-[#1f4d2d]">${formatNumberDisplay(item.pesoBruto)} kg</td>` : ``}
+                        ${isCultivares ? `<td class="px-4 py-3 text-right text-[#61713d]">${Number(item.amostras || 0).toLocaleString("pt-BR")}</td>` : ``}
+                        ${isCultivares ? `<td class="px-4 py-3 text-right font-medium text-[#2f6b37]">${formatNumberDisplay(item.pesoA)} kg</td>` : ``}
+                        <td class="px-4 py-3 text-right">
+                          <span class="font-semibold text-[#1f4d2d]">${formatPercent(percent)}</span>
+                          <div class="mt-1.5 h-1.5 w-24 ml-auto overflow-hidden rounded-full bg-[#e5e7eb]">
+                            <div class="h-full rounded-full bg-[#7FB23D]" style="width:${Math.min(Math.max(percent, 0), 100)}%"></div>
+                          </div>
+                        </td>
+                      </tr>
+                    `;
+                  }).join("")}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }
+
+      function updateRankingQualityButtons() {
+        if (!rankingQualityFiltersEl) return;
+        rankingQualityFiltersEl.querySelectorAll("[data-ranking-quality]").forEach((button) => {
+          const active = button.dataset.rankingQuality === rankingQualityView;
+          button.classList.toggle("bg-[#1f4d2d]", active);
+          button.classList.toggle("text-white", active);
+          button.classList.toggle("border-[#1f4d2d]", active);
+          button.classList.toggle("bg-[#f8faf4]", !active);
+          button.classList.toggle("text-[#1f4d2d]", !active);
+        });
+      }
+
+      const rankingTitleMap = { produtores: "Produtores", unidades: "Unidades", cultivares: "Cultivares" };
+
+      function applyRankingSearch() {
+        const q = (rankingSearchInputEl?.value || "").trim().toLowerCase();
+        const rows = rankingAllRows;
+        const filtered = q
+          ? rows.filter(item => {
+              const str = [item.produtor, item.cultivar, item.unidade, item.label, item.codigo]
+                .filter(Boolean).join(" ").toLowerCase();
+              return str.includes(q);
+            })
+          : rows;
+        if (rankingSearchCountEl) {
+          if (q && filtered.length !== rows.length) {
+            rankingSearchCountEl.textContent = `${filtered.length} de ${rows.length}`;
+            rankingSearchCountEl.classList.remove("hidden");
+          } else {
+            rankingSearchCountEl.classList.add("hidden");
+          }
+        }
+        rankingModuloGridEl.innerHTML = renderRankingLista(rankingTitleMap[rankingQualityView] || "Qualidade", filtered);
+      }
+
+      async function carregarRankingModulo(force = false) {
+        if (!rankingModuloGridEl || !rankingModuloStatusEl) return;
+        if (rankingModuloCarregado && !force) return;
+
+        rankingModuloStatusEl.classList.remove("hidden");
+        rankingModuloStatusEl.textContent = "Carregando ranking...";
+        rankingModuloGridEl.innerHTML = "";
+        if (rankingSearchInputEl) rankingSearchInputEl.value = "";
+        if (rankingSearchCountEl) rankingSearchCountEl.classList.add("hidden");
+
+        try {
+          const data = await fetchJson("/api/rankings-teste");
+          rankingModuloCarregado = true;
+          rankingDataCache = data.rankings?.qualidade || {};
+          rankingModuloStatusEl.classList.add("hidden");
+          rankingAllRows = rankingDataCache[rankingQualityView] || [];
+          rankingModuloGridEl.innerHTML = renderRankingLista(rankingTitleMap[rankingQualityView] || "Qualidade", rankingAllRows);
+          updateRankingQualityButtons();
+        } catch (error) {
+          rankingModuloStatusEl.textContent = error.message;
+          rankingModuloGridEl.innerHTML = "";
+        }
+      }
+
+      function renderHistoricoModulo(historico) {
+        if (!listaHistoricoModuloEl) return;
+
+        if (!historico.length) {
+          listaHistoricoModuloEl.innerHTML = `<p class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4 text-sm text-[#61713d]">Nenhuma simulação registrada.</p>`;
+          return;
+        }
+
+        listaHistoricoModuloEl.innerHTML = historico
+          .map((item) => `
+            <div class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] px-4 py-3">
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p class="font-semibold text-[#1f4d2d]">${escapeHtml(item.produtorNome)}</p>
+                  <p class="text-xs text-[#61713d]">${formatAppDateTime(item.createdAt)} | ${escapeHtml(item.itens)} item(ns)</p>
+                </div>
+                <p class="font-bold text-[#6f5428]">R$ ${escapeHtml(item.totalGeralFmt)}</p>
+              </div>
+            </div>
+          `)
+          .join("");
+      }
 
       function normalizeBoolean(value) {
         if (typeof value === "boolean") return value;
@@ -398,7 +1421,7 @@
         return Number.isNaN(date.getTime()) ? null : date;
       }
 
-      function formatAppDateTime(value, fallback = "data nao registrada") {
+      function formatAppDateTime(value, fallback = "data não registrada") {
         const date = parseAppDateTime(value);
         return date ? date.toLocaleString("pt-BR", APP_DATE_TIME_OPTIONS) : fallback;
       }
@@ -420,6 +1443,21 @@
             : "bg-red-50 border border-red-200 text-red-700";
         statusConfigEl.textContent = message;
         statusConfigEl.className = `mt-4 rounded-lg px-3 py-2 text-sm ${colorClass}`;
+      }
+
+      function isZeroValue(value) {
+        return (Number(value) || 0) === 0;
+      }
+
+      function updateZeroField(input) {
+        if (input.type !== "number") return;
+        input.classList.toggle("zero-value-input", isZeroValue(input.value));
+      }
+
+      function updateZeroHighlights() {
+        updateZeroField(globalPercEl);
+        updateZeroField(globalValorEl);
+        configPorItemEl.querySelectorAll(".cfg-number").forEach(updateZeroField);
       }
 
       async function fetchJson(url, options = {}) {
@@ -449,19 +1487,31 @@
 
       function renderFornecedorList(filter = "") {
         const normalized = filter.trim().toLowerCase();
-        const filtered = fornecedoresDisponiveis.filter((nome) => nome.toLowerCase().includes(normalized));
+        const source = fornecedoresResumo.length ? fornecedoresResumo : fornecedoresDisponiveis.map(n => ({ produtor: n }));
+        const filtered = source.filter(item => {
+          const nome = item.produtor || item.label || "";
+          return nome.toLowerCase().includes(normalized);
+        });
 
         if (!filtered.length) {
-          listaFornecedoresEl.innerHTML = `<div class="px-3 py-2 text-sm text-[#74835d]">Nenhum produtor encontrado.</div>`;
+          listaFornecedoresEl.innerHTML = `<div class="px-4 py-4 text-sm text-[#74835d] text-center">Nenhum produtor encontrado.</div>`;
         } else {
           listaFornecedoresEl.innerHTML = filtered
-            .map(
-              (nome) => `
-                <button type="button" data-fornecedor="${escapeHtml(nome)}" class="block w-full px-3 py-2 text-left text-sm text-[#203a28] hover:bg-[#edf4e2]">
-                  ${escapeHtml(nome)}
+            .map((item, idx) => {
+              const nome = item.produtor || item.label || "";
+              const centros = Array.isArray(item.centros) && item.centros.length
+                ? item.centros.join(" / ")
+                : null;
+              const peso = item.pesoLiquido != null ? formatCompactWeight(item.pesoLiquido) : null;
+              const sub = [centros, peso].filter(Boolean).join(" · ");
+              return `
+                <button type="button" data-fornecedor="${escapeHtml(nome)}"
+                        class="block w-full px-4 py-3 text-left hover:bg-[#f0f7ea] transition-colors ${idx < filtered.length - 1 ? "border-b border-[#f0ede3]" : ""}">
+                  <p class="font-semibold text-sm text-[#1f4d2d]">${escapeHtml(nome)}</p>
+                  ${sub ? `<p class="mt-0.5 text-xs text-[#74835d]">${escapeHtml(sub)}</p>` : ""}
                 </button>
-              `
-            )
+              `;
+            })
             .join("");
         }
 
@@ -490,7 +1540,7 @@
       }
 
       function clearResultado() {
-        totalGeralEl.textContent = "Total Geral: R$ 0,00";
+        totalGeralEl.textContent = "R$ 0,00";
         resultadoBodyEl.innerHTML = "";
         btnPdfEl.classList.add("hidden");
         ultimoPayloadPdf = null;
@@ -510,16 +1560,39 @@
         configPorItemEl.innerHTML = "";
         configPorItemEl.classList.add("hidden");
         Object.keys(configsLocais).forEach((key) => delete configsLocais[key]);
-        globalPercEl.value = "10";
+        globalPercEl.value = "0";
         globalValorEl.value = "0";
-        modoGlobalEl.checked = true;
-        configGlobalEl.classList.remove("hidden");
+        modoGlobalEl.checked = false;
+        configGlobalEl.classList.add("hidden");
         clearResultado();
+        updateZeroHighlights();
       }
 
       async function carregarFornecedores() {
-        const data = await fetchJson("/api/fornecedores");
-        fornecedoresDisponiveis = data.fornecedores;
+        const data = await fetchJson("/api/rankings-teste");
+        fornecedoresResumo = Array.isArray(data.rankings?.produtores) ? data.rankings.produtores : [];
+        cultivaresResumo = Array.isArray(data.rankings?.cultivares) ? data.rankings.cultivares : [];
+        // Keep volume order (already sorted by API), only fallback-sort by name
+        fornecedoresDisponiveis = fornecedoresResumo
+          .map(item => item.produtor || item.label || "")
+          .filter(Boolean);
+        // Update counter badges
+        const count = fornecedoresDisponiveis.length;
+        const contadorEl = document.getElementById("contadorFornecedores");
+        const contadorLabelEl = document.getElementById("contadorFornecedoresLabel");
+        if (contadorEl) { contadorEl.textContent = `${count} cadastrados`; contadorEl.classList.remove("hidden"); }
+        if (contadorLabelEl) contadorLabelEl.textContent = `(${count} cadastrados)`;
+        renderFornecedoresModulo();
+      }
+
+      async function carregarPracas() {
+        try {
+          const data = await fetchJson("/api/pracas");
+          pracaOptions = Array.isArray(data.pracas) ? data.pracas : [];
+        } catch (_error) {
+          pracaOptions = [];
+        }
+        renderMarketReference();
       }
 
       async function carregarCentros() {
@@ -565,9 +1638,42 @@
         for (const input of inputs) {
           const key = input.dataset.key;
           const type = input.dataset.type;
-          if (!configsLocais[key]) configsLocais[key] = { perc: 10, valor: 0 };
-          configsLocais[key][type] = Number(input.value) || 0;
+          if (!configsLocais[key]) configsLocais[key] = { perc: 0, valor: 0, praca: "" };
+          configsLocais[key][type] = type === "praca" ? input.value : Number(input.value) || 0;
         }
+      }
+
+      function getConfigKey(item) {
+        return `${item.inscricaoEstadual}|||${item.centro}|||${item.cultivar}`;
+      }
+
+      function getCentroFornecedorKey(item) {
+        return `${item.inscricaoEstadual}|||${item.centro}`;
+      }
+
+      function getDefaultConfig(item) {
+        const pracaOption = findPracaOption(item.praca);
+        return {
+          perc: Number(item.percPadrao) || Number(pracaOption?.perc) || 0,
+          valor: Number(item.valorPadrao) || Number(pracaOption?.valor) || 0,
+          praca: item.praca || ""
+        };
+      }
+
+      function getConfigLocal(item) {
+        const key = getConfigKey(item);
+        const defaults = getDefaultConfig(item);
+        if (!configsLocais[key]) {
+          configsLocais[key] = defaults;
+        } else {
+          const current = configsLocais[key];
+          const selectedPraca = current.praca || defaults.praca || item.praca || "";
+          const pracaOption = findPracaOption(selectedPraca);
+          current.praca = selectedPraca;
+          if (isZeroValue(current.perc)) current.perc = defaults.perc || Number(pracaOption?.perc) || 0;
+          if (isZeroValue(current.valor)) current.valor = defaults.valor || Number(pracaOption?.valor) || 0;
+        }
+        return configsLocais[key];
       }
 
       function buildPayload(extra = {}) {
@@ -598,6 +1704,118 @@
           .join("")}</ul>`;
       }
 
+      function normalizePracaName(value) {
+        return String(value || "")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase()
+          .replace(/\s*\/\s*/g, "/")
+          .replace(/\s+/g, " ")
+          .trim();
+      }
+
+      function formatNumberInput(value) {
+        const numeric = Number(value) || 0;
+        return Number.isInteger(numeric) ? String(numeric) : String(Number(numeric.toFixed(2)));
+      }
+
+      function formatNumberDisplay(value) {
+        return (Number(value) || 0).toLocaleString("pt-BR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+      }
+
+      const defaultPracaOptions = {
+        "posse/go": { praca: "POSSE/GO", perc: 12, valor: 104.05 },
+        "buritis/mg": { praca: "BURITIS/MG", perc: 12, valor: 105.45 },
+        "formosa/go": { praca: "FORMOSA/GO", perc: 12, valor: 106.55 },
+        "primavera do leste/mt": { praca: "PRIMAVERA DO LESTE/MT", perc: 10, valor: 106.60 },
+        "brasilia/df": { praca: "BRASILIA/DF", perc: 12, valor: 106.80 },
+        "unai/mg": { praca: "UNAI/MG", perc: 12, valor: 107.45 },
+        "rondonopolis/mt": { praca: "RONDONOPOLIS/MT", perc: 12, valor: 108.78 },
+        "rio verde/go": { praca: "RIO VERDE/GO", perc: 12, valor: 109.33 },
+        "cristalina/go": { praca: "CRISTALINA/GO", perc: 12, valor: 110.33 },
+        "patrocinio/mg": { praca: "PATROCINIO/MG", perc: 12, valor: 111.75 },
+        "barreiras/ba": { praca: "BARREIRAS/BA", perc: 11, valor: 112.00 },
+        "uberlandia/mg": { praca: "UBERLANDIA/MG", perc: 12, valor: 115.75 },
+        "sao luis/ma": { praca: "SAO LUIS/MA", perc: 12, valor: 123.80 }
+      };
+
+      function findPracaOption(praca) {
+        const normalized = normalizePracaName(praca);
+        return pracaOptions.find((option) => normalizePracaName(option.praca) === normalized) ||
+          defaultPracaOptions[normalized] ||
+          null;
+      }
+
+      function renderPracaSelectOptions(selectedPraca) {
+        const selectedNormalized = normalizePracaName(selectedPraca);
+        const hasSelected = pracaOptions.some((option) => normalizePracaName(option.praca) === selectedNormalized);
+        const optionsHtml = pracaOptions
+          .map((option) => {
+            const selected = normalizePracaName(option.praca) === selectedNormalized ? "selected" : "";
+            return `<option value="${escapeHtml(option.praca)}" data-perc="${escapeHtml(option.perc)}" data-valor="${escapeHtml(option.valor)}" ${selected}>${escapeHtml(option.praca)} | ${escapeHtml(option.percFmt)}% | R$ ${escapeHtml(option.valorFmt)}</option>`;
+          })
+          .join("");
+
+        if (selectedPraca && !hasSelected) {
+          return `<option value="${escapeHtml(selectedPraca)}" selected>${escapeHtml(selectedPraca)}</option>${optionsHtml}`;
+        }
+
+        if (!selectedPraca) {
+          return `<option value="" selected>Selecione uma praça</option>${optionsHtml}`;
+        }
+
+        return optionsHtml;
+      }
+
+      function updatePracaSummary(card, config) {
+        const labelEl = card.querySelector("[data-praca-label]");
+        const valuesEl = card.querySelector("[data-praca-values]");
+        const praca = config.praca || "";
+
+        if (labelEl) {
+          labelEl.textContent = praca ? `Praça: ${praca}` : "Praça não localizada";
+          labelEl.className = praca
+            ? "rounded-md border border-[#cfdcbd] bg-white px-2 py-1 text-xs font-semibold text-[#6f5428]"
+            : "rounded-md border border-[#ead37c] bg-[#fffaf0] px-2 py-1 text-xs font-semibold text-[#6a5514]";
+        }
+
+        if (valuesEl) {
+          valuesEl.textContent = `Percentual: ${formatNumberDisplay(config.perc)}% | Valor da saca: R$ ${formatNumberDisplay(config.valor)}`;
+        }
+      }
+
+      function applyPracaSelection(select) {
+        const key = select.dataset.key;
+        const card = select.closest("[data-config-card]");
+        if (!key || !card) return;
+
+        const selectedOption = select.selectedOptions[0];
+        const optionData = findPracaOption(select.value);
+        const perc = Number(selectedOption?.dataset.perc || optionData?.perc || 0) || 0;
+        const valor = Number(selectedOption?.dataset.valor || optionData?.valor || 0) || 0;
+        const config = configsLocais[key] || { perc: 0, valor: 0, praca: "" };
+
+        config.praca = select.value;
+        config.perc = perc;
+        config.valor = valor;
+        configsLocais[key] = config;
+
+        const percInput = card.querySelector('[data-type="perc"]');
+        const valorInput = card.querySelector('[data-type="valor"]');
+        if (percInput) {
+          percInput.value = formatNumberInput(perc);
+          updateZeroField(percInput);
+        }
+        if (valorInput) {
+          valorInput.value = formatNumberInput(valor);
+          updateZeroField(valorInput);
+        }
+        updatePracaSummary(card, config);
+      }
+
       function renderConfigPorItem() {
         if (!combinacoesAtuais.length) {
           configPorItemEl.classList.add("hidden");
@@ -605,21 +1823,55 @@
           return;
         }
 
+        const pracaPorCentroFornecedor = {};
+        for (const item of combinacoesAtuais) {
+          const praca = configsLocais[getConfigKey(item)]?.praca || item.praca || "";
+          if (praca) pracaPorCentroFornecedor[getCentroFornecedorKey(item)] = praca;
+        }
+
         configPorItemEl.innerHTML = combinacoesAtuais
           .map((item) => {
-            const key = `${item.inscricaoEstadual}|||${item.centro}|||${item.cultivar}`;
-            const current = configsLocais[key] || { perc: 10, valor: 0 };
+            if (!item.praca) item.praca = pracaPorCentroFornecedor[getCentroFornecedorKey(item)] || "";
+            const key = getConfigKey(item);
+            const current = getConfigLocal(item);
+            const selectedPraca = current.praca || item.praca || "";
+            const percZeroClass = isZeroValue(current.perc) ? " zero-value-input" : "";
+            const valorZeroClass = isZeroValue(current.valor) ? " zero-value-input" : "";
+            const pracaHtml = selectedPraca
+              ? `<span data-praca-label class="rounded-md border border-[#cfdcbd] bg-white px-2 py-1 text-xs font-semibold text-[#6f5428]">Praça: ${escapeHtml(selectedPraca)}</span>`
+              : `<span data-praca-label class="rounded-md border border-[#ead37c] bg-[#fffaf0] px-2 py-1 text-xs font-semibold text-[#6a5514]">Praça não localizada</span>`;
+            const pracaSelectHtml = pracaOptions.length
+              ? `
+                <button type="button" data-praca-toggle="${escapeHtml(key)}" class="inline-flex items-center gap-1 rounded-md border border-[#cfdcbd] bg-white px-2 py-1 text-xs font-semibold text-[#38563f] transition-colors hover:bg-[#edf4e2]">
+                  <i class="fa-solid fa-pen-to-square text-[11px]"></i>
+                  Alterar
+                </button>
+              `
+              : "";
             return `
-              <div class="rounded-lg border border-[#cfdcbd] bg-[#f8faf4] p-3">
-                <p class="mb-3 text-sm font-medium text-[#38563f]">Inscrição Estadual ${escapeHtml(item.inscricaoEstadual)} | Centro ${escapeHtml(item.centro)} | ${escapeHtml(item.cultivar)}</p>
+              <div data-config-card="${escapeHtml(key)}" class="rounded-lg border border-[#cfdcbd] bg-[#f8faf4] p-3">
+                <div class="mb-3 flex flex-wrap items-start justify-between gap-3">
+                  <p class="text-sm font-medium text-[#38563f]">Inscrição Estadual ${escapeHtml(item.inscricaoEstadual)} | Centro ${escapeHtml(item.centro)} | ${escapeHtml(item.cultivar)}</p>
+                  <div class="flex flex-wrap items-center gap-2">
+                    ${pracaHtml}
+                    ${pracaSelectHtml}
+                  </div>
+                </div>
+                <div data-praca-panel="${escapeHtml(key)}" class="mb-3 hidden rounded-md border border-[#d8e5c6] bg-white p-3">
+                  <label class="mb-1 block text-xs font-medium text-[#61713d]">Praça</label>
+                  <select data-key="${escapeHtml(key)}" data-type="praca" class="cfg-item cfg-praca w-full rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-sm text-[#203a28] focus:ring-[#7FB23D] focus:border-[#7FB23D] outline-none">
+                    ${renderPracaSelectOptions(selectedPraca)}
+                  </select>
+                  <p data-praca-values class="mt-2 text-xs font-semibold text-[#61713d]">Percentual: ${escapeHtml(formatNumberDisplay(current.perc))}% | Valor da saca: R$ ${escapeHtml(formatNumberDisplay(current.valor))}</p>
+                </div>
                 <div class="grid gap-3 md:grid-cols-2">
                   <div>
                     <label class="mb-1 block text-xs font-medium text-[#61713d]">Percentual (%)</label>
-                    <input data-key="${escapeHtml(key)}" data-type="perc" type="number" step="0.1" value="${escapeHtml(current.perc)}" class="cfg-item w-full rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-sm text-[#203a28] focus:ring-[#7FB23D] focus:border-[#7FB23D] outline-none">
+                    <input data-key="${escapeHtml(key)}" data-type="perc" type="number" step="0.1" value="${escapeHtml(current.perc)}" class="cfg-item cfg-number${percZeroClass} w-full rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-sm text-[#203a28] focus:ring-[#7FB23D] focus:border-[#7FB23D] outline-none">
                   </div>
                   <div>
                     <label class="mb-1 block text-xs font-medium text-[#61713d]">Valor da saca (R$)</label>
-                    <input data-key="${escapeHtml(key)}" data-type="valor" type="number" step="0.01" value="${escapeHtml(current.valor)}" class="cfg-item w-full rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-sm text-[#203a28] focus:ring-[#7FB23D] focus:border-[#7FB23D] outline-none">
+                    <input data-key="${escapeHtml(key)}" data-type="valor" type="number" step="0.01" value="${escapeHtml(current.valor)}" class="cfg-item cfg-number${valorZeroClass} w-full rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-sm text-[#203a28] focus:ring-[#7FB23D] focus:border-[#7FB23D] outline-none">
                   </div>
                 </div>
               </div>
@@ -627,6 +1879,7 @@
           })
           .join("");
         configPorItemEl.classList.remove("hidden");
+        updateZeroHighlights();
       }
 
       async function atualizarPreviewSeCompleto() {
@@ -662,7 +1915,7 @@
       const debouncedAtualizarPreviewSeCompleto = debounce(atualizarPreviewSeCompleto);
 
       function renderResultado(result) {
-        totalGeralEl.textContent = `Total Geral: R$ ${result.totalGeralFmt}`;
+        totalGeralEl.textContent = `R$ ${result.totalGeralFmt}`;
         resultadoBodyEl.innerHTML = result.detalhes
           .map(
             (d) => `
@@ -704,8 +1957,7 @@
           btnPdfEl.classList.toggle("hidden", result.detalhes.length === 0);
 
           if (result.detalhes.length > 0) {
-            const pdfEmitido = await baixarPdf();
-            if (pdfEmitido) showTopStatus("PDF de bonificação emitido.");
+            showTopStatus("Cálculo concluído. PDF disponível no botão Emitir PDF de bonificação.");
           }
           
           if (!modoGlobalEl.checked) renderConfigPorItem();
@@ -713,7 +1965,7 @@
             showTopStatus(result.historicoErro);
           }
           await carregarHistorico().catch(() => {
-            showTopStatus("Calculo concluido. Historico indisponivel no momento.");
+            showTopStatus("Cálculo concluído. Histórico indisponível no momento.");
           });
         } catch (error) {
           alert(error.message);
@@ -892,8 +2144,14 @@
         }
 
         const origem = data.origem === "upload" ? "upload manual" : "planilha padrão";
-        const dataUpload = data.enviadoEm ? ` em ${formatAppDateTime(data.enviadoEm)}` : "";
-        planilhaAtualEl.textContent = `Atual: ${data.arquivo} (${origem}${dataUpload})`;
+        if (data.origem !== "upload") {
+          planilhaAtualEl.textContent = `Atual: ${data.arquivo} (${origem}).`;
+          return;
+        }
+
+        const dataUpload = formatAppDateTime(data.enviadoEm, "data não registrada");
+        const usuarioUpload = data.atualizadoPor || data.atualizadoPorEmail || "usuário não registrado";
+        planilhaAtualEl.textContent = `Atual: ${data.arquivo} (${origem}). Última atualização: ${dataUpload} por ${usuarioUpload}.`;
       }
 
       async function carregarDashboardLink() {
@@ -903,6 +2161,7 @@
         dashboardCardEl.href = link || "#";
         dashboardCardEl.classList.toggle("hidden", !link);
         dashboardCardEl.classList.toggle("opacity-60", !link);
+        updateResumoDashboard(link);
         return link;
       }
 
@@ -926,7 +2185,7 @@
                 <div class="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p class="font-semibold text-[#1f4d2d]">${escapeHtml(usuario)} ${userAdmin ? "<span class=\"text-xs text-[#6f5428]\">Administrador</span>" : ""}</p>
-                    <p class="text-xs text-[#61713d]">${escapeHtml(email || "Email nao informado")} | ${user.confirmado ? "Confirmado" : "Pendente"}</p>
+                    <p class="text-xs text-[#61713d]">${escapeHtml(email || "E-mail não informado")} | ${user.confirmado ? "Confirmado" : "Pendente"}</p>
                   </div>
                   <div class="flex flex-wrap gap-2">
                     <button type="button" data-admin-user="${escapeHtml(usuario)}" data-admin-email="${escapeHtml(email)}" data-admin-value="${adminValue}" class="rounded-lg border border-[#cfdcbd] bg-[#f8faf4] px-3 py-2 text-xs font-semibold text-[#38563f] hover:bg-[#edf4e2]">${adminLabel}</button>
@@ -947,8 +2206,9 @@
       }
 
       function renderHistorico(historico) {
+        renderHistoricoModulo(historico);
         if (!historico.length) {
-          listaHistoricoEl.innerHTML = `<p class="text-[#74835d]">Nenhum cálculo nas últimas 24 horas.</p>`;
+          listaHistoricoEl.innerHTML = `<p class="text-[#74835d]">Nenhum cálculo salvo.</p>`;
           return;
         }
 
@@ -976,9 +2236,9 @@
         modalConfiguracoesEl.classList.remove("hidden");
         modalConfiguracoesEl.classList.add("flex");
         await Promise.all([
-          carregarInfoPlanilha(),
           carregarHistorico(),
           carregarDashboardLink(),
+          usuarioAdminAtual ? carregarInfoPlanilha() : Promise.resolve(),
           usuarioAdminAtual ? carregarUsuariosAdmin() : Promise.resolve()
         ]);
       }
@@ -986,6 +2246,75 @@
       function fecharConfiguracoes() {
         modalConfiguracoesEl.classList.add("hidden");
         modalConfiguracoesEl.classList.remove("flex");
+      }
+
+      navLinksEls.forEach((link) => {
+        link.addEventListener("click", () => setActiveView(link.dataset.navView));
+      });
+      btnIrSimuladorEl.addEventListener("click", () => setActiveView("simulador"));
+      if (btnAtualizarRankingModuloEl) {
+        btnAtualizarRankingModuloEl.addEventListener("click", () => carregarRankingModulo(true));
+      }
+
+      const btnAtualizarUnidadesEl = document.getElementById("btnAtualizarUnidades");
+      if (btnAtualizarUnidadesEl) {
+        btnAtualizarUnidadesEl.addEventListener("click", async () => {
+          const icon = btnAtualizarUnidadesEl.querySelector("i");
+          if (icon) icon.classList.add("animate-spin");
+          btnAtualizarUnidadesEl.disabled = true;
+          if (unidadeDetalheModuloEl) { unidadeDetalheModuloEl.classList.add("hidden"); unidadeDetalheModuloEl.innerHTML = ""; }
+          if (resumoGeralUnidadesModuloEl) resumoGeralUnidadesModuloEl.classList.add("hidden");
+          await carregarUnidadesResumo();
+          btnAtualizarUnidadesEl.disabled = false;
+          if (icon) icon.classList.remove("animate-spin");
+        });
+      }
+      if (rankingQualityFiltersEl) {
+        rankingQualityFiltersEl.addEventListener("click", (event) => {
+          const button = event.target.closest("[data-ranking-quality]");
+          if (!button) return;
+          const view = button.dataset.rankingQuality;
+          if (!view || view === rankingQualityView) return;
+          rankingQualityView = view;
+          if (rankingSearchInputEl) rankingSearchInputEl.value = "";
+          if (rankingSearchCountEl) rankingSearchCountEl.classList.add("hidden");
+          if (rankingDataCache[view]) {
+            rankingAllRows = rankingDataCache[view] || [];
+            rankingModuloGridEl.innerHTML = renderRankingLista(rankingTitleMap[view] || "Qualidade", rankingAllRows);
+            updateRankingQualityButtons();
+          } else {
+            carregarRankingModulo(true);
+          }
+        });
+      }
+
+      if (rankingSearchInputEl) {
+        rankingSearchInputEl.addEventListener("input", () => {
+          if (!rankingAllRows.length) return;
+          applyRankingSearch();
+        });
+      }
+
+      if (listaUnidadesModuloEl) {
+        listaUnidadesModuloEl.addEventListener("click", (event) => {
+          const button = event.target.closest("[data-unidade-id]");
+          if (!button) return;
+          carregarUnidadeDetalhe(button.dataset.unidadeId);
+        });
+      }
+
+      if (unidadeDetalheModuloEl) {
+        unidadeDetalheModuloEl.addEventListener("click", (event) => {
+          if (event.target.closest("[data-fechar-unidade-detalhe]")) {
+            unidadeDetalheModuloEl.classList.add("hidden");
+            unidadeDetalheModuloEl.innerHTML = "";
+            if (resumoGeralUnidadesModuloEl) resumoGeralUnidadesModuloEl.classList.remove("hidden");
+            return;
+          }
+          if (event.target.closest("[data-nav-ranking-detalhe]")) {
+            setActiveView("ranking");
+          }
+        });
       }
 
       modoGlobalEl.addEventListener("change", () => {
@@ -1030,6 +2359,15 @@
         await selecionarFornecedor(button.dataset.fornecedor);
       });
 
+      if (listaFornecedoresModuloEl) {
+        listaFornecedoresModuloEl.addEventListener("click", async (event) => {
+          const button = event.target.closest("[data-fornecedor-modulo]");
+          if (!button) return;
+          setActiveView("simulador");
+          await selecionarFornecedor(button.dataset.fornecedorModulo);
+        });
+      }
+
       document.addEventListener("click", (event) => {
         if (!fornecedorEl.contains(event.target) && !listaFornecedoresEl.contains(event.target)) {
           listaFornecedoresEl.classList.add("hidden");
@@ -1038,15 +2376,54 @@
 
       listaCentrosEl.addEventListener("change", carregarCultivares);
       listaCultivaresEl.addEventListener("change", debouncedAtualizarPreviewSeCompleto);
-      globalPercEl.addEventListener("change", debouncedAtualizarPreviewSeCompleto);
-      globalValorEl.addEventListener("change", debouncedAtualizarPreviewSeCompleto);
+      [globalPercEl, globalValorEl].forEach((input) => {
+        input.addEventListener("input", () => updateZeroField(input));
+        input.addEventListener("change", () => {
+          updateZeroField(input);
+          debouncedAtualizarPreviewSeCompleto();
+        });
+      });
+      configPorItemEl.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-praca-toggle]");
+        if (!button) return;
+
+        const panel = Array.from(configPorItemEl.querySelectorAll("[data-praca-panel]"))
+          .find((element) => element.dataset.pracaPanel === button.dataset.pracaToggle);
+        if (panel) panel.classList.toggle("hidden");
+      });
+      configPorItemEl.addEventListener("input", (event) => {
+        const input = event.target.closest(".cfg-item");
+        if (input) updateZeroField(input);
+      });
+      configPorItemEl.addEventListener("change", (event) => {
+        const input = event.target.closest(".cfg-item");
+        if (!input) return;
+        if (input.dataset.type === "praca") {
+          applyPracaSelection(input);
+        }
+        updateZeroField(input);
+        debouncedAtualizarPreviewSeCompleto();
+      });
       btnNovaCotacaoEl.addEventListener("click", () => {
         resetarFluxo(true);
         window.scrollTo({ top: 0, behavior: "smooth" });
       });
       btnCalcularEl.addEventListener("click", onCalcular);
-      btnPdfEl.addEventListener("click", baixarPdf);
-      btnUploadPlanilhaEl.addEventListener("click", () => uploadPlanilhaTopoEl.click());
+      btnPdfEl.addEventListener("click", async () => {
+        const pdfEmitido = await baixarPdf();
+        if (pdfEmitido) showTopStatus("PDF de bonificação emitido.");
+      });
+      btnUploadPlanilhaEl.addEventListener("click", () => {
+        if (!usuarioAdminAtual) return;
+        uploadPlanilhaTopoEl.click();
+      });
+      const btnImportarXlsxFornecedoresEl = document.getElementById("btnImportarXlsxFornecedores");
+      if (btnImportarXlsxFornecedoresEl) {
+        btnImportarXlsxFornecedoresEl.addEventListener("click", () => {
+          if (!usuarioAdminAtual) return;
+          uploadPlanilhaTopoEl.click();
+        });
+      }
       uploadPlanilhaTopoEl.addEventListener("change", async () => {
         if (!uploadPlanilhaTopoEl.files.length) return;
         try {
@@ -1067,7 +2444,7 @@
         event.preventDefault();
         const senha = String(novaSenhaConfigEl.value || "").trim();
         if (senha.length < 4) {
-          showConfigStatus("Informe uma senha com no minimo 4 caracteres.", "error");
+          showConfigStatus("Informe uma senha com no mínimo 4 caracteres.", "error");
           return;
         }
 
@@ -1206,9 +2583,12 @@
           usuarioAtual = session.usuario;
           usuarioAdminAtual = normalizeBoolean(session.admin);
           usuarioLogadoEl.textContent = `Usuário: ${session.usuario}`;
-          await carregarFornecedores();
-          await carregarInfoPlanilha();
+          updateShellUser(session);
+          await Promise.all([carregarFornecedores(), carregarPracas()]);
+          if (usuarioAdminAtual) await carregarInfoPlanilha();
           await carregarDashboardLink();
+          carregarHistorico().catch(() => renderHistoricoModulo([]));
+          setActiveView("inicio");
           window.setInterval(() => carregarDashboardLink().catch(() => {}), 30000);
         } catch (_error) {
           window.location.href = "/";
@@ -1226,6 +2606,10 @@
       });
 
       boot();
+      updateZeroHighlights();
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
     </script>
   </body>
 </html>
