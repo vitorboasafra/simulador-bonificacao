@@ -446,8 +446,8 @@
                   <span class="h-4 w-[3px] rounded-full bg-[#1f4d2d]"></span>
                   <p class="text-sm font-bold text-[#1f4d2d]">Ranking de Fornecedores por Volume</p>
                 </div>
-                <button id="btnImportarXlsxFornecedores" type="button" class="inline-flex items-center gap-2 rounded-lg bg-[#1f4d2d] px-4 py-2 text-sm font-semibold text-white hover:bg-[#163b21]">
-                  <i class="fa-solid fa-file-arrow-up"></i> Importar XLSX
+                <button id="btnExportarXlsxFornecedores" type="button" class="inline-flex items-center gap-2 rounded-lg bg-[#1f4d2d] px-4 py-2 text-sm font-semibold text-white hover:bg-[#163b21] disabled:cursor-not-allowed disabled:opacity-60">
+                  <i class="fa-solid fa-file-excel"></i> Exportar
                 </button>
               </div>
               <div id="listaFornecedoresModulo" class="overflow-x-auto"></div>
@@ -800,11 +800,11 @@
         const statAtivosEl = document.getElementById("statFornecedoresAtivos");
         const statVolumeEl = document.getElementById("statVolumeTotal");
         const statDivEl = document.getElementById("statComDivergencia");
-        const btnImportarEl = document.getElementById("btnImportarXlsxFornecedores");
+        const btnExportarEl = document.getElementById("btnExportarXlsxFornecedores");
         if (statAtivosEl) statAtivosEl.textContent = totalFornecedores;
         if (statVolumeEl) statVolumeEl.textContent = formatCompactWeight(totalPesoLiquido);
         if (statDivEl) statDivEl.textContent = comDivergencia;
-        if (btnImportarEl) btnImportarEl.classList.toggle("hidden", !usuarioAdminAtual);
+        if (btnExportarEl) btnExportarEl.disabled = !rows.length;
 
         if (!rows.length) {
           listaFornecedoresModuloEl.innerHTML = `<p class="p-5 text-sm text-[#61713d]">Nenhum fornecedor carregado.</p>`;
@@ -2121,6 +2121,38 @@
         return true;
       }
 
+      async function exportarRankingFornecedores() {
+        if (!fornecedoresResumo.length) return false;
+
+        const button = document.getElementById("btnExportarXlsxFornecedores");
+        if (button) button.disabled = true;
+
+        try {
+          const response = await fetch("/api/ranking-fornecedores/exportar");
+          if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            throw new Error(data.erro || "Nao foi possivel exportar o ranking.");
+          }
+
+          const blob = await response.blob();
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = "ranking-fornecedores-volume.xlsx";
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          URL.revokeObjectURL(url);
+          showTopStatus("Ranking exportado em Excel.");
+          return true;
+        } catch (error) {
+          alert(error.message);
+          return false;
+        } finally {
+          if (button) button.disabled = !fornecedoresResumo.length;
+        }
+      }
+
       async function enviarPlanilha(file) {
         const formData = new FormData();
         formData.append("planilha", file);
@@ -2417,11 +2449,10 @@
         if (!usuarioAdminAtual) return;
         uploadPlanilhaTopoEl.click();
       });
-      const btnImportarXlsxFornecedoresEl = document.getElementById("btnImportarXlsxFornecedores");
-      if (btnImportarXlsxFornecedoresEl) {
-        btnImportarXlsxFornecedoresEl.addEventListener("click", () => {
-          if (!usuarioAdminAtual) return;
-          uploadPlanilhaTopoEl.click();
+      const btnExportarXlsxFornecedoresEl = document.getElementById("btnExportarXlsxFornecedores");
+      if (btnExportarXlsxFornecedoresEl) {
+        btnExportarXlsxFornecedoresEl.addEventListener("click", () => {
+          exportarRankingFornecedores();
         });
       }
       uploadPlanilhaTopoEl.addEventListener("change", async () => {

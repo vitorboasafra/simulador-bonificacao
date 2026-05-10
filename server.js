@@ -1996,6 +1996,45 @@ function buildWorkbookRankings() {
   };
 }
 
+function buildRankingFornecedoresWorkbookBuffer(rankings) {
+  const rows = Array.isArray(rankings?.rankings?.produtores) ? rankings.rankings.produtores : [];
+  const totalPesoLiquido = rows.reduce((sum, item) => sum + Number(item.pesoLiquido || 0), 0);
+  const sheetRows = [
+    ["#", "Fornecedor", "Centro(s)", "Peso (kg)", "% do Total", "Status"],
+    ...rows.map((item, index) => {
+      const posicao = index + 1;
+      const peso = Number(item.pesoLiquido || 0);
+      const percentual = totalPesoLiquido > 0 ? Number(((peso / totalPesoLiquido) * 100).toFixed(2)) : 0;
+      const centros = Array.isArray(item.centros) && item.centros.length ? item.centros.join(", ") : "-";
+      const status = posicao <= 3 ? "Top" : posicao <= 8 ? "Ativo" : "Regular";
+
+      return [
+        posicao,
+        item.produtor || item.label || "-",
+        centros,
+        peso,
+        percentual,
+        status
+      ];
+    })
+  ];
+
+  const worksheet = XLSX.utils.aoa_to_sheet(sheetRows);
+  worksheet["!cols"] = [
+    { wch: 8 },
+    { wch: 45 },
+    { wch: 28 },
+    { wch: 16 },
+    { wch: 14 },
+    { wch: 12 }
+  ];
+  worksheet["!autofilter"] = { ref: `A1:F${sheetRows.length}` };
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Ranking Fornecedores");
+  return XLSX.write(workbook, { bookType: "xlsx", type: "buffer" });
+}
+
 function buildUnidadesResumo() {
   const rows = getWorkbookRows();
   if (!rows) return null;
@@ -3189,6 +3228,23 @@ function responderRankings(_req, res) {
 
 app.get("/api/rankings", requireAuth, requireAdmin, responderRankings);
 app.get("/api/rankings-teste", requireAuth, responderRankings);
+
+app.get("/api/ranking-fornecedores/exportar", requireAuth, (_req, res) => {
+  try {
+    const rankings = buildWorkbookRankings();
+    if (!rankings) {
+      return res.status(500).json({ erro: "Planilha nÃ£o encontrada." });
+    }
+
+    const buffer = buildRankingFornecedoresWorkbookBuffer(rankings);
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", "attachment; filename=\"ranking-fornecedores-volume.xlsx\"");
+    res.send(buffer);
+  } catch (error) {
+    console.error(`Erro ao exportar ranking de fornecedores: ${error.message}`);
+    res.status(500).json({ erro: "Erro ao exportar ranking de fornecedores." });
+  }
+});
 
 app.get("/api/unidades-resumo", requireAuth, (_req, res) => {
   try {
