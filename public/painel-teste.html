@@ -789,12 +789,7 @@
               <span class="h-2 w-2 rounded-full bg-[#2f7d32]"></span>
               Conta ativa
             </span>
-            <button
-              id="btnFecharConfiguracoes"
-              type="button"
-              class="inline-flex items-center gap-2 rounded-xl border border-[#dce8d5] bg-white px-4 py-2 text-xs font-extrabold text-[#0f3d24] transition-all hover:bg-[#f6fbf4]"
-              aria-label="Fechar configurações"
-            >
+            <button id="btnFecharConfiguracoes" type="button" class="inline-flex items-center gap-2 rounded-xl border border-[#dce8d5] bg-white px-4 py-2 text-xs font-extrabold text-[#0f3d24] transition-all hover:bg-[#f6fbf4]" aria-label="Fechar configurações">
               <i class="fa-solid fa-xmark text-[11px]"></i>
               Fechar
             </button>
@@ -802,24 +797,12 @@
         </header>
 
         <nav class="config-scrollbar flex gap-2 overflow-x-auto rounded-[18px] border border-[rgba(15,61,36,0.08)] bg-white px-4 pt-3 shadow-[0_10px_28px_rgba(15,61,36,.06)]" aria-label="Abas de configurações">
-          <button type="button" data-config-tab="conta" class="config-tab inline-flex shrink-0 items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-extrabold text-[#536279] transition-all hover:text-[#0f3d24]">
-            <i data-lucide="user-round" class="h-4 w-4"></i>Conta
-          </button>
-          <button type="button" data-config-tab="arquivos" data-admin-config-tab class="config-tab inline-flex shrink-0 items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-extrabold text-[#536279] transition-all hover:text-[#0f3d24]">
-            <i data-lucide="folder" class="h-4 w-4"></i>Arquivos
-          </button>
-          <button type="button" data-config-tab="dashboard" data-admin-config-tab class="config-tab inline-flex shrink-0 items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-extrabold text-[#536279] transition-all hover:text-[#0f3d24]">
-            <i data-lucide="bar-chart-3" class="h-4 w-4"></i>Dashboard
-          </button>
-          <button type="button" data-config-tab="usuarios" data-admin-config-tab class="config-tab inline-flex shrink-0 items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-extrabold text-[#536279] transition-all hover:text-[#0f3d24]">
-            <i data-lucide="users-round" class="h-4 w-4"></i>Usuários
-          </button>
-          <button type="button" data-config-tab="regras" data-admin-config-tab class="config-tab inline-flex shrink-0 items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-extrabold text-[#536279] transition-all hover:text-[#0f3d24]">
-            <i data-lucide="shield-check" class="h-4 w-4"></i>Regras
-          </button>
-          <button type="button" data-config-tab="historico" class="config-tab inline-flex shrink-0 items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-extrabold text-[#536279] transition-all hover:text-[#0f3d24]">
-            <i data-lucide="clock-3" class="h-4 w-4"></i>Histórico
-          </button>
+          <button type="button" data-config-tab="conta" class="config-tab inline-flex shrink-0 items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-extrabold text-[#536279] transition-all hover:text-[#0f3d24]"><i data-lucide="user-round" class="h-4 w-4"></i>Conta</button>
+          <button type="button" data-config-tab="arquivos" data-admin-config-tab class="config-tab inline-flex shrink-0 items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-extrabold text-[#536279] transition-all hover:text-[#0f3d24]"><i data-lucide="folder" class="h-4 w-4"></i>Arquivos</button>
+          <button type="button" data-config-tab="dashboard" data-admin-config-tab class="config-tab inline-flex shrink-0 items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-extrabold text-[#536279] transition-all hover:text-[#0f3d24]"><i data-lucide="bar-chart-3" class="h-4 w-4"></i>Dashboard</button>
+          <button type="button" data-config-tab="usuarios" data-admin-config-tab class="config-tab inline-flex shrink-0 items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-extrabold text-[#536279] transition-all hover:text-[#0f3d24]"><i data-lucide="users-round" class="h-4 w-4"></i>Usuários</button>
+          <button type="button" data-config-tab="regras" data-admin-config-tab class="config-tab inline-flex shrink-0 items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-extrabold text-[#536279] transition-all hover:text-[#0f3d24]"><i data-lucide="shield-check" class="h-4 w-4"></i>Regras</button>
+          <button type="button" data-config-tab="historico" class="config-tab inline-flex shrink-0 items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-extrabold text-[#536279] transition-all hover:text-[#0f3d24]"><i data-lucide="clock-3" class="h-4 w-4"></i>Histórico</button>
         </nav>
 
         <section data-config-panel="conta" class="config-panel rounded-[18px] border border-[rgba(15,61,36,0.08)] bg-white p-6 shadow-[0_10px_28px_rgba(15,61,36,.06)]">
@@ -829,29 +812,19 @@
                 <div class="relative h-24 w-24 shrink-0 rounded-full border-4 border-white bg-[#eaf5e5] shadow-[0_12px_30px_rgba(15,61,36,0.14)]">
                   <img id="configProfilePhotoPreview" class="hidden h-full w-full rounded-full object-cover" alt="Foto de perfil" />
                   <div id="configProfilePhotoFallback" class="flex h-full w-full items-center justify-center rounded-full text-3xl font-extrabold text-[#0f3d24]">T</div>
-                  <span class="absolute -bottom-1 -right-1 inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-[#0f3d24] text-white shadow-sm" aria-hidden="true">
-                    <i data-lucide="camera" class="h-4 w-4"></i>
-                  </span>
+                  <span class="absolute -bottom-1 -right-1 inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-[#0f3d24] text-white shadow-sm" aria-hidden="true"><i data-lucide="camera" class="h-4 w-4"></i></span>
                 </div>
                 <div>
                   <div class="flex items-center gap-3">
                     <span class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-[#eaf5e5] text-[#0f3d24]"><i data-lucide="image-up" class="h-5 w-5"></i></span>
-                    <div>
-                      <h3 class="text-xl font-extrabold text-[#052e1a]">Foto de perfil</h3>
-                      <p class="mt-1 text-sm leading-6 text-[#536279]">Personalize sua conta com uma imagem que aparece no menu lateral.</p>
-                    </div>
+                    <div><h3 class="text-xl font-extrabold text-[#052e1a]">Foto de perfil</h3><p class="mt-1 text-sm leading-6 text-[#536279]">Personalize sua conta com uma imagem que aparece no menu lateral.</p></div>
                   </div>
                   <p class="mt-4 rounded-xl border border-[#dce8d5] bg-white px-4 py-3 text-xs leading-5 text-[#536279]">Use JPG, PNG ou WebP com ate 3 MB.</p>
                 </div>
               </div>
               <div class="mt-6 flex flex-col gap-3 sm:flex-row">
-                <button id="btnUploadFotoPerfil" type="button" class="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#0f3d24] px-5 text-sm font-extrabold text-white shadow-[0_10px_22px_rgba(15,61,36,.16)] transition-all hover:-translate-y-0.5 hover:bg-[#18562f]">
-                  <i data-lucide="upload" class="h-4 w-4"></i>
-                  Escolher foto
-                </button>
-                <button id="btnRemoverFotoPerfil" type="button" class="hidden h-12 rounded-xl border border-[#dce8d5] bg-white px-5 text-sm font-extrabold text-[#0f3d24] transition-all hover:-translate-y-0.5 hover:bg-[#f6fbf4]">
-                  Remover foto
-                </button>
+                <button id="btnUploadFotoPerfil" type="button" class="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#0f3d24] px-5 text-sm font-extrabold text-white shadow-[0_10px_22px_rgba(15,61,36,.16)] transition-all hover:-translate-y-0.5 hover:bg-[#18562f]"><i data-lucide="upload" class="h-4 w-4"></i>Escolher foto</button>
+                <button id="btnRemoverFotoPerfil" type="button" class="hidden h-12 rounded-xl border border-[#dce8d5] bg-white px-5 text-sm font-extrabold text-[#0f3d24] transition-all hover:-translate-y-0.5 hover:bg-[#f6fbf4]">Remover foto</button>
               </div>
               <input id="uploadFotoPerfil" type="file" accept="image/jpeg,image/png,image/webp" class="hidden" />
             </article>
@@ -859,27 +832,13 @@
             <article class="rounded-[18px] border border-[rgba(15,61,36,0.08)] bg-[#fbfdfb] p-6 transition-all hover:-translate-y-0.5 hover:shadow-[0_14px_32px_rgba(15,61,36,0.08)]">
               <div class="flex items-center gap-3">
                 <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf5e5] text-[#0f3d24]"><i data-lucide="lock-keyhole" class="h-5 w-5"></i></span>
-                <div>
-                  <h3 class="text-xl font-extrabold text-[#052e1a]">Alterar senha</h3>
-                  <p class="mt-1 text-sm text-[#536279]">Mantenha sua conta segura com uma senha atualizada.</p>
-                </div>
+                <div><h3 class="text-xl font-extrabold text-[#052e1a]">Alterar senha</h3><p class="mt-1 text-sm text-[#536279]">Mantenha sua conta segura com uma senha atualizada.</p></div>
               </div>
               <form id="formUsuario" class="mt-6 grid gap-4">
-                <div class="relative">
-                  <input id="senhaAtualConfig" type="password" autocomplete="current-password" class="h-12 w-full rounded-xl border border-[#dce8d5] bg-white px-4 pr-11 text-sm text-[#052e1a] outline-none transition-all focus:border-[#2f7d32] focus:shadow-[0_0_0_4px_rgba(47,125,50,0.12)]" placeholder="Senha atual" />
-                  <button type="button" data-toggle-config-password="senhaAtualConfig" class="absolute right-3 top-1/2 -translate-y-1/2 text-[#74835d] hover:text-[#0f3d24]" aria-label="Mostrar senha atual"><i data-lucide="eye" class="h-4 w-4"></i></button>
-                </div>
-                <div class="relative">
-                  <input id="novaSenhaConfig" type="password" autocomplete="new-password" class="h-12 w-full rounded-xl border border-[#dce8d5] bg-white px-4 pr-11 text-sm text-[#052e1a] outline-none transition-all focus:border-[#2f7d32] focus:shadow-[0_0_0_4px_rgba(47,125,50,0.12)]" placeholder="Nova senha" />
-                  <button type="button" data-toggle-config-password="novaSenhaConfig" class="absolute right-3 top-1/2 -translate-y-1/2 text-[#74835d] hover:text-[#0f3d24]" aria-label="Mostrar nova senha"><i data-lucide="eye" class="h-4 w-4"></i></button>
-                </div>
-                <div class="relative">
-                  <input id="confirmarSenhaConfig" type="password" autocomplete="new-password" class="h-12 w-full rounded-xl border border-[#dce8d5] bg-white px-4 pr-11 text-sm text-[#052e1a] outline-none transition-all focus:border-[#2f7d32] focus:shadow-[0_0_0_4px_rgba(47,125,50,0.12)]" placeholder="Confirmar nova senha" />
-                  <button type="button" data-toggle-config-password="confirmarSenhaConfig" class="absolute right-3 top-1/2 -translate-y-1/2 text-[#74835d] hover:text-[#0f3d24]" aria-label="Mostrar confirmação de senha"><i data-lucide="eye" class="h-4 w-4"></i></button>
-                </div>
-                <button type="submit" class="h-12 rounded-xl bg-[#0f3d24] px-5 text-sm font-extrabold text-white shadow-[0_10px_22px_rgba(15,61,36,.16)] transition-all hover:-translate-y-0.5 hover:bg-[#18562f]">
-                  Salvar nova senha
-                </button>
+                <div class="relative"><input id="senhaAtualConfig" type="password" autocomplete="current-password" class="h-12 w-full rounded-xl border border-[#dce8d5] bg-white px-4 pr-11 text-sm text-[#052e1a] outline-none transition-all focus:border-[#2f7d32] focus:shadow-[0_0_0_4px_rgba(47,125,50,0.12)]" placeholder="Senha atual" /><button type="button" data-toggle-config-password="senhaAtualConfig" class="absolute right-3 top-1/2 -translate-y-1/2 text-[#74835d] hover:text-[#0f3d24]" aria-label="Mostrar senha atual"><i data-lucide="eye" class="h-4 w-4"></i></button></div>
+                <div class="relative"><input id="novaSenhaConfig" type="password" autocomplete="new-password" class="h-12 w-full rounded-xl border border-[#dce8d5] bg-white px-4 pr-11 text-sm text-[#052e1a] outline-none transition-all focus:border-[#2f7d32] focus:shadow-[0_0_0_4px_rgba(47,125,50,0.12)]" placeholder="Nova senha" /><button type="button" data-toggle-config-password="novaSenhaConfig" class="absolute right-3 top-1/2 -translate-y-1/2 text-[#74835d] hover:text-[#0f3d24]" aria-label="Mostrar nova senha"><i data-lucide="eye" class="h-4 w-4"></i></button></div>
+                <div class="relative"><input id="confirmarSenhaConfig" type="password" autocomplete="new-password" class="h-12 w-full rounded-xl border border-[#dce8d5] bg-white px-4 pr-11 text-sm text-[#052e1a] outline-none transition-all focus:border-[#2f7d32] focus:shadow-[0_0_0_4px_rgba(47,125,50,0.12)]" placeholder="Confirmar nova senha" /><button type="button" data-toggle-config-password="confirmarSenhaConfig" class="absolute right-3 top-1/2 -translate-y-1/2 text-[#74835d] hover:text-[#0f3d24]" aria-label="Mostrar confirmação de senha"><i data-lucide="eye" class="h-4 w-4"></i></button></div>
+                <button type="submit" class="h-12 rounded-xl bg-[#0f3d24] px-5 text-sm font-extrabold text-white shadow-[0_10px_22px_rgba(15,61,36,.16)] transition-all hover:-translate-y-0.5 hover:bg-[#18562f]">Salvar nova senha</button>
               </form>
             </article>
           </div>
@@ -891,70 +850,37 @@
               <article class="rounded-[18px] border border-[rgba(15,61,36,0.08)] bg-white p-6 shadow-[0_10px_28px_rgba(15,61,36,.06)] transition-all hover:-translate-y-0.5">
                 <div class="flex items-start gap-4">
                   <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf5e5] text-[#0f3d24]"><i data-lucide="file-spreadsheet" class="h-5 w-5"></i></span>
-                  <div>
-                    <h3 class="text-lg font-extrabold text-[#052e1a]">Planilha do simulador (ZMM113)</h3>
-                    <p class="mt-1 text-sm text-[#536279]">Arquivo usado como base para os cálculos.</p>
-                  </div>
+                  <div><h3 class="text-lg font-extrabold text-[#052e1a]">Planilha do simulador (ZMM113)</h3><p class="mt-1 text-sm text-[#536279]">Arquivo usado como base para os cálculos.</p></div>
                 </div>
                 <div id="planilhaAtual" class="mt-5">Carregando planilha atual...</div>
-                <button type="button" data-config-upload="planilha" data-config-drop="planilha" class="mt-5 flex w-full flex-col items-center justify-center rounded-[16px] border border-dashed border-[#a8c99d] bg-[#f5fbf2] px-5 py-8 text-center text-[#0f3d24] transition-all hover:border-[#2f7d32] hover:bg-[#eaf5e5]">
-                  <i data-lucide="upload-cloud" class="h-7 w-7"></i>
-                  <span class="mt-3 text-sm font-extrabold">Arraste e solte um arquivo aqui</span>
-                  <span class="mt-1 text-xs text-[#536279]">ou clique para selecionar</span>
-                </button>
-                <button id="btnUploadPlanilha" type="button" class="mt-4 h-11 w-full rounded-xl bg-[#0f3d24] text-sm font-extrabold text-white transition-all hover:bg-[#18562f]">
-                  Substituir arquivo
-                </button>
+                <button type="button" data-config-upload="planilha" data-config-drop="planilha" class="mt-5 flex w-full flex-col items-center justify-center rounded-[16px] border border-dashed border-[#a8c99d] bg-[#f5fbf2] px-5 py-8 text-center text-[#0f3d24] transition-all hover:border-[#2f7d32] hover:bg-[#eaf5e5]"><i data-lucide="upload-cloud" class="h-7 w-7"></i><span class="mt-3 text-sm font-extrabold">Arraste e solte um arquivo aqui</span><span class="mt-1 text-xs text-[#536279]">ou clique para selecionar</span></button>
+                <button id="btnUploadPlanilha" type="button" class="mt-4 h-11 w-full rounded-xl bg-[#0f3d24] text-sm font-extrabold text-white transition-all hover:bg-[#18562f]">Substituir arquivo</button>
                 <input id="uploadPlanilhaTopo" type="file" accept=".xlsx,.xls" class="hidden" />
               </article>
 
               <article class="rounded-[18px] border border-[rgba(15,61,36,0.08)] bg-white p-6 shadow-[0_10px_28px_rgba(15,61,36,.06)] transition-all hover:-translate-y-0.5">
                 <div class="flex items-start gap-4">
                   <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf5e5] text-[#0f3d24]"><i data-lucide="file-check-2" class="h-5 w-5"></i></span>
-                  <div>
-                    <h3 class="text-lg font-extrabold text-[#052e1a]">Planilha de classificações</h3>
-                    <p class="mt-1 text-sm text-[#536279]">Arquivo utilizado no ranking de qualidade.</p>
-                  </div>
+                  <div><h3 class="text-lg font-extrabold text-[#052e1a]">Planilha de classificações</h3><p class="mt-1 text-sm text-[#536279]">Arquivo utilizado no ranking de qualidade.</p></div>
                 </div>
                 <div id="classificacoesAtual" class="mt-5">Carregando planilha de classificações...</div>
-                <button type="button" data-config-upload="classificacoes" data-config-drop="classificacoes" class="mt-5 flex w-full flex-col items-center justify-center rounded-[16px] border border-dashed border-[#a8c99d] bg-[#f5fbf2] px-5 py-8 text-center text-[#0f3d24] transition-all hover:border-[#2f7d32] hover:bg-[#eaf5e5]">
-                  <i data-lucide="upload-cloud" class="h-7 w-7"></i>
-                  <span class="mt-3 text-sm font-extrabold">Arraste e solte um arquivo aqui</span>
-                  <span class="mt-1 text-xs text-[#536279]">ou clique para selecionar</span>
-                </button>
-                <button id="btnUploadClassificacoes" type="button" class="mt-4 h-11 w-full rounded-xl bg-[#0f3d24] text-sm font-extrabold text-white transition-all hover:bg-[#18562f]">
-                  Substituir arquivo
-                </button>
+                <button type="button" data-config-upload="classificacoes" data-config-drop="classificacoes" class="mt-5 flex w-full flex-col items-center justify-center rounded-[16px] border border-dashed border-[#a8c99d] bg-[#f5fbf2] px-5 py-8 text-center text-[#0f3d24] transition-all hover:border-[#2f7d32] hover:bg-[#eaf5e5]"><i data-lucide="upload-cloud" class="h-7 w-7"></i><span class="mt-3 text-sm font-extrabold">Arraste e solte um arquivo aqui</span><span class="mt-1 text-xs text-[#536279]">ou clique para selecionar</span></button>
+                <button id="btnUploadClassificacoes" type="button" class="mt-4 h-11 w-full rounded-xl bg-[#0f3d24] text-sm font-extrabold text-white transition-all hover:bg-[#18562f]">Substituir arquivo</button>
                 <input id="uploadClassificacoes" type="file" accept=".xlsx,.xls,.csv" class="hidden" />
               </article>
             </div>
           </section>
 
           <section data-config-panel="dashboard" data-admin-config-panel class="config-panel hidden rounded-[18px] border border-[rgba(15,61,36,0.08)] bg-white p-6 shadow-[0_10px_28px_rgba(15,61,36,.06)]">
-            <div class="flex items-start gap-4">
-              <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf5e5] text-[#0f3d24]"><i data-lucide="bar-chart-3" class="h-5 w-5"></i></span>
-              <div>
-                <h3 class="text-xl font-extrabold text-[#052e1a]">Dashboard Power BI</h3>
-                <p class="mt-1 text-sm text-[#536279]">Gerencie o link de acesso ao dashboard.</p>
-              </div>
-            </div>
+            <div class="flex items-start gap-4"><span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf5e5] text-[#0f3d24]"><i data-lucide="bar-chart-3" class="h-5 w-5"></i></span><div><h3 class="text-xl font-extrabold text-[#052e1a]">Dashboard Power BI</h3><p class="mt-1 text-sm text-[#536279]">Gerencie o link de acesso ao dashboard.</p></div></div>
             <form id="formDashboard" class="mt-6 grid gap-4 lg:grid-cols-[1fr_auto]">
               <input id="dashboardLinkConfig" type="url" class="h-12 rounded-xl border border-[#dce8d5] bg-white px-4 text-sm text-[#052e1a] outline-none transition-all focus:border-[#2f7d32] focus:shadow-[0_0_0_4px_rgba(47,125,50,0.12)]" placeholder="Cole o link atual do dashboard" />
-              <button type="submit" class="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-[#8fb98a] bg-white px-5 text-sm font-extrabold text-[#0f3d24] transition-all hover:-translate-y-0.5 hover:bg-[#f6fbf4]">
-                Atualizar link
-                <i data-lucide="external-link" class="h-4 w-4"></i>
-              </button>
+              <button type="submit" class="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-[#8fb98a] bg-white px-5 text-sm font-extrabold text-[#0f3d24] transition-all hover:-translate-y-0.5 hover:bg-[#f6fbf4]">Atualizar link<i data-lucide="external-link" class="h-4 w-4"></i></button>
             </form>
           </section>
 
           <section data-config-panel="usuarios" data-admin-config-panel class="config-panel hidden rounded-[18px] border border-[rgba(15,61,36,0.08)] bg-white p-6 shadow-[0_10px_28px_rgba(15,61,36,.06)]">
-            <div class="flex items-start gap-4">
-              <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf5e5] text-[#0f3d24]"><i data-lucide="users-round" class="h-5 w-5"></i></span>
-              <div>
-                <h3 class="text-xl font-extrabold text-[#052e1a]">Usuários e permissões</h3>
-                <p class="mt-1 text-sm text-[#536279]">Gerencie quem possui acesso ao sistema.</p>
-              </div>
-            </div>
+            <div class="flex items-start gap-4"><span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf5e5] text-[#0f3d24]"><i data-lucide="users-round" class="h-5 w-5"></i></span><div><h3 class="text-xl font-extrabold text-[#052e1a]">Usuários e permissões</h3><p class="mt-1 text-sm text-[#536279]">Gerencie quem possui acesso ao sistema.</p></div></div>
             <div class="mt-6 grid gap-6 xl:grid-cols-[0.9fr_1.2fr]">
               <div class="rounded-[16px] border border-[#dce8d5] bg-[#fbfdfb] p-5">
                 <h4 class="font-extrabold text-[#052e1a]">Adicionar usuário</h4>
@@ -962,13 +888,9 @@
                   <input id="novoUsuarioAdmin" type="text" class="h-11 rounded-xl border border-[#dce8d5] bg-white px-4 text-sm outline-none transition-all focus:border-[#2f7d32] focus:shadow-[0_0_0_4px_rgba(47,125,50,0.12)]" placeholder="Nome" />
                   <input id="novoEmailAdmin" type="email" class="h-11 rounded-xl border border-[#dce8d5] bg-white px-4 text-sm outline-none transition-all focus:border-[#2f7d32] focus:shadow-[0_0_0_4px_rgba(47,125,50,0.12)]" placeholder="Email corporativo" />
                   <input id="novaSenhaAdmin" type="password" class="h-11 rounded-xl border border-[#dce8d5] bg-white px-4 text-sm outline-none transition-all focus:border-[#2f7d32] focus:shadow-[0_0_0_4px_rgba(47,125,50,0.12)]" placeholder="Senha" />
-                  <label class="inline-flex items-center gap-2 text-sm font-semibold text-[#38563f]">
-                    <input id="novoAdminCheck" type="checkbox" class="h-4 w-4 rounded border-[#cfdcbd] text-[#2f7d32]" />
-                    Administrador
-                  </label>
+                  <label class="inline-flex items-center gap-2 text-sm font-semibold text-[#38563f]"><input id="novoAdminCheck" type="checkbox" class="h-4 w-4 rounded border-[#cfdcbd] text-[#2f7d32]" />Administrador</label>
                   <button type="submit" class="h-11 rounded-xl bg-[#0f3d24] text-sm font-extrabold text-white transition-all hover:bg-[#18562f]">Criar usuário</button>
                 </form>
-
                 <details class="mt-5 rounded-xl border border-[#dce8d5] bg-white p-4">
                   <summary class="cursor-pointer text-sm font-extrabold text-[#0f3d24]">Promoção por usuário existente</summary>
                   <form id="formPromoverAdmin" class="mt-4 grid gap-3">
@@ -978,40 +900,20 @@
                   </form>
                 </details>
               </div>
-              <div>
-                <div class="flex items-center justify-between gap-3">
-                  <h4 class="font-extrabold text-[#052e1a]">Usuários cadastrados</h4>
-                </div>
-                <div id="listaUsuariosAdmin" class="config-scrollbar mt-4 max-h-[520px] space-y-3 overflow-auto pr-2 text-sm"></div>
-              </div>
+              <div><div class="flex items-center justify-between gap-3"><h4 class="font-extrabold text-[#052e1a]">Usuários cadastrados</h4></div><div id="listaUsuariosAdmin" class="config-scrollbar mt-4 max-h-[520px] space-y-3 overflow-auto pr-2 text-sm"></div></div>
             </div>
           </section>
 
           <section data-config-panel="regras" data-admin-config-panel class="config-panel hidden rounded-[18px] border border-[rgba(15,61,36,0.08)] bg-white p-6 shadow-[0_10px_28px_rgba(15,61,36,.06)]">
             <div class="flex flex-wrap items-start justify-between gap-4">
-              <div class="flex items-start gap-4">
-                <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf5e5] text-[#0f3d24]"><i data-lucide="shield-check" class="h-5 w-5"></i></span>
-                <div>
-                  <h3 class="text-xl font-extrabold text-[#052e1a]">Regras de tratamento</h3>
-                  <p class="mt-1 max-w-2xl text-sm text-[#536279]">Edite, remova ou acrescente linhas. Para descarte, use DESCARTAR LINHA|termo ou DESCARTAR termo.</p>
-                </div>
-              </div>
-              <button id="btnEditarRegrasClassificacoes" type="button" class="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#8fb98a] bg-white px-4 text-sm font-extrabold text-[#0f3d24] transition-all hover:bg-[#f6fbf4]">
-                <i class="fa-solid fa-pen-to-square"></i>
-                Editar regras
-              </button>
+              <div class="flex items-start gap-4"><span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf5e5] text-[#0f3d24]"><i data-lucide="shield-check" class="h-5 w-5"></i></span><div><h3 class="text-xl font-extrabold text-[#052e1a]">Regras de tratamento</h3><p class="mt-1 max-w-2xl text-sm text-[#536279]">Edite, remova ou acrescente linhas. Para descarte, use DESCARTAR LINHA|termo ou DESCARTAR termo.</p></div></div>
+              <button id="btnEditarRegrasClassificacoes" type="button" class="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#8fb98a] bg-white px-4 text-sm font-extrabold text-[#0f3d24] transition-all hover:bg-[#f6fbf4]"><i class="fa-solid fa-pen-to-square"></i>Editar regras</button>
             </div>
             <div id="editorRegrasClassificacoes" class="mt-5 hidden space-y-4">
               <textarea id="regrasClassificacoesTexto" rows="16" spellcheck="false" class="config-scrollbar min-h-80 w-full resize-y rounded-[16px] border border-[#dce8d5] bg-[#fbfdfb] px-4 py-3 font-mono text-xs leading-5 text-[#203a28] outline-none transition-all focus:border-[#2f7d32] focus:shadow-[0_0_0_4px_rgba(47,125,50,0.12)]" placeholder="Carregando regras..."></textarea>
               <div class="flex flex-wrap gap-3">
-                <button id="btnSalvarRegrasClassificacoes" type="button" class="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#0f3d24] px-5 text-sm font-extrabold text-white transition-all hover:bg-[#18562f] disabled:cursor-wait disabled:opacity-60">
-                  <i class="fa-solid fa-floppy-disk"></i>
-                  Salvar regras
-                </button>
-                <button id="btnRecarregarRegrasClassificacoes" type="button" class="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#dce8d5] bg-white px-5 text-sm font-extrabold text-[#0f3d24] transition-all hover:bg-[#f6fbf4] disabled:cursor-wait disabled:opacity-60">
-                  <i class="fa-solid fa-rotate-right"></i>
-                  Recarregar
-                </button>
+                <button id="btnSalvarRegrasClassificacoes" type="button" class="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#0f3d24] px-5 text-sm font-extrabold text-white transition-all hover:bg-[#18562f] disabled:cursor-wait disabled:opacity-60"><i class="fa-solid fa-floppy-disk"></i>Salvar regras</button>
+                <button id="btnRecarregarRegrasClassificacoes" type="button" class="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#dce8d5] bg-white px-5 text-sm font-extrabold text-[#0f3d24] transition-all hover:bg-[#f6fbf4] disabled:cursor-wait disabled:opacity-60"><i class="fa-solid fa-rotate-right"></i>Recarregar</button>
               </div>
               <p id="statusRegrasClassificacoes" class="hidden rounded-xl px-3 py-2 text-xs"></p>
             </div>
@@ -1020,23 +922,11 @@
 
         <section data-config-panel="historico" class="config-panel hidden rounded-[18px] border border-[rgba(15,61,36,0.08)] bg-white p-6 shadow-[0_10px_28px_rgba(15,61,36,.06)]">
           <div class="flex flex-wrap items-start justify-between gap-4">
-            <div class="flex items-start gap-4">
-              <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf5e5] text-[#0f3d24]"><i data-lucide="clock-3" class="h-5 w-5"></i></span>
-              <div>
-                <h3 class="text-xl font-extrabold text-[#052e1a]">Histórico de cálculos</h3>
-                <p class="mt-1 text-sm text-[#536279]">Registro das simulações realizadas no sistema.</p>
-              </div>
-            </div>
-            <button id="btnLimparHistorico" type="button" class="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-4 text-xs font-extrabold text-red-600 transition-all hover:bg-red-50">
-              <i data-lucide="trash-2" class="h-4 w-4"></i>
-              Limpar histórico
-            </button>
+            <div class="flex items-start gap-4"><span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf5e5] text-[#0f3d24]"><i data-lucide="clock-3" class="h-5 w-5"></i></span><div><h3 class="text-xl font-extrabold text-[#052e1a]">Histórico de cálculos</h3><p class="mt-1 text-sm text-[#536279]">Registro das simulações realizadas no sistema.</p></div></div>
+            <button id="btnLimparHistorico" type="button" class="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-4 text-xs font-extrabold text-red-600 transition-all hover:bg-red-50"><i data-lucide="trash-2" class="h-4 w-4"></i>Limpar histórico</button>
           </div>
           <div id="listaHistorico" class="config-scrollbar mt-5 max-h-[520px] space-y-2 overflow-auto pr-2 text-sm"></div>
-          <button type="button" data-config-history-link class="mt-5 inline-flex items-center gap-2 text-sm font-extrabold text-[#0f3d24] hover:text-[#2f7d32]">
-            Ver mais
-            <i data-lucide="arrow-right" class="h-4 w-4"></i>
-          </button>
+          <button type="button" data-config-history-link class="mt-5 inline-flex items-center gap-2 text-sm font-extrabold text-[#0f3d24] hover:text-[#2f7d32]">Ver mais<i data-lucide="arrow-right" class="h-4 w-4"></i></button>
         </section>
 
         <p id="statusConfig" class="hidden rounded-xl px-4 py-3 text-sm"></p>
