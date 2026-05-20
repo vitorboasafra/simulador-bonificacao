@@ -38,6 +38,10 @@ const PUBLIC_DIR = path.join(ROOT_DIR, "public");
 const DATA_DIR = path.join(ROOT_DIR, "data");
 const WORKBOOK_SNAPSHOT_CONFIG_KEY = "planilha_atual_snapshot";
 const PRACA_PREP_META = path.join(DATA_DIR, "pracas-preparadas.json");
+const CLASSIFICATION_WORKBOOK_NAME = "classificacoes.xlsx";
+const CLASSIFICATION_WORKBOOK = path.join(ROOT_DIR, CLASSIFICATION_WORKBOOK_NAME);
+const CLASSIFICATION_META = path.join(DATA_DIR, "classificacoes.json");
+const CLASSIFICATION_RULES_FILE = path.join(ROOT_DIR, "regras-classificacoes.txt");
 const UNITS_WORKBOOK = path.join(ROOT_DIR, "Unidades Boa Safra.xlsx");
 const MODEL_PDF = path.join(ROOT_DIR, "NF MODELO BONIFICACAO.pdf");
 const LOGO_IMAGE = path.join(ROOT_DIR, "logo.png");
@@ -62,17 +66,22 @@ const EMAIL_DOMAIN = "@boasafrasementes.com.br";
 const APP_URL = process.env.APP_URL || "";
 const DEFAULT_PUBLIC_APP_URL = "https://simulador-bonificacao-production.up.railway.app";
 
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 50 * 1024 * 1024 },
-  fileFilter: (_req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (![".xlsx", ".xls"].includes(ext)) {
-      return cb(new Error("Envie uma planilha nos formatos .xlsx ou .xls."));
+function createWorkbookUpload(allowedExtensions) {
+  return multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 50 * 1024 * 1024 },
+    fileFilter: (_req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase();
+      if (!allowedExtensions.includes(ext)) {
+        return cb(new Error(`Envie uma planilha nos formatos ${allowedExtensions.join(", ")}.`));
+      }
+      return cb(null, true);
     }
-    return cb(null, true);
-  }
-});
+  });
+}
+
+const upload = createWorkbookUpload([".xlsx", ".xls"]);
+const uploadClassificacoes = createWorkbookUpload([".xlsx", ".xls", ".csv"]);
 
 // ============= MIDDLEWARE =============
 app.use(express.static(PUBLIC_DIR));
@@ -423,6 +432,10 @@ let pracaConfigCache = null;
 let valorSacaCache = null;
 let pracaWorkbookPrepareTimer = null;
 let pracaWorkbookWatcher = null;
+let zmm113WatcherTimer = null;
+let zmm113Watcher = null;
+let extraWorkbookWatcher = null;
+let extraWorkbookSyncTimers = {};
 
 function readWorkbookMeta() {
   const WORKBOOK_META = path.join(DATA_DIR, "planilha.json");
@@ -436,6 +449,20 @@ function readWorkbookMeta() {
 
 function writeWorkbookMeta(meta) {
   fs.writeFileSync(path.join(DATA_DIR, "planilha.json"), JSON.stringify(meta, null, 2));
+}
+
+function readClassificationMeta() {
+  if (!fs.existsSync(CLASSIFICATION_META)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(CLASSIFICATION_META, "utf8"));
+  } catch (_err) {
+    return null;
+  }
+}
+
+function writeClassificationMeta(meta) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.writeFileSync(CLASSIFICATION_META, JSON.stringify(meta, null, 2));
 }
 
 function getCurrentWorkbookNames() {
@@ -884,9 +911,246 @@ function watchPracaWorkbookChanges() {
       if (name.includes(".backup-auto-")) return;
       if (name && !name.includes("praca") && !name.includes("pra")) return;
       schedulePracaWorkbookPreparation();
+      scheduleExtraWorkbookSync("pracas_snapshot", 3000);
     });
   } catch (error) {
     console.warn(`Não foi possível monitorar a planilha de praças: ${error.message}`);
+  }
+}
+
+async function syncZmm113ToActive() {
+  const zmm113Path = findWorkbookPath();
+  if (!zmm113Path) return false;
+
+  try {
+    const buffer = fs.readFileSync(zmm113Path);
+    const originalName = path.basename(zmm113Path);
+    const savedWorkbook = saveCurrentUploadedWorkbook(buffer, originalName);
+    const meta = {
+      storedName: savedWorkbook.currentName,
+      currentName: savedWorkbook.currentName,
+      ext: savedWorkbook.ext,
+      size: savedWorkbook.size,
+      sha256: savedWorkbook.sha256,
+      originalName,
+      uploadedAt: new Date().toISOString(),
+      uploadedBy: "auto-sync",
+      uploadedByEmail: null
+    };
+    writeWorkbookMeta(meta);
+    await saveWorkbookSnapshot(meta, buffer);
+    clearWorkbookCache();
+    console.log(`✅ Planilha sincronizada automaticamente: ${originalName}`);
+    return true;
+  } catch (error) {
+    console.warn(`Não foi possível sincronizar a planilha principal: ${error.message}`);
+    return false;
+  }
+}
+
+function scheduleZmm113Sync(delayMs = 2000) {
+  if (zmm113WatcherTimer) clearTimeout(zmm113WatcherTimer);
+  zmm113WatcherTimer = setTimeout(async () => {
+    zmm113WatcherTimer = null;
+    try {
+      await syncZmm113ToActive();
+    } catch (error) {
+      console.warn(`Erro na sincronização automática da planilha: ${error.message}`);
+    }
+  }, delayMs);
+}
+
+function watchZmm113Changes() {
+  if (zmm113Watcher) return;
+
+  try {
+    zmm113Watcher = fs.watch(ROOT_DIR, (_eventType, filename) => {
+      const name = String(filename || "").toLowerCase();
+      if (!name || name.includes(".backup-auto-") || name.startsWith("planilha")) return;
+      if (!name.includes("zmm")) return;
+      scheduleZmm113Sync();
+    });
+  } catch (error) {
+    console.warn(`Não foi possível monitorar a planilha principal: ${error.message}`);
+  }
+}
+
+function startSnapshotSyncPolling() {
+  const INTERVAL_MS = 5 * 60 * 1000;
+
+  setInterval(async () => {
+    try {
+      const restored = await restoreWorkbookSnapshot();
+      if (restored) {
+        console.log("✅ Planilha atualizada automaticamente do armazenamento persistente.");
+      }
+    } catch (error) {
+      console.warn(`Não foi possível sincronizar planilha do Supabase: ${error.message}`);
+    }
+
+    for (const config of getExtraWorkbookConfigs()) {
+      try {
+        await restoreExtraWorkbookSnapshot(config);
+      } catch (error) {
+        console.warn(`Não foi possível sincronizar ${config.label}: ${error.message}`);
+      }
+    }
+  }, INTERVAL_MS);
+}
+
+function getExtraWorkbookConfigs() {
+  return [
+    {
+      key: "pracas_snapshot",
+      label: "Praças",
+      fixedRestoreName: "pracas.xlsx",
+      getPath: findPracaWorkbookPath,
+      clearCache() { pracaRowsCache = null; pracaConfigCache = null; },
+      afterRestore(p) { try { preparePracaWorkbookIfNeeded(p); } catch (_e) {} }
+    },
+    {
+      key: "classificacoes_snapshot",
+      label: "Classificações",
+      fixedRestoreName: "classificacoes.xlsx",
+      getPath: findClassificationWorkbookPath,
+      clearCache() { classificationRowsCache = null; },
+      afterRestore: null
+    },
+    {
+      key: "unidades_snapshot",
+      label: "Unidades Boa Safra",
+      fixedRestoreName: path.basename(UNITS_WORKBOOK),
+      getPath() { return fs.existsSync(UNITS_WORKBOOK) ? UNITS_WORKBOOK : null; },
+      clearCache() { unitsRowsCache = null; },
+      afterRestore: null
+    },
+    {
+      key: "valor_saca_snapshot",
+      label: "Valor Saca",
+      fixedRestoreName: "valor saca.xlsx",
+      getPath: findValorSacaWorkbookPath,
+      clearCache() { valorSacaCache = null; },
+      afterRestore: null
+    }
+  ];
+}
+
+async function saveExtraWorkbookSnapshot(config) {
+  const filePath = config.getPath();
+  if (!filePath || !fs.existsSync(filePath)) return false;
+
+  try {
+    const stat = fs.statSync(filePath);
+    const buffer = fs.readFileSync(filePath);
+    const snapshot = {
+      originalName: path.basename(filePath),
+      fileModifiedAt: new Date(stat.mtimeMs).toISOString(),
+      savedAt: new Date().toISOString(),
+      contentBase64: buffer.toString("base64")
+    };
+    await setConfigValue(config.key, JSON.stringify(snapshot));
+    console.log(`✅ ${config.label} sincronizada no Supabase: ${snapshot.originalName}`);
+    return true;
+  } catch (error) {
+    console.warn(`Não foi possível salvar ${config.label} no Supabase: ${error.message}`);
+    return false;
+  }
+}
+
+async function restoreExtraWorkbookSnapshot(config) {
+  let raw = "";
+  try {
+    raw = await getConfigValue(config.key);
+  } catch (_error) {
+    return false;
+  }
+
+  if (!raw) return false;
+
+  let snapshot;
+  try {
+    snapshot = JSON.parse(raw);
+  } catch (_err) {
+    return false;
+  }
+
+  if (!snapshot?.contentBase64) return false;
+
+  const restorePath = path.join(ROOT_DIR, config.fixedRestoreName);
+  if (fs.existsSync(restorePath)) {
+    try {
+      const localStat = fs.statSync(restorePath);
+      const snapshotFileModifiedAtMs = snapshot.fileModifiedAt ? Date.parse(snapshot.fileModifiedAt) : NaN;
+      if (Number.isFinite(snapshotFileModifiedAtMs) && localStat.mtimeMs >= snapshotFileModifiedAtMs) {
+        return false;
+      }
+    } catch (_err) {
+      // proceed to restore
+    }
+  }
+
+  try {
+    const buffer = Buffer.from(snapshot.contentBase64, "base64");
+    fs.writeFileSync(restorePath, buffer);
+    config.clearCache();
+    if (config.afterRestore) config.afterRestore(restorePath);
+    console.log(`✅ ${config.label} restaurada do Supabase: ${snapshot.originalName || config.fixedRestoreName}`);
+    return true;
+  } catch (error) {
+    console.warn(`Não foi possível restaurar ${config.label}: ${error.message}`);
+    return false;
+  }
+}
+
+async function restoreAllExtraWorkbooks() {
+  for (const config of getExtraWorkbookConfigs()) {
+    try {
+      await restoreExtraWorkbookSnapshot(config);
+    } catch (error) {
+      console.warn(`Erro ao restaurar ${config.label}: ${error.message}`);
+    }
+  }
+}
+
+function scheduleExtraWorkbookSync(configKey, delayMs = 2000) {
+  if (extraWorkbookSyncTimers[configKey]) clearTimeout(extraWorkbookSyncTimers[configKey]);
+  extraWorkbookSyncTimers[configKey] = setTimeout(async () => {
+    delete extraWorkbookSyncTimers[configKey];
+    const config = getExtraWorkbookConfigs().find(c => c.key === configKey);
+    if (!config) return;
+    try {
+      await saveExtraWorkbookSnapshot(config);
+    } catch (error) {
+      console.warn(`Erro ao sincronizar ${config.label}: ${error.message}`);
+    }
+  }, delayMs);
+}
+
+function watchExtraWorkbookChanges() {
+  if (extraWorkbookWatcher) return;
+
+  const PATTERNS = [
+    { test: (n) => /classifica/i.test(n), key: "classificacoes_snapshot" },
+    { test: (n) => /unidade/i.test(n), key: "unidades_snapshot" },
+    { test: (n) => /valor.{0,5}saca/i.test(n), key: "valor_saca_snapshot" }
+  ];
+
+  try {
+    extraWorkbookWatcher = fs.watch(ROOT_DIR, (_eventType, filename) => {
+      if (!filename) return;
+      const name = String(filename).toLowerCase();
+      if (name.includes(".backup-auto-") || name.startsWith("planilha") || name.includes("zmm")) return;
+      if (name.includes("praca") || name.includes("praç")) return;
+
+      for (const p of PATTERNS) {
+        if (p.test(filename)) {
+          scheduleExtraWorkbookSync(p.key);
+          break;
+        }
+      }
+    });
+  } catch (error) {
+    console.warn(`Não foi possível monitorar planilhas auxiliares: ${error.message}`);
   }
 }
 
@@ -909,6 +1173,8 @@ function findValorSacaWorkbookPath() {
 }
 
 function findClassificationWorkbookPath() {
+  if (fs.existsSync(CLASSIFICATION_WORKBOOK)) return CLASSIFICATION_WORKBOOK;
+
   const extensions = new Set([".csv", ".xlsx", ".xls"]);
   const candidates = fs.readdirSync(ROOT_DIR)
     .filter(file => /classifica/i.test(file) && extensions.has(path.extname(file).toLowerCase()))
@@ -991,6 +1257,35 @@ function getWorkbookInfo() {
   }
 
   return { origem: "nenhuma", arquivo: null, enviadoEm: null, atualizadoPor: null, atualizadoPorEmail: null };
+}
+
+function getClassificationWorkbookInfo() {
+  const workbookPath = findClassificationWorkbookPath();
+  if (!workbookPath) {
+    return {
+      origem: "nenhuma",
+      arquivo: null,
+      arquivoTratado: null,
+      enviadoEm: null,
+      atualizadoPor: null,
+      atualizadoPorEmail: null,
+      regras: path.basename(CLASSIFICATION_RULES_FILE),
+      tratamento: null
+    };
+  }
+
+  const stat = fs.statSync(workbookPath);
+  const meta = readClassificationMeta();
+  return {
+    origem: meta?.originalName ? "upload" : "arquivo local",
+    arquivo: meta?.originalName || path.basename(workbookPath),
+    arquivoTratado: path.basename(workbookPath),
+    enviadoEm: meta?.uploadedAt || new Date(stat.mtimeMs).toISOString(),
+    atualizadoPor: meta?.uploadedBy || null,
+    atualizadoPorEmail: meta?.uploadedByEmail || null,
+    regras: path.basename(CLASSIFICATION_RULES_FILE),
+    tratamento: meta?.stats || null
+  };
 }
 
 function getWorkbook() {
@@ -1224,11 +1519,257 @@ function parseFlexibleNumber(value) {
       text = text.replace(/,/g, "");
     }
   } else if (lastComma >= 0) {
-    text = text.replace(",", ".");
+    const commaCount = (text.match(/,/g) || []).length;
+    if (commaCount > 1) {
+      text = text
+        .split("")
+        .map((char, index) => char === "," ? (index === lastComma ? "." : "") : char)
+        .join("");
+    } else {
+      text = text.replace(",", ".");
+    }
   }
 
   const parsed = Number(text);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function countTextIssues(value) {
+  return (String(value || "").match(/[ÃÂ�\u0080-\u009f]/g) || []).length;
+}
+
+function repairMojibake(value) {
+  const text = normalizeText(value);
+  if (!/[ÃÂ�\u0080-\u009f]/.test(text)) return text;
+
+  try {
+    const repaired = Buffer.from(text, "latin1").toString("utf8");
+    return countTextIssues(repaired) <= countTextIssues(text) && !repaired.includes("�")
+      ? repaired.trim()
+      : text;
+  } catch (_err) {
+    return text;
+  }
+}
+
+function normalizeRuleText(value) {
+  return repairMojibake(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function splitRuleTerms(value) {
+  return String(value || "")
+    .split(",")
+    .map(term => normalizeRuleText(term))
+    .filter(Boolean);
+}
+
+function getDefaultClassificationRules() {
+  return {
+    columnAliases: new Map([
+      ["codigocliente", "Código de Campo"],
+      ["codigodecampo", "Código de Campo"],
+      ["pesoliquido", "Peso Liquido"],
+      ["datalassificacao", "Data de classificação"],
+      ["dataclassificacao", "Data de classificação"]
+    ]),
+    cultivarRules: [
+      { mode: "ALL", terms: ["OLIMPO"], value: "80I82RSF IPRO - OLIMPO" },
+      { mode: "ALL", terms: ["JATOBA"], value: "22213I2X - JATOBA" },
+      { mode: "ALL", terms: ["BALSAMO"], value: "23311I2X - BALSAMO" },
+      { mode: "ALL", terms: ["GUEPARDO"], value: "67I68RSF IPRO - GUEPARDO" },
+      { mode: "ALL", terms: ["TORMENTA"], value: "74K76RSF CE - TORMENTA" },
+      { mode: "ALL", terms: ["APICE"], value: "75IX78RSF I2X - APICE" },
+      { mode: "ALL", terms: ["M7601I2X"], value: "7601I2X - M7601I2X" },
+      { mode: "ALL", terms: ["COBRE"], value: "77IX78RSF I2X - COBRE" },
+      { mode: "ALL", terms: ["79K82RSF"], value: "79K82RSF CE - MITICA CE" },
+      { mode: "ALL", terms: ["2471"], value: "BS2471001 I2X - AVRA 2471" },
+      { mode: "ALL", terms: ["2576"], value: "BS2576003 I2X-AVRA 2576" },
+      { mode: "ALL", terms: ["AVRA", "2478"], value: "BS2478002 I2X-AVRA 2478" },
+      { mode: "ANY", terms: ["SPARTA", "80IX81RSF"], value: "80IX81RSF I2X - SPARTA" },
+      { mode: "ALL", terms: ["SYN", "2478"], value: "SYN2478IPRO - GH2478 IPRO" },
+      { mode: "ALL", terms: ["SYN", "1687"], value: "SYN 1687 IPRO - GH1687 IPRO" },
+      { mode: "ALL", terms: ["SYN", "2282"], value: "SYN2282IPRO - GH2282 IPRO" },
+      { mode: "ALL", terms: ["NEO", "800"], value: "O800 I2X - NEO800 I2X" }
+    ],
+    discardRowTerms: ["FEIJAO", "MILHO", "SOJA INTACTA", "SORGO", "TRIGO", "FORRAGEIRA", "ARROZ", "TBIO"],
+    discardNotas: ["G"],
+    cultivarPrefix: "SEM SOJA"
+  };
+}
+
+function readClassificationRules() {
+  const rules = getDefaultClassificationRules();
+  if (!fs.existsSync(CLASSIFICATION_RULES_FILE)) return rules;
+
+  const lines = fs.readFileSync(CLASSIFICATION_RULES_FILE, "utf8").split(/\r?\n/);
+  const fileCultivarRules = [];
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+
+    const parts = line.split("|").map(part => part.trim());
+    const type = normalizeRuleText(parts[0]);
+
+    if (type === "COLUNA" && parts.length >= 3) {
+      rules.columnAliases.set(normalizeColumnKey(repairMojibake(parts[1])), repairMojibake(parts.slice(2).join("|")));
+      continue;
+    }
+
+    if (type === "CULTIVAR" && parts.length >= 4) {
+      const mode = normalizeRuleText(parts[1]) === "QUALQUER" || normalizeRuleText(parts[1]) === "ANY" ? "ANY" : "ALL";
+      const terms = splitRuleTerms(parts[2]);
+      const value = repairMojibake(parts.slice(3).join("|"));
+      if (terms.length && value) fileCultivarRules.push({ mode, terms, value });
+      continue;
+    }
+
+    if (type === "DESCARTAR LINHA" || type === "DESCARTAR CULTIVAR") {
+      rules.discardRowTerms.push(...splitRuleTerms(parts.slice(1).join(",")));
+      continue;
+    }
+
+    if (type === "DESCARTAR NOTA") {
+      rules.discardNotas.push(...splitRuleTerms(parts.slice(1).join(",")));
+      continue;
+    }
+
+    if (type === "PREFIXO CULTIVAR" && parts[1]) {
+      rules.cultivarPrefix = repairMojibake(parts.slice(1).join("|"));
+    }
+  }
+
+  if (fileCultivarRules.length) {
+    rules.cultivarRules = [...fileCultivarRules, ...rules.cultivarRules];
+  }
+
+  return rules;
+}
+
+function getRowKey(row, candidates) {
+  const normalizedCandidates = new Set(candidates.map(normalizeColumnKey));
+  return Object.keys(row).find(key => normalizedCandidates.has(normalizeColumnKey(key))) || "";
+}
+
+function normalizeClassificationColumnName(key, rules) {
+  const repaired = repairMojibake(key);
+  return rules.columnAliases.get(normalizeColumnKey(repaired)) || repaired;
+}
+
+function classificationRowText(row) {
+  return normalizeRuleText(Object.values(row).map(repairMojibake).join(" "));
+}
+
+function shouldDiscardClassificationRow(row, rules) {
+  const nota = normalizeRuleText(getRowValue(row, ["Nota", "Classificacao", "Classificação"]));
+  if (nota && rules.discardNotas.some(term => nota.includes(term))) return "nota";
+
+  const rowText = classificationRowText(row);
+  if (rules.discardRowTerms.some(term => rowText.includes(term))) return "cultivar";
+
+  return "";
+}
+
+function normalizeClassificationCultivar(value, rules) {
+  const repaired = repairMojibake(value);
+  const comparable = normalizeRuleText(repaired);
+  if (!comparable) return "";
+
+  const matchedRule = rules.cultivarRules.find(rule => {
+    if (rule.mode === "ANY") return rule.terms.some(term => comparable.includes(term));
+    return rule.terms.every(term => comparable.includes(term));
+  });
+
+  const cultivar = matchedRule ? matchedRule.value : repaired;
+  const prefix = repairMojibake(rules.cultivarPrefix || "SEM SOJA");
+  return normalizeRuleText(cultivar).includes(normalizeRuleText(prefix))
+    ? cultivar
+    : `${prefix} ${cultivar}`;
+}
+
+function formatClassificationPesoLiquido(value) {
+  if (typeof value === "number") {
+    return String(value).replace(".", ",");
+  }
+
+  return repairMojibake(value).replace(/\./g, ",");
+}
+
+function transformClassificationRow(row, rules, stats) {
+  const normalized = {};
+  for (const [rawKey, rawValue] of Object.entries(row)) {
+    const key = normalizeClassificationColumnName(rawKey, rules);
+    normalized[key] = typeof rawValue === "string" ? repairMojibake(rawValue) : rawValue;
+  }
+
+  const pesoKey = getRowKey(normalized, ["Peso Liquido", "Peso Líquido", "Peso LÃ­quido"]);
+  if (pesoKey) normalized[pesoKey] = formatClassificationPesoLiquido(normalized[pesoKey]);
+
+  const cultivarKey = getRowKey(normalized, ["Cultivar", "Descricao (Material)", "Descrição (Material)", "Material"]);
+  if (cultivarKey) {
+    const originalCultivar = normalizeRuleText(normalized[cultivarKey]);
+    normalized[cultivarKey] = normalizeClassificationCultivar(normalized[cultivarKey], rules);
+    if (normalizeRuleText(normalized[cultivarKey]) !== originalCultivar) stats.cultivaresTratadas += 1;
+  }
+
+  return normalized;
+}
+
+function processClassificationWorkbookBuffer(buffer, originalName = "") {
+  const isCsv = path.extname(originalName).toLowerCase() === ".csv";
+  const inputWorkbook = isCsv
+    ? XLSX.read(buffer.toString("utf8").replace(/^\uFEFF/, ""), { type: "string", raw: false })
+    : XLSX.read(buffer, { type: "buffer", raw: false });
+  const sheetName = inputWorkbook.SheetNames[0];
+  if (!sheetName) throw new Error("Planilha de classificações sem abas.");
+
+  const worksheet = inputWorkbook.Sheets[sheetName];
+  const rows = XLSX.utils.sheet_to_json(worksheet, { defval: "", raw: false });
+  const rules = readClassificationRules();
+  const stats = {
+    linhasRecebidas: rows.length,
+    linhasMantidas: 0,
+    descartadasPorNota: 0,
+    descartadasPorCultivar: 0,
+    cultivaresTratadas: 0
+  };
+
+  const treatedRows = [];
+  const headers = [];
+
+  for (const row of rows) {
+    const discardReason = shouldDiscardClassificationRow(row, rules);
+    if (discardReason === "nota") {
+      stats.descartadasPorNota += 1;
+      continue;
+    }
+    if (discardReason === "cultivar") {
+      stats.descartadasPorCultivar += 1;
+      continue;
+    }
+
+    const transformed = transformClassificationRow(row, rules, stats);
+    for (const key of Object.keys(transformed)) {
+      if (!headers.includes(key)) headers.push(key);
+    }
+    treatedRows.push(transformed);
+  }
+
+  stats.linhasMantidas = treatedRows.length;
+
+  const outputWorkbook = XLSX.utils.book_new();
+  const outputWorksheet = XLSX.utils.json_to_sheet(treatedRows, { header: headers });
+  XLSX.utils.book_append_sheet(outputWorkbook, outputWorksheet, "Classificacoes");
+
+  return {
+    buffer: XLSX.write(outputWorkbook, { bookType: "xlsx", type: "buffer" }),
+    stats
+  };
 }
 
 function cleanNumericCode(value) {
@@ -1257,6 +1798,7 @@ function extractCultivar(row) {
 function prefixSojaSemente(cultivar) {
   const value = normalizeText(cultivar);
   if (!value) return "";
+  if (/^sem\s+soja\b/i.test(value)) return value;
   return /^soja\s+semente\b/i.test(value) ? value : `SOJA SEMENTE ${value}`;
 }
 
@@ -1952,7 +2494,7 @@ function buildUnidadeDetalhe(unidadeId) {
       produtores: produtores.size,
       cultivares: cultivares.size
     },
-    topCultivares: buildCultivarRanking(selectedRows).slice(0, 8).map(rankingNumberFields),
+    topCultivares: buildCultivarRanking(selectedRows).map(rankingNumberFields),
     topProdutores: buildProdutorRanking(selectedRows).slice(0, 8).map(rankingNumberFields)
   };
 }
@@ -2214,10 +2756,11 @@ function getPracaDefaultsForItem(item) {
 
 function getItemConfig(item, body) {
   if (body.modoGlobal !== false) {
+    const globalPraca = normalizeText(body.globalPraca);
     return {
       perc: Number(body.globalPerc) || 0,
       valor: Number(body.globalValor) || 0,
-      praca: item.praca || ""
+      praca: globalPraca || item.praca || ""
     };
   }
 
@@ -4076,6 +4619,48 @@ app.get("/api/planilha", requireAuth, requireAdmin, (_req, res) => {
   res.json(info);
 });
 
+app.get("/api/classificacoes-planilha", requireAuth, requireAdmin, (_req, res) => {
+  res.json(getClassificationWorkbookInfo());
+});
+
+app.post("/api/classificacoes-planilha", requireAuth, requireAdmin, uploadClassificacoes.single("planilha"), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ erro: "Nenhum arquivo enviado." });
+  }
+
+  try {
+    const profile = await getCurrentProfile(req);
+    const treated = processClassificationWorkbookBuffer(req.file.buffer, req.file.originalname);
+    fs.writeFileSync(CLASSIFICATION_WORKBOOK, treated.buffer);
+
+    const meta = {
+      storedName: CLASSIFICATION_WORKBOOK_NAME,
+      originalName: req.file.originalname,
+      uploadedAt: new Date().toISOString(),
+      uploadedBy: profile?.usuario || req.session.user || null,
+      uploadedByEmail: profile?.email || null,
+      size: treated.buffer.length,
+      sha256: crypto.createHash("sha256").update(treated.buffer).digest("hex"),
+      rulesFile: path.basename(CLASSIFICATION_RULES_FILE),
+      stats: treated.stats
+    };
+
+    writeClassificationMeta(meta);
+    classificationRowsCache = null;
+
+    const config = getExtraWorkbookConfigs().find(item => item.key === "classificacoes_snapshot");
+    if (config) await saveExtraWorkbookSnapshot(config);
+
+    res.json({
+      mensagem: "Planilha de classificações tratada e atualizada com sucesso.",
+      classificacoes: getClassificationWorkbookInfo()
+    });
+  } catch (error) {
+    console.error(`Erro ao fazer upload de classificacoes: ${error.message}`);
+    res.status(500).json({ erro: "Erro ao tratar a planilha de classificações." });
+  }
+});
+
 // ============= CONFIGURACOES E USUARIOS =============
 
 app.get("/api/dashboard-link", requireAuth, async (_req, res) => {
@@ -4316,11 +4901,26 @@ async function startServer() {
   }
 
   try {
+    await restoreAllExtraWorkbooks();
+  } catch (error) {
+    console.warn(`Não foi possível restaurar planilhas auxiliares: ${error.message}`);
+  }
+
+  try {
     preparePracaWorkbookIfNeeded(findPracaWorkbookPath());
     watchPracaWorkbookChanges();
   } catch (error) {
     console.warn(`Não foi possível iniciar o tratamento automático de praças: ${error.message}`);
   }
+
+  try {
+    watchZmm113Changes();
+    watchExtraWorkbookChanges();
+  } catch (error) {
+    console.warn(`Não foi possível iniciar o monitoramento das planilhas: ${error.message}`);
+  }
+
+  startSnapshotSyncPolling();
 
   const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);

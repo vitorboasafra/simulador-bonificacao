@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Simulador de Bonificação</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link
@@ -14,7 +17,8 @@
     />
     <style>
       body {
-        background: #E7E7E7;
+        background: #f5f7f6;
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       }
       .lucide {
         height: 16px;
@@ -30,17 +34,159 @@
         border-color: #ef4444 !important;
         box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.18) !important;
       }
+      .config-modal-shell {
+        left: 0;
+      }
+      @media (min-width: 768px) {
+        .config-modal-shell {
+          left: 240px;
+        }
+      }
+      body.sidebar-collapsed .config-modal-shell {
+        left: 48px;
+      }
+      .config-scrollbar {
+        scrollbar-color: rgba(15, 61, 36, 0.28) transparent;
+        scrollbar-width: thin;
+      }
+      .config-scrollbar::-webkit-scrollbar {
+        height: 8px;
+        width: 8px;
+      }
+      .config-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(15, 61, 36, 0.22);
+        border-radius: 999px;
+      }
+      .app-sidebar {
+        transition: width 0.2s ease, transform 0.2s ease;
+      }
+      .app-content {
+        margin-left: 240px;
+        transition: margin-left 0.2s ease;
+      }
+      .sidebar-toggle-shell {
+        display: none;
+        left: 16px;
+        position: fixed;
+        top: 16px;
+        z-index: 60;
+      }
+      #btnToggleSidebar .sidebar-icon-open {
+        display: none;
+      }
+      body.sidebar-collapsed .app-sidebar {
+        width: 48px !important;
+        overflow-x: hidden;
+        transform: translateX(0);
+      }
+      body.sidebar-collapsed .app-content {
+        margin-left: 48px;
+      }
+      body.sidebar-collapsed .sidebar-toggle-shell {
+        display: none;
+      }
+      body.sidebar-collapsed #btnToggleSidebar .sidebar-icon-open {
+        display: inline-flex;
+      }
+      body.sidebar-collapsed #btnToggleSidebar .sidebar-icon-close {
+        display: none;
+      }
+      body.sidebar-collapsed #appSidebar > div:first-child {
+        cursor: pointer;
+        padding: 12px 0 10px;
+      }
+      body.sidebar-collapsed #sidebarUserName,
+      body.sidebar-collapsed #usuarioLogado,
+      body.sidebar-collapsed .app-sidebar nav > p {
+        display: none;
+      }
+      body.sidebar-collapsed #btnCloseSidebar {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        color: rgba(255, 255, 255, 0.76);
+        display: inline-flex;
+        height: 30px;
+        margin: 8px auto 0;
+        position: static;
+        width: 30px;
+      }
+      body.sidebar-collapsed #btnCloseSidebar:hover {
+        background: rgba(255, 255, 255, 0.14);
+        color: #ffffff;
+      }
+      body.sidebar-collapsed #sidebarAvatar {
+        height: 32px !important;
+        width: 32px !important;
+        border-width: 1px;
+        box-shadow: 0 0 0 2px rgba(141, 198, 63, 0.16);
+      }
+      body.sidebar-collapsed #sidebarAvatarIcon {
+        display: none;
+      }
+      body.sidebar-collapsed #sidebarRailInitial,
+      body.sidebar-collapsed .sidebar-rail-dot {
+        display: inline-flex;
+      }
+      body.sidebar-collapsed .app-sidebar > div:nth-child(2) {
+        padding: 8px 0;
+      }
+      body.sidebar-collapsed #btnLogout,
+      body.sidebar-collapsed .app-sidebar .nav-link,
+      body.sidebar-collapsed #btnConfiguracoes {
+        align-items: center;
+        border-radius: 8px;
+        display: flex;
+        font-size: 0;
+        height: 36px;
+        justify-content: center;
+        margin-left: auto;
+        margin-right: auto;
+        padding: 0;
+        width: 36px;
+      }
+      body.sidebar-collapsed #btnCloseSidebar .lucide {
+        height: 18px;
+        width: 18px;
+      }
+      body.sidebar-collapsed #btnLogout i,
+      body.sidebar-collapsed .app-sidebar .nav-link .lucide,
+      body.sidebar-collapsed #btnConfiguracoes .lucide {
+        font-size: 14px;
+        height: 18px;
+        width: 18px;
+      }
+      body.sidebar-collapsed .app-sidebar nav {
+        padding: 8px 0;
+      }
+      body.sidebar-collapsed .app-sidebar nav .mt-2,
+      body.sidebar-collapsed .app-sidebar nav .mt-6 {
+        margin-top: 6px;
+      }
+      @media (max-width: 767px) {
+        .app-content {
+          margin-left: 0;
+        }
+        .app-sidebar {
+          box-shadow: 0 24px 60px rgba(8, 28, 15, 0.32);
+        }
+      }
     </style>
   </head>
-  <body class="min-h-screen bg-[#E7E7E7] text-[#203a28]">
+  <body class="min-h-screen bg-[#f5f7f6] text-[#203a28]">
     <div class="min-h-screen">
-      <aside class="fixed left-0 top-0 z-50 h-screen w-[240px] overflow-y-auto bg-[#1f4d2d] text-white">
-        <div class="flex items-center gap-3 border-b border-white/10 px-4 py-5">
-          <div id="sidebarInitials" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#7FB23D] text-sm font-bold text-white">BS</div>
-          <div class="min-w-0">
-            <p id="sidebarUserName" class="break-words text-sm font-bold leading-tight">Carregando...</p>
-            <p id="usuarioLogado" class="break-all text-xs text-white/70 leading-tight mt-0.5"></p>
+      <aside id="appSidebar" class="app-sidebar fixed left-0 top-0 z-50 h-screen w-[240px] overflow-y-auto bg-[#0f3d24] text-white shadow-[12px_0_40px_rgba(15,61,36,0.16)]">
+        <div class="relative border-b border-white/10 px-4 py-5 text-center">
+          <button id="btnCloseSidebar" type="button" class="absolute right-3 top-3 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-white/70 transition-colors hover:bg-white/10 hover:text-white" aria-label="Fechar menu lateral" title="Fechar menu lateral">
+            <i data-sidebar-toggle-icon data-lucide="x"></i>
+          </button>
+          <div id="sidebarAvatar" class="relative mx-auto flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#8dc63f] bg-[#6ea638]/80 text-white shadow-[0_0_0_4px_rgba(141,198,63,0.12)]">
+            <img id="sidebarAvatarPhoto" class="hidden h-full w-full rounded-full object-cover" alt="Foto de perfil" />
+            <i id="sidebarAvatarIcon" data-lucide="user" class="!h-8 !w-8"></i>
+            <span id="sidebarRailInitial" class="hidden text-xs font-extrabold leading-none">T</span>
+            <span class="sidebar-rail-dot absolute -right-0.5 bottom-1 hidden h-2 w-2 rounded-full border border-[#0f3d24] bg-[#8dc63f]"></span>
           </div>
+          <p id="sidebarUserName" class="mt-2 break-words text-base font-extrabold leading-tight">Carregando...</p>
+          <p id="usuarioLogado" class="mx-auto mt-1 max-w-[190px] break-all text-[11px] text-white/75 leading-tight"></p>
         </div>
         <div class="border-b border-white/10 px-4 py-3">
           <button id="btnLogout" type="button" class="inline-flex items-center gap-2 text-xs text-white/70 hover:text-white">
@@ -58,7 +204,7 @@
           <p class="mt-6 px-2 text-[10px] font-bold uppercase tracking-[0.14em] text-white/35">M&oacute;dulos</p>
           <div class="mt-2 space-y-1">
             <button id="rankingLink" type="button" data-nav-view="ranking" class="nav-link flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-white/80 transition-colors hover:bg-white/10"><i data-lucide="trophy"></i>Qualidade</button>
-            <button type="button" data-nav-view="fornecedores" class="nav-link flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-white/80 transition-colors hover:bg-white/10"><i data-lucide="users"></i>Fornecedores</button>
+            <button type="button" data-nav-view="fornecedores" class="nav-link flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-white/80 transition-colors hover:bg-white/10"><i data-lucide="users"></i>Produtores</button>
             <button type="button" data-nav-view="unidades" class="nav-link flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-white/80 transition-colors hover:bg-white/10"><i data-lucide="warehouse"></i>Unidades</button>
             <button type="button" data-nav-view="historico" class="nav-link flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-white/80 transition-colors hover:bg-white/10"><i data-lucide="history"></i>Hist&oacute;rico</button>
             <button id="btnConfiguracoes" type="button" class="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-white/80 transition-colors hover:bg-white/10"><i data-lucide="settings"></i>Configura&ccedil;&otilde;es</button>
@@ -66,62 +212,97 @@
         </nav>
       </aside>
 
-      <div class="min-w-0 ml-[240px]">
-        <header class="sticky top-0 z-40 border-b border-[#dfdfd8] bg-white/95 px-5 py-4 backdrop-blur">
-          <div class="mx-auto flex max-w-[1600px] items-center justify-between gap-4">
-            <div class="flex items-center gap-3 text-sm">
-              <span class="h-6 border-l-2 border-[#7FB23D]"></span>
-              <span id="breadcrumbAtual" class="font-semibold text-[#1f4d2d]">Início</span>
-              <span class="rounded-full bg-[#fff3c4] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#6f5428]">Teste</span>
-            </div>
-            <span id="statusTopo" class="hidden rounded-md border border-[#cde5bd] bg-[#edf7e8] px-3 py-2 text-sm text-[#315b2f]"></span>
-          </div>
-        </header>
+      <div class="app-content min-w-0">
+        <div class="sidebar-toggle-shell">
+          <button id="btnToggleSidebar" type="button" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-[#cfdcbd] bg-white text-[#1f4d2d] shadow-sm transition-colors hover:bg-[#edf7e8]" aria-controls="appSidebar" aria-expanded="true" aria-label="Fechar menu lateral" title="Fechar menu lateral">
+            <span class="sidebar-icon-open inline-flex"><i data-lucide="menu"></i></span>
+            <span class="sidebar-icon-close inline-flex"><i data-lucide="x"></i></span>
+          </button>
+        </div>
+        <span id="statusTopo" class="fixed right-5 top-4 z-[60] hidden rounded-md border border-[#cde5bd] bg-[#edf7e8] px-3 py-2 text-sm text-[#315b2f] shadow-sm"></span>
 
-        <main class="mx-auto w-full max-w-[1600px] space-y-6 px-4 py-6 lg:px-8">
-          <section id="viewInicio" data-app-view="inicio" class="space-y-6">
-            <div class="mx-auto max-w-2xl rounded-lg border border-[#d8d8cf] bg-white p-6 shadow-sm">
-              <div class="h-1 w-10 rounded-full bg-[#7FB23D]"></div>
-              <h1 id="welcomeTitle" class="mt-4 text-xl font-bold text-[#1f4d2d]">Bem-vindo</h1>
-              <p class="mt-1 text-xs font-semibold text-[#6f5428]">Simulador de Bonificação - Boa Safra Sementes - Safra 2026</p>
-              <p class="mt-5 border-b border-[#e5e3da] pb-5 text-sm leading-6 text-[#27382d]">Aqui você calcula e acompanha as bonificações de cada produtor com base nos dados reais do ZMM113. Tudo em um só lugar: rápido, preciso e direto ao ponto.</p>
-              <div class="mt-5">
-                <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-[#1f4d2d]">O que você encontra aqui</p>
-                <ul class="mt-3 space-y-3 text-sm text-[#27382d]">
-                  <li class="flex gap-3"><span class="mt-0.5 text-[#7FB23D]"><i class="fa-solid fa-circle-check"></i></span>Cálculo automático de bonificação por cultivar e unidade</li>
-                  <li class="flex gap-3"><span class="mt-0.5 text-[#7FB23D]"><i class="fa-solid fa-circle-check"></i></span>Relatório em PDF com todos os detalhes da simulação</li>
-                  <li class="flex gap-3"><span class="mt-0.5 text-[#7FB23D]"><i class="fa-solid fa-circle-check"></i></span>Envio do resumo direto pelo WhatsApp</li>
-                  <li class="flex gap-3"><span class="mt-0.5 text-[#7FB23D]"><i class="fa-solid fa-circle-check"></i></span>Dashboard com visão consolidada por unidade e região</li>
+        <main class="mx-auto w-full max-w-[1680px] space-y-6 px-4 py-4 lg:px-8">
+          <section id="viewInicio" data-app-view="inicio" class="space-y-3">
+            <div class="overflow-hidden rounded-xl bg-[#0f3d24] shadow-[0_16px_40px_rgba(15,61,36,0.16)]">
+              <img src="/assets/home-hero-safra-2026.png" alt="Boa Safra - O agro é nosso negócio, pessoas são nosso DNA" class="block h-auto w-full" />
+            </div>
+
+            <div class="grid gap-5 rounded-xl border border-[#e4ebe6] bg-white px-6 py-5 shadow-[0_10px_30px_rgba(18,44,29,0.08)] lg:grid-cols-[1.25fr_1fr] lg:items-center">
+              <div>
+                <div class="h-0.5 w-9 rounded-full bg-[#79aa38]"></div>
+                <h1 id="welcomeTitle" class="mt-3 text-2xl font-extrabold tracking-tight text-[#0f3d24]">Bem-vindo</h1>
+                <p class="mt-1 text-xs font-bold text-[#9b691f]">Simulador de Bonificação - Boa Safra Sementes - Safra 2026</p>
+                <p class="mt-4 max-w-3xl text-sm leading-6 text-[#324238]">Aqui você calcula e acompanha as bonificações de cada produtor com base nos dados reais do ZMM113. Tudo em um só lugar: rápido, preciso e direto ao ponto.</p>
+              </div>
+              <div class="border-[#e4ebe6] lg:border-l lg:pl-8">
+                <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#24372c]">O que você encontra aqui</p>
+                <ul class="mt-3 space-y-2.5 text-sm font-medium text-[#25382d]">
+                  <li class="flex gap-3"><span class="mt-0.5 text-[#79aa38]"><i class="fa-solid fa-circle-check"></i></span>Cálculo automático de bonificação por cultivar e unidade</li>
+                  <li class="flex gap-3"><span class="mt-0.5 text-[#79aa38]"><i class="fa-solid fa-circle-check"></i></span>Relatório em PDF com todos os detalhes da simulação</li>
+                  <li class="flex gap-3"><span class="mt-0.5 text-[#79aa38]"><i class="fa-solid fa-circle-check"></i></span>Dashboard com visão consolidada por unidade e região</li>
                 </ul>
               </div>
             </div>
 
-            <div class="mx-auto max-w-2xl overflow-hidden rounded-lg border border-[#d8d8cf] bg-white shadow-sm">
-              <div class="border-b border-[#e5e3da] px-5 py-4">
-                <h2 class="text-sm font-bold text-[#1f4d2d]">Referência de Mercado - Safra 2026</h2>
-                <p class="mt-1 text-xs text-[#79836f]">Valor médio da saca por localidade. Base: Compilado Boa Safra 2026</p>
+            <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div class="rounded-xl border border-[#e4ebe6] bg-white px-6 py-4 shadow-[0_10px_26px_rgba(18,44,29,0.07)]">
+                <div class="flex items-center gap-5">
+                  <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#edf4e6] text-[#16652f]"><i data-lucide="map-pin" class="!h-7 !w-7"></i></div>
+                  <div>
+                    <p class="text-xs font-bold text-[#26382e]">Praças mapeadas</p>
+                    <p id="homeKpiLocalidadesValue" class="mt-1 text-2xl font-extrabold text-[#0f5a28]">--</p>
+                  </div>
+                </div>
+              </div>
+              <div class="rounded-xl border border-[#e4ebe6] bg-white px-6 py-4 shadow-[0_10px_26px_rgba(18,44,29,0.07)]">
+                <div class="flex items-center gap-5">
+                  <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#edf4e6] text-[#16652f]"><i data-lucide="trending-down" class="!h-7 !w-7"></i></div>
+                  <div>
+                    <p class="text-xs font-bold text-[#26382e]">Menor valor (R$/SC)</p>
+                    <p id="homeKpiMenorValue" class="mt-1 text-2xl font-extrabold text-[#0f5a28]">--</p>
+                    <p id="homeKpiMenorLabel" class="text-sm font-bold uppercase text-[#536279]">--</p>
+                  </div>
+                </div>
+              </div>
+              <div class="rounded-xl border border-[#e4ebe6] bg-white px-6 py-4 shadow-[0_10px_26px_rgba(18,44,29,0.07)]">
+                <div class="flex items-center gap-5">
+                  <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#edf4e6] text-[#16652f]"><i data-lucide="trending-up" class="!h-7 !w-7"></i></div>
+                  <div>
+                    <p class="text-xs font-bold text-[#26382e]">Maior valor (R$/SC)</p>
+                    <p id="homeKpiMaiorValue" class="mt-1 text-2xl font-extrabold text-[#0f5a28]">--</p>
+                    <p id="homeKpiMaiorLabel" class="text-sm font-bold uppercase text-[#536279]">--</p>
+                  </div>
+                </div>
+              </div>
+              <div class="rounded-xl border border-[#e4ebe6] bg-white px-6 py-4 shadow-[0_10px_26px_rgba(18,44,29,0.07)]">
+                <div class="flex items-center gap-5">
+                  <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#edf4e6] text-[#79aa38]"><i data-lucide="pie-chart" class="!h-7 !w-7"></i></div>
+                  <div>
+                    <p class="text-xs font-bold text-[#26382e]">Diferença</p>
+                    <p id="homeKpiDiferencaValue" class="mt-1 text-2xl font-extrabold text-[#0f5a28]">--</p>
+                    <p class="text-sm font-medium text-[#536279]">entre menor e maior</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="overflow-hidden rounded-xl border border-[#e4ebe6] bg-white shadow-[0_12px_32px_rgba(18,44,29,0.08)]">
+              <div class="px-5 py-3">
+                <h2 class="text-base font-extrabold text-[#1a2a21]">Referência de Mercado - Safra 2026</h2>
+                <p class="mt-1 text-xs font-medium text-[#607083]">Valor médio da saca por praça. Base: Compilado Boa Safra 2026</p>
               </div>
               <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">
-                  <thead class="bg-[#1f4d2d] text-white">
+                  <thead class="bg-gradient-to-r from-[#0f3d24] to-[#18562f] text-white">
                     <tr>
-                      <th class="px-5 py-3 text-left text-xs font-bold uppercase">Localidade / Região</th>
-                      <th class="px-5 py-3 text-right text-xs font-bold uppercase">Valor médio (R$/sc)</th>
+                      <th class="px-5 py-2 text-left text-xs font-extrabold uppercase">Praça/UF</th>
+                      <th class="px-5 py-2 text-right text-xs font-extrabold uppercase">Valor médio (R$/SC)</th>
                     </tr>
                   </thead>
-                  <tbody id="homeMarketBody" class="divide-y divide-[#e6e5dc]"></tbody>
+                  <tbody id="homeMarketBody" class="divide-y divide-[#edf1ec]"></tbody>
                 </table>
               </div>
-              <div id="homeMarketFooter" class="flex items-center justify-between border-t border-[#e5e3da] px-5 py-3 text-xs text-[#8b927f]"></div>
-            </div>
-
-            <div class="mx-auto max-w-2xl text-center">
-              <p class="text-xs text-[#7c8373]">Tudo pronto? Acesse o simulador e calcule a bonificação agora.</p>
-              <button id="btnIrSimulador" type="button" class="mt-4 inline-flex items-center justify-center gap-2 rounded-md bg-[#2f6b37] px-8 py-3 text-sm font-bold text-white transition-colors hover:bg-[#25572d]">
-                <i class="fa-solid fa-seedling text-[#7FB23D]"></i>
-                Iniciar Simulação
-                <i class="fa-solid fa-arrow-right text-xs"></i>
-              </button>
+              <div id="homeMarketFooter" class="flex items-center justify-between border-t border-[#edf1ec] px-5 py-3 text-xs font-medium text-[#607083]"></div>
             </div>
           </section>
 
@@ -191,11 +372,11 @@
         </div>
 
         <div class="space-y-5">
-          <!-- Step 1: Fornecedor -->
+          <!-- Step 1: Produtor -->
           <div>
             <div class="mb-2 flex items-center gap-2">
               <span class="flex h-5 w-5 items-center justify-center rounded-full bg-[#1f4d2d] text-[10px] font-black text-white shrink-0">1</span>
-              <span class="text-xs font-bold uppercase tracking-widest text-[#8b927f]">Fornecedor</span>
+              <span class="text-xs font-bold uppercase tracking-widest text-[#8b927f]">Produtor</span>
               <span id="contadorFornecedoresLabel" class="text-xs text-[#a8b89a]"></span>
             </div>
             <div class="relative">
@@ -206,7 +387,7 @@
                 id="fornecedor"
                 type="text"
                 class="w-full rounded-lg border border-[#cfdcbd] bg-[#f8faf4] pl-9 pr-3 py-2.5 text-[#1f4d2d] font-medium placeholder-[#a8b89a] focus:border-[#38c96b] focus:ring-2 focus:ring-[#38c96b]/20 outline-none transition-colors"
-                placeholder="Buscar fornecedor..."
+                placeholder="Buscar produtor..."
                 autocomplete="off"
               />
               <div
@@ -264,6 +445,29 @@
         </label>
 
         <div id="configGlobal" class="hidden grid gap-4 md:grid-cols-2">
+          <div class="md:col-span-2">
+            <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <span id="globalPracaLabel" class="rounded-md border border-[#ead37c] bg-[#fffaf0] px-2 py-1 text-xs font-semibold text-[#6a5514]">Praça não selecionada</span>
+              <button
+                id="globalPracaToggle"
+                type="button"
+                class="inline-flex items-center gap-1 rounded-md border border-[#cfdcbd] bg-white px-2 py-1 text-xs font-semibold text-[#38563f] transition-colors hover:bg-[#edf4e2]"
+              >
+                <i class="fa-solid fa-pen-to-square text-[11px]"></i>
+                Selecionar praça
+              </button>
+            </div>
+            <div id="globalPracaPanel" class="hidden rounded-md border border-[#d8e5c6] bg-white p-3">
+              <label for="globalPraca" class="mb-1 block text-xs font-medium text-[#61713d]">Praça para todos</label>
+              <select
+                id="globalPraca"
+                class="w-full rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-sm text-[#203a28] focus:ring-[#7FB23D] focus:border-[#7FB23D] outline-none"
+              >
+                <option value="" selected>Selecione uma praça</option>
+              </select>
+              <p id="globalPracaValues" class="mt-2 text-xs font-semibold text-[#61713d]">Percentual: 0,00% | Valor da saca: R$ 0,00</p>
+            </div>
+          </div>
           <div>
             <label for="globalPerc" class="mb-2 block text-sm font-medium text-[#38563f]">Porcentagem (%)</label>
             <input
@@ -320,14 +524,14 @@
           <table class="min-w-full divide-y divide-[#d8e5c6] text-sm">
             <thead>
               <tr class="bg-[#1f4d2d] text-white">
-                <th class="px-3 py-2.5 text-left text-xs font-bold uppercase tracking-wider">Centro</th>
-                <th class="px-3 py-2.5 text-left text-xs font-bold uppercase tracking-wider">Insc. Estadual</th>
-                <th class="px-3 py-2.5 text-left text-xs font-bold uppercase tracking-wider">Cultivar</th>
-                <th class="px-3 py-2.5 text-right text-xs font-bold uppercase tracking-wider">Peso Base</th>
-                <th class="px-3 py-2.5 text-right text-xs font-bold uppercase tracking-wider">% Bonif</th>
-                <th class="px-3 py-2.5 text-right text-xs font-bold uppercase tracking-wider">Sacas</th>
-                <th class="px-3 py-2.5 text-right text-xs font-bold uppercase tracking-wider">Vl. Saca</th>
-                <th class="px-3 py-2.5 text-right text-xs font-bold uppercase tracking-wider">Subtotal</th>
+                <th class="px-3 py-2.5 text-center text-xs font-bold uppercase tracking-wider">Centro</th>
+                <th class="px-3 py-2.5 text-center text-xs font-bold uppercase tracking-wider">Insc. Estadual</th>
+                <th class="px-3 py-2.5 text-center text-xs font-bold uppercase tracking-wider">Cultivar</th>
+                <th class="px-3 py-2.5 text-center text-xs font-bold uppercase tracking-wider">Peso Base</th>
+                <th class="px-3 py-2.5 text-center text-xs font-bold uppercase tracking-wider">% Bonif</th>
+                <th class="px-3 py-2.5 text-center text-xs font-bold uppercase tracking-wider">Sacas</th>
+                <th class="px-3 py-2.5 text-center text-xs font-bold uppercase tracking-wider">Vl. Saca</th>
+                <th class="px-3 py-2.5 text-center text-xs font-bold uppercase tracking-wider">Subtotal</th>
               </tr>
             </thead>
             <tbody id="resultadoBody" class="divide-y divide-[#e6edd8] bg-white"></tbody>
@@ -376,103 +580,171 @@
             </div>
           </section>
 
-          <section id="viewRanking" data-app-view="ranking" class="hidden space-y-6">
-            <div class="rounded-lg border border-[#d8e5c6] bg-white p-6 shadow-sm">
-              <div class="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <h1 class="text-xl font-bold text-[#1f4d2d]">Qualidade</h1>
-                  <p class="mt-1 text-sm text-[#61713d]">Ranking de qualidade por produtor, unidade e cultivar com base na classificação atual.</p>
-                </div>
-                <button id="btnAtualizarRankingModulo" type="button" class="rounded-lg border border-[#cfdcbd] bg-white px-4 py-2 text-sm font-semibold text-[#1f4d2d] hover:bg-[#edf7e8]">
-                  Atualizar
-                </button>
-              </div>
-              <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
-                <div id="rankingQualityFilters" class="flex flex-wrap items-center gap-2">
-                  <button type="button" data-ranking-quality="produtores" class="rounded-full border border-[#cfdcbd] bg-[#f8faf4] px-4 py-2 text-sm font-semibold text-[#1f4d2d] transition-colors hover:bg-[#edf7e8]">Produtor</button>
-                  <button type="button" data-ranking-quality="unidades" class="rounded-full border border-[#cfdcbd] bg-[#f8faf4] px-4 py-2 text-sm font-semibold text-[#1f4d2d] transition-colors hover:bg-[#edf7e8]">Centro</button>
-                  <button type="button" data-ranking-quality="cultivares" class="rounded-full border border-[#cfdcbd] bg-[#f8faf4] px-4 py-2 text-sm font-semibold text-[#1f4d2d] transition-colors hover:bg-[#edf7e8]">Cultivar</button>
-                </div>
+          <section id="viewRanking" data-app-view="ranking" class="hidden space-y-5">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+              <div>
                 <div class="flex items-center gap-2">
-                  <span class="flex items-center gap-1.5 rounded-lg border border-[#d8e5c6] bg-[#f8faf4] px-3 py-2">
-                    <i class="fa-solid fa-magnifying-glass text-xs text-[#74835d]"></i>
-                    <input id="rankingSearchInput" type="search" placeholder="Pesquisar..." autocomplete="off"
-                           class="w-52 bg-transparent text-sm text-[#1f4d2d] placeholder-[#a8b89a] outline-none" />
-                  </span>
-                  <span id="rankingSearchCount" class="hidden text-xs text-[#74835d]"></span>
+                  <h1 class="text-2xl font-extrabold tracking-tight text-[#0f3d24]">Qualidade</h1>
+                </div>
+                <p class="mt-2 max-w-xl text-sm leading-6 text-[#536279]">Ranking de qualidade por produtor, unidade e cultivar com base na classificação atual.</p>
+              </div>
+              <div class="flex flex-wrap items-center gap-3">
+                <span class="inline-flex items-center gap-2 rounded-lg border border-[#d9e6dc] bg-white px-4 py-2 text-xs font-bold text-[#1f4d2d] shadow-sm">
+                  <i data-lucide="clipboard-list" class="h-4 w-4"></i>
+                  Relatório baseado pela MOVGRÃOS
+                </span>
+              </div>
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+              <div class="rounded-xl border border-[#e4ebe6] bg-white px-6 py-5 shadow-[0_10px_26px_rgba(18,44,29,0.07)]">
+                <div class="flex items-center gap-5">
+                  <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#edf4e6] text-[#2f7a32]"><i data-lucide="shield-check" class="!h-7 !w-7"></i></div>
+                  <div>
+                    <p class="text-xs font-bold text-[#536279]">Média de qualidade</p>
+                    <p id="rankingKpiQualidadeMedia" class="mt-1 text-2xl font-extrabold text-[#0f3d24]">--</p>
+                    <p class="text-sm font-medium text-[#536279]">média geral</p>
+                  </div>
                 </div>
               </div>
-              <div id="rankingModuloStatus" class="mt-5 rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4 text-sm text-[#61713d]">Carregando ranking...</div>
-              <div id="rankingModuloGrid" class="mt-5"></div>
+              <div class="rounded-xl border border-[#e4ebe6] bg-white px-6 py-5 shadow-[0_10px_26px_rgba(18,44,29,0.07)]">
+                <div class="flex items-center gap-5">
+                  <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#edf4e6] text-[#2f7a32]"><i data-lucide="map-pinned" class="!h-7 !w-7"></i></div>
+                  <div>
+                    <p class="text-xs font-bold text-[#536279]">Centros envolvidos</p>
+                    <p id="rankingKpiCentros" class="mt-1 text-2xl font-extrabold text-[#0f3d24]">--</p>
+                    <p class="text-sm font-medium text-[#536279]">centros</p>
+                  </div>
+                </div>
+              </div>
             </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div id="rankingQualityFilters" class="flex flex-wrap items-center gap-2">
+                <button type="button" data-ranking-quality="produtores" class="rounded-lg border border-[#d9e6dc] bg-white px-5 py-2.5 text-sm font-bold text-[#1f4d2d] shadow-sm transition-colors hover:bg-[#edf7e8]">Produtor</button>
+                <button type="button" data-ranking-quality="unidades" class="rounded-lg border border-[#d9e6dc] bg-white px-5 py-2.5 text-sm font-bold text-[#1f4d2d] shadow-sm transition-colors hover:bg-[#edf7e8]">Centro</button>
+                <button type="button" data-ranking-quality="cultivares" class="rounded-lg border border-[#d9e6dc] bg-white px-5 py-2.5 text-sm font-bold text-[#1f4d2d] shadow-sm transition-colors hover:bg-[#edf7e8]">Cultivar</button>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="flex items-center gap-3 rounded-lg border border-[#e4ebe6] bg-white px-4 py-2.5 shadow-sm">
+                  <i data-lucide="search" class="h-4 w-4 text-[#536279]"></i>
+                  <input id="rankingSearchInput" type="search" placeholder="Pesquisar produtor..." autocomplete="off"
+                         class="w-64 bg-transparent text-sm text-[#1f4d2d] placeholder-[#8a98a8] outline-none" />
+                </span>
+                <span id="rankingSearchCount" class="hidden text-xs font-medium text-[#74835d]"></span>
+              </div>
+            </div>
+
+            <div id="rankingModuloStatus" class="rounded-xl border border-[#d8e5c6] bg-[#f8faf4] p-4 text-sm text-[#61713d]">Carregando ranking...</div>
+            <div id="rankingModuloGrid"></div>
           </section>
 
           <section id="viewFornecedores" data-app-view="fornecedores" class="hidden space-y-5">
-            <!-- Stat cards -->
-            <div class="grid gap-4 sm:grid-cols-3">
-              <div class="flex items-center gap-4 rounded-lg border border-[#d8e5c6] bg-white p-5 shadow-sm">
-                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#edf7e8] text-[#2f6b37]">
-                  <i class="fa-solid fa-users text-lg"></i>
+            <div class="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <div class="flex items-center gap-2">
+                  <h1 class="text-2xl font-extrabold tracking-tight text-[#0f3d24]">Produtores</h1>
+                </div>
+                <p class="mt-2 max-w-xl text-sm leading-6 text-[#536279]">Ranking de produtores por peso líquido da ZMM113 atual.</p>
+              </div>
+              <div class="flex flex-wrap items-center gap-3">
+                <span class="inline-flex items-center gap-2 rounded-lg border border-[#d9e6dc] bg-white px-4 py-2 text-xs font-bold text-[#1f4d2d] shadow-sm">
+                  <i data-lucide="clipboard-list" class="h-4 w-4"></i>
+                  Relatório baseado pela ZMM113
                 </span>
-                <div>
-                  <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-[#8b927f]">Fornecedores Ativos</p>
-                  <p id="statFornecedoresAtivos" class="mt-0.5 text-3xl font-bold text-[#1f4d2d]">—</p>
+                <button id="btnExportarXlsxFornecedores" type="button" class="inline-flex items-center gap-2 rounded-lg bg-[#0f3d24] px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#18562f] disabled:cursor-not-allowed disabled:opacity-60">
+                  <i data-lucide="download" class="h-4 w-4"></i>
+                  Exportar
+                  <i data-lucide="chevron-down" class="h-4 w-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+              <div class="rounded-2xl border border-[#dce8d5] bg-white px-6 py-5 shadow-[0_8px_24px_rgba(15,61,36,.06)]">
+                <div class="flex items-center gap-5">
+                  <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#eaf5e5] text-[#2f7d32]">
+                    <i data-lucide="building-2" class="!h-7 !w-7"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold text-[#536279]">Centro mais ativo</p>
+                    <p id="fornecedorKpiCentroAtivo" class="mt-1 text-3xl font-extrabold text-[#0f3d24]">--</p>
+                  </div>
                 </div>
               </div>
-              <div class="flex items-center gap-4 rounded-lg border border-[#d8e5c6] bg-white p-5 shadow-sm">
-                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#edf7e8] text-[#2f6b37]">
-                  <i class="fa-solid fa-seedling text-lg"></i>
-                </span>
-                <div>
-                  <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-[#8b927f]">Volume Total</p>
-                  <p id="statVolumeTotal" class="mt-0.5 text-3xl font-bold text-[#1f4d2d]">—</p>
-                </div>
-              </div>
-              <div class="flex items-center gap-4 rounded-lg border border-red-200 bg-white p-5 shadow-sm">
-                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-500">
-                  <i class="fa-solid fa-triangle-exclamation text-lg"></i>
-                </span>
-                <div>
-                  <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-[#8b927f]">Com Divergência</p>
-                  <p id="statComDivergencia" class="mt-0.5 text-3xl font-bold text-red-600">—</p>
+              <div class="rounded-2xl border border-[#dce8d5] bg-white px-6 py-5 shadow-[0_8px_24px_rgba(15,61,36,.06)]">
+                <div class="flex items-center gap-5">
+                  <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#eaf5e5] text-[#2f7d32]">
+                    <i data-lucide="medal" class="!h-7 !w-7"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold text-[#536279]">Participação do Top 3 no volume total</p>
+                    <p id="fornecedorKpiTop3" class="mt-1 text-3xl font-extrabold text-[#0f3d24]">--</p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- Ranking table -->
-            <div class="rounded-lg border border-[#d8e5c6] bg-white shadow-sm">
-              <div class="flex items-center justify-between border-b border-[#d8e5c6] px-5 py-4">
-                <div class="flex items-center gap-2">
-                  <span class="h-4 w-[3px] rounded-full bg-[#1f4d2d]"></span>
-                  <p class="text-sm font-bold text-[#1f4d2d]">Ranking de Fornecedores por Volume</p>
-                </div>
-                <button id="btnExportarXlsxFornecedores" type="button" class="inline-flex items-center gap-2 rounded-lg bg-[#1f4d2d] px-4 py-2 text-sm font-semibold text-white hover:bg-[#163b21] disabled:cursor-not-allowed disabled:opacity-60">
-                  <i class="fa-solid fa-file-excel"></i> Exportar
-                </button>
+            <div class="flex flex-wrap items-center gap-3 rounded-[14px] border border-[#dce8d5] bg-white px-4 py-4 shadow-[0_8px_24px_rgba(15,61,36,.06)]">
+              <div class="flex min-w-[260px] flex-1 items-center gap-3 rounded-xl border border-[#dce8d5] bg-white px-4 py-2.5">
+                <i data-lucide="search" class="h-4 w-4 text-[#536279]"></i>
+                <input id="fornecedorSearchInput" type="search" placeholder="Buscar produtor..." autocomplete="off" class="w-full bg-transparent text-sm text-[#1f4d2d] placeholder-[#8a98a8] outline-none" />
               </div>
-              <div id="listaFornecedoresModulo" class="overflow-x-auto"></div>
+              <div class="relative">
+                <button id="fornecedorCentroToggle" type="button" class="flex items-center gap-2 rounded-xl border border-[#dce8d5] bg-white px-4 py-2.5 text-sm font-semibold text-[#1f4d2d] transition-colors hover:bg-[#f6fbf4]">
+                  <span class="text-[#536279]">Centro</span>
+                  <span id="fornecedorCentroLabel" class="font-bold text-[#0f3d24]">Todos</span>
+                  <i data-lucide="chevron-down" class="h-4 w-4 text-[#536279]"></i>
+                </button>
+                <div id="fornecedorCentroMenu" class="absolute right-0 top-full z-30 mt-2 hidden w-64 rounded-xl border border-[#dce8d5] bg-white p-3 shadow-[0_18px_40px_rgba(15,61,36,.14)]">
+                  <div class="mb-2 flex items-center justify-between border-b border-[#edf1ec] pb-2">
+                    <span class="text-xs font-extrabold uppercase tracking-wide text-[#1f4d2d]">Selecionar centros</span>
+                    <button id="fornecedorCentroClear" type="button" class="text-xs font-bold text-[#6f5428] hover:text-[#1f4d2d]">Limpar</button>
+                  </div>
+                  <div id="fornecedorCentroOptions" class="max-h-56 space-y-1 overflow-auto"></div>
+                </div>
+              </div>
+              <span id="fornecedoresModuloTotal" class="ml-auto text-sm font-semibold text-[#7a8795]">0 registros</span>
+              <button id="btnAtualizarFornecedoresModulo" type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#0f3d24] text-white shadow-sm transition-colors hover:bg-[#18562f]" title="Atualizar">
+                <i data-lucide="refresh-cw" class="h-4 w-4"></i>
+              </button>
             </div>
-            <span id="fornecedoresModuloTotal" class="hidden">0</span>
+
+            <div id="fornecedorPremiacaoModulo" class="grid gap-5 md:grid-cols-2 xl:grid-cols-3"></div>
+
+            <div class="overflow-hidden rounded-2xl border border-[#dce8d5] bg-white shadow-[0_8px_24px_rgba(15,61,36,.06)]">
+              <div class="flex items-center justify-between border-b border-[#edf1ec] px-5 py-4">
+                <div>
+                  <p class="text-sm font-extrabold text-[#1f4d2d]">Ranking de Produtores por Volume</p>
+                </div>
+              </div>
+              <div id="listaFornecedoresModulo" class="h-[calc(100vh-390px)] min-h-[360px] overflow-auto"></div>
+            </div>
             <div id="produtoresResumoModulo" class="hidden"></div>
           </section>
 
-          <section id="viewUnidades" data-app-view="unidades" class="hidden space-y-6">
-            <div class="rounded-lg border border-[#d8e5c6] bg-white p-6 shadow-sm">
-              <div class="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <h1 class="text-xl font-bold text-[#1f4d2d]">Unidades</h1>
-                  <p class="mt-1 text-sm text-[#61713d]">Resumo dos centros calculado a partir da ZMM113 atual enviada pelo administrador.</p>
+          <section id="viewUnidades" data-app-view="unidades" class="hidden bg-[#f6f8f6]">
+            <div class="mx-auto w-full max-w-[1440px] space-y-8">
+              <header class="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+                <div class="max-w-3xl">
+                  <div class="flex items-center gap-3">
+                    <h1 class="text-3xl font-extrabold tracking-normal text-[#0f3d24] sm:text-4xl">Unidades</h1>
+                  </div>
+                  <p class="mt-3 max-w-2xl text-sm leading-6 text-[#324238]">Resumo dos centros calculado a partir da ZMM113 atual enviada pelo administrador.</p>
                 </div>
-                <div class="flex items-center gap-3">
-                  <span id="unidadesModuloTotal" class="rounded-full bg-[#edf7e8] px-3 py-1 text-xs font-bold text-[#1f4d2d]">0 centros</span>
-                  <button id="btnAtualizarUnidades" type="button" class="rounded-lg border border-[#cfdcbd] bg-white px-4 py-2 text-sm font-semibold text-[#1f4d2d] hover:bg-[#edf7e8] transition-colors flex items-center gap-2">
-                    <i class="fa-solid fa-rotate-right text-xs"></i> Atualizar
-                  </button>
-                </div>
+                <span class="inline-flex w-fit items-center gap-2 rounded-xl border border-[#dce8d5] bg-white px-4 py-3 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#0f3d24] shadow-[0_10px_28px_rgba(15,61,36,0.06)]">
+                  <i class="fa-solid fa-file-lines text-xs"></i>
+                  Relatório baseado pela ZMM113
+                </span>
+              </header>
+
+              <div>
+                <h2 class="text-base font-extrabold text-[#052e1a]">Ranking geral de unidades por peso líquido</h2>
+                <div id="listaUnidadesModulo" class="mt-5 grid gap-6 md:grid-cols-2 xl:grid-cols-3"></div>
               </div>
-              <div id="listaUnidadesModulo" class="mt-5 grid gap-3 md:grid-cols-2 lg:grid-cols-3"></div>
-              <div id="resumoGeralUnidadesModulo" class="mt-6 hidden"></div>
-              <div id="unidadeDetalheModulo" class="mt-6 hidden space-y-5"></div>
+
+              <div id="resumoGeralUnidadesModulo" class="hidden"></div>
+              <div id="unidadeDetalheModulo" class="hidden space-y-5"></div>
             </div>
           </section>
 
@@ -489,121 +761,291 @@
       </div>
     </div>
 
-    <div id="modalConfiguracoes" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 px-4">
-      <section class="max-h-[90vh] w-full max-w-4xl overflow-auto rounded-lg border border-[#d8e5c6] bg-white p-6 shadow-xl">
-        <div class="mb-5 flex items-center justify-between gap-4">
-          <div>
-            <h2 class="text-lg font-semibold text-[#1f4d2d]">Configurações</h2>
-            <p class="mt-1 text-sm text-[#61713d]">Ajustes da conta e preferências do simulador.</p>
+    <div id="modalConfiguracoes" class="config-modal-shell fixed inset-y-0 right-0 z-50 hidden items-start justify-center overflow-auto bg-[#f6f8f6] px-4 py-6">
+      <section class="w-full max-w-[1440px] space-y-6">
+        <header class="flex flex-col gap-5 rounded-[18px] border border-[rgba(15,61,36,0.08)] bg-white p-6 shadow-[0_10px_28px_rgba(15,61,36,.06)] md:flex-row md:items-start md:justify-between">
+          <div class="max-w-3xl">
+            <div class="flex items-center gap-3">
+              <h2 class="text-3xl font-extrabold tracking-normal text-[#0f3d24]">Configurações</h2>
+              <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#eaf5e5] text-[#0f3d24]" aria-hidden="true">
+                <i data-lucide="settings" class="h-4 w-4"></i>
+              </span>
+            </div>
+            <p class="mt-3 text-sm leading-6 text-[#536279]">Gerencie suas preferências, integrações e permissões da conta.</p>
           </div>
-          <button
-            id="btnFecharConfiguracoes"
-            type="button"
-            class="flex h-9 w-9 items-center justify-center rounded-lg border border-[#d8e5c6] bg-[#f8faf4] text-[#38563f] hover:bg-[#edf4e2]"
-            aria-label="Fechar configurações"
-          >
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </div>
-
-        <div class="grid gap-5 lg:grid-cols-2">
-          <section class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4">
-            <h3 class="font-semibold text-[#1f4d2d]">Alterar senha</h3>
-            <form id="formUsuario" class="mt-4 grid gap-3">
-              <input
-                id="novaSenhaConfig"
-                type="password"
-                class="rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-sm outline-none focus:border-[#7FB23D]"
-                placeholder="Senha com mínimo 4 caracteres"
-              />
-              <button type="submit" class="rounded-lg bg-[#2f6b37] px-4 py-2 text-sm font-semibold text-white hover:bg-[#25572d]">
-                Salvar senha
-              </button>
-            </form>
-          </section>
-
-          <section class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4">
-            <div class="flex items-center justify-between gap-3">
-              <h3 class="font-semibold text-[#1f4d2d]">Histórico de Cálculos</h3>
-              <button
-                id="btnLimparHistorico"
-                type="button"
-                class="rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-xs font-semibold text-[#38563f] hover:bg-[#edf4e2]"
-              >
-                Limpar
-              </button>
-            </div>
-            <div id="listaHistorico" class="mt-4 max-h-80 space-y-2 overflow-auto text-sm"></div>
-          </section>
-        </div>
-
-        <div id="adminConfiguracoes" class="mt-5 hidden grid gap-5 lg:grid-cols-2">
-          <section class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4">
-            <h3 class="font-semibold text-[#1f4d2d]">Planilha do simulador</h3>
-            <p id="planilhaAtual" class="mt-3 text-sm text-[#61713d]">Carregando planilha atual...</p>
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="inline-flex items-center gap-2 rounded-full border border-[#cfe4c8] bg-[#eaf5e5] px-4 py-2 text-xs font-extrabold text-[#0f3d24]">
+              <span class="h-2 w-2 rounded-full bg-[#2f7d32]"></span>
+              Conta ativa
+            </span>
             <button
-              id="btnUploadPlanilha"
+              id="btnFecharConfiguracoes"
               type="button"
-              class="mt-4 inline-flex items-center justify-center gap-2 rounded-lg bg-[#2f6b37] px-4 py-2 text-sm font-semibold text-white hover:bg-[#25572d]"
+              class="inline-flex items-center gap-2 rounded-xl border border-[#dce8d5] bg-white px-4 py-2 text-xs font-extrabold text-[#0f3d24] transition-all hover:bg-[#f6fbf4]"
+              aria-label="Fechar configurações"
             >
-              <i class="fa-solid fa-file-arrow-up"></i>
-              Enviar planilha
+              <i class="fa-solid fa-xmark text-[11px]"></i>
+              Fechar
             </button>
-            <input id="uploadPlanilhaTopo" type="file" accept=".xlsx,.xls" class="hidden" />
+          </div>
+        </header>
+
+        <nav class="config-scrollbar flex gap-2 overflow-x-auto rounded-[18px] border border-[rgba(15,61,36,0.08)] bg-white px-4 pt-3 shadow-[0_10px_28px_rgba(15,61,36,.06)]" aria-label="Abas de configurações">
+          <button type="button" data-config-tab="conta" class="config-tab inline-flex shrink-0 items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-extrabold text-[#536279] transition-all hover:text-[#0f3d24]">
+            <i data-lucide="user-round" class="h-4 w-4"></i>Conta
+          </button>
+          <button type="button" data-config-tab="arquivos" data-admin-config-tab class="config-tab inline-flex shrink-0 items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-extrabold text-[#536279] transition-all hover:text-[#0f3d24]">
+            <i data-lucide="folder" class="h-4 w-4"></i>Arquivos
+          </button>
+          <button type="button" data-config-tab="dashboard" data-admin-config-tab class="config-tab inline-flex shrink-0 items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-extrabold text-[#536279] transition-all hover:text-[#0f3d24]">
+            <i data-lucide="bar-chart-3" class="h-4 w-4"></i>Dashboard
+          </button>
+          <button type="button" data-config-tab="usuarios" data-admin-config-tab class="config-tab inline-flex shrink-0 items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-extrabold text-[#536279] transition-all hover:text-[#0f3d24]">
+            <i data-lucide="users-round" class="h-4 w-4"></i>Usuários
+          </button>
+          <button type="button" data-config-tab="regras" data-admin-config-tab class="config-tab inline-flex shrink-0 items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-extrabold text-[#536279] transition-all hover:text-[#0f3d24]">
+            <i data-lucide="shield-check" class="h-4 w-4"></i>Regras
+          </button>
+          <button type="button" data-config-tab="historico" class="config-tab inline-flex shrink-0 items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-extrabold text-[#536279] transition-all hover:text-[#0f3d24]">
+            <i data-lucide="clock-3" class="h-4 w-4"></i>Histórico
+          </button>
+        </nav>
+
+        <section data-config-panel="conta" class="config-panel rounded-[18px] border border-[rgba(15,61,36,0.08)] bg-white p-6 shadow-[0_10px_28px_rgba(15,61,36,.06)]">
+          <div class="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+            <article class="rounded-[18px] border border-[rgba(15,61,36,0.08)] bg-[#fbfdfb] p-6 transition-all hover:-translate-y-0.5 hover:shadow-[0_14px_32px_rgba(15,61,36,0.08)]">
+              <div class="flex flex-col gap-5 sm:flex-row sm:items-center">
+                <div class="relative h-24 w-24 shrink-0 rounded-full border-4 border-white bg-[#eaf5e5] shadow-[0_12px_30px_rgba(15,61,36,0.14)]">
+                  <img id="configProfilePhotoPreview" class="hidden h-full w-full rounded-full object-cover" alt="Foto de perfil" />
+                  <div id="configProfilePhotoFallback" class="flex h-full w-full items-center justify-center rounded-full text-3xl font-extrabold text-[#0f3d24]">T</div>
+                  <span class="absolute -bottom-1 -right-1 inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-[#0f3d24] text-white shadow-sm" aria-hidden="true">
+                    <i data-lucide="camera" class="h-4 w-4"></i>
+                  </span>
+                </div>
+                <div>
+                  <div class="flex items-center gap-3">
+                    <span class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-[#eaf5e5] text-[#0f3d24]"><i data-lucide="image-up" class="h-5 w-5"></i></span>
+                    <div>
+                      <h3 class="text-xl font-extrabold text-[#052e1a]">Foto de perfil</h3>
+                      <p class="mt-1 text-sm leading-6 text-[#536279]">Personalize sua conta com uma imagem que aparece no menu lateral.</p>
+                    </div>
+                  </div>
+                  <p class="mt-4 rounded-xl border border-[#dce8d5] bg-white px-4 py-3 text-xs leading-5 text-[#536279]">Use JPG, PNG ou WebP com ate 3 MB.</p>
+                </div>
+              </div>
+              <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+                <button id="btnUploadFotoPerfil" type="button" class="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#0f3d24] px-5 text-sm font-extrabold text-white shadow-[0_10px_22px_rgba(15,61,36,.16)] transition-all hover:-translate-y-0.5 hover:bg-[#18562f]">
+                  <i data-lucide="upload" class="h-4 w-4"></i>
+                  Escolher foto
+                </button>
+                <button id="btnRemoverFotoPerfil" type="button" class="hidden h-12 rounded-xl border border-[#dce8d5] bg-white px-5 text-sm font-extrabold text-[#0f3d24] transition-all hover:-translate-y-0.5 hover:bg-[#f6fbf4]">
+                  Remover foto
+                </button>
+              </div>
+              <input id="uploadFotoPerfil" type="file" accept="image/jpeg,image/png,image/webp" class="hidden" />
+            </article>
+
+            <article class="rounded-[18px] border border-[rgba(15,61,36,0.08)] bg-[#fbfdfb] p-6 transition-all hover:-translate-y-0.5 hover:shadow-[0_14px_32px_rgba(15,61,36,0.08)]">
+              <div class="flex items-center gap-3">
+                <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf5e5] text-[#0f3d24]"><i data-lucide="lock-keyhole" class="h-5 w-5"></i></span>
+                <div>
+                  <h3 class="text-xl font-extrabold text-[#052e1a]">Alterar senha</h3>
+                  <p class="mt-1 text-sm text-[#536279]">Mantenha sua conta segura com uma senha atualizada.</p>
+                </div>
+              </div>
+              <form id="formUsuario" class="mt-6 grid gap-4">
+                <div class="relative">
+                  <input id="senhaAtualConfig" type="password" autocomplete="current-password" class="h-12 w-full rounded-xl border border-[#dce8d5] bg-white px-4 pr-11 text-sm text-[#052e1a] outline-none transition-all focus:border-[#2f7d32] focus:shadow-[0_0_0_4px_rgba(47,125,50,0.12)]" placeholder="Senha atual" />
+                  <button type="button" data-toggle-config-password="senhaAtualConfig" class="absolute right-3 top-1/2 -translate-y-1/2 text-[#74835d] hover:text-[#0f3d24]" aria-label="Mostrar senha atual"><i data-lucide="eye" class="h-4 w-4"></i></button>
+                </div>
+                <div class="relative">
+                  <input id="novaSenhaConfig" type="password" autocomplete="new-password" class="h-12 w-full rounded-xl border border-[#dce8d5] bg-white px-4 pr-11 text-sm text-[#052e1a] outline-none transition-all focus:border-[#2f7d32] focus:shadow-[0_0_0_4px_rgba(47,125,50,0.12)]" placeholder="Nova senha" />
+                  <button type="button" data-toggle-config-password="novaSenhaConfig" class="absolute right-3 top-1/2 -translate-y-1/2 text-[#74835d] hover:text-[#0f3d24]" aria-label="Mostrar nova senha"><i data-lucide="eye" class="h-4 w-4"></i></button>
+                </div>
+                <div class="relative">
+                  <input id="confirmarSenhaConfig" type="password" autocomplete="new-password" class="h-12 w-full rounded-xl border border-[#dce8d5] bg-white px-4 pr-11 text-sm text-[#052e1a] outline-none transition-all focus:border-[#2f7d32] focus:shadow-[0_0_0_4px_rgba(47,125,50,0.12)]" placeholder="Confirmar nova senha" />
+                  <button type="button" data-toggle-config-password="confirmarSenhaConfig" class="absolute right-3 top-1/2 -translate-y-1/2 text-[#74835d] hover:text-[#0f3d24]" aria-label="Mostrar confirmação de senha"><i data-lucide="eye" class="h-4 w-4"></i></button>
+                </div>
+                <button type="submit" class="h-12 rounded-xl bg-[#0f3d24] px-5 text-sm font-extrabold text-white shadow-[0_10px_22px_rgba(15,61,36,.16)] transition-all hover:-translate-y-0.5 hover:bg-[#18562f]">
+                  Salvar nova senha
+                </button>
+              </form>
+            </article>
+          </div>
+        </section>
+
+        <div id="adminConfiguracoes" class="hidden space-y-6">
+          <section data-config-panel="arquivos" data-admin-config-panel class="config-panel hidden">
+            <div class="grid gap-6 lg:grid-cols-2">
+              <article class="rounded-[18px] border border-[rgba(15,61,36,0.08)] bg-white p-6 shadow-[0_10px_28px_rgba(15,61,36,.06)] transition-all hover:-translate-y-0.5">
+                <div class="flex items-start gap-4">
+                  <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf5e5] text-[#0f3d24]"><i data-lucide="file-spreadsheet" class="h-5 w-5"></i></span>
+                  <div>
+                    <h3 class="text-lg font-extrabold text-[#052e1a]">Planilha do simulador (ZMM113)</h3>
+                    <p class="mt-1 text-sm text-[#536279]">Arquivo usado como base para os cálculos.</p>
+                  </div>
+                </div>
+                <div id="planilhaAtual" class="mt-5">Carregando planilha atual...</div>
+                <button type="button" data-config-upload="planilha" data-config-drop="planilha" class="mt-5 flex w-full flex-col items-center justify-center rounded-[16px] border border-dashed border-[#a8c99d] bg-[#f5fbf2] px-5 py-8 text-center text-[#0f3d24] transition-all hover:border-[#2f7d32] hover:bg-[#eaf5e5]">
+                  <i data-lucide="upload-cloud" class="h-7 w-7"></i>
+                  <span class="mt-3 text-sm font-extrabold">Arraste e solte um arquivo aqui</span>
+                  <span class="mt-1 text-xs text-[#536279]">ou clique para selecionar</span>
+                </button>
+                <button id="btnUploadPlanilha" type="button" class="mt-4 h-11 w-full rounded-xl bg-[#0f3d24] text-sm font-extrabold text-white transition-all hover:bg-[#18562f]">
+                  Substituir arquivo
+                </button>
+                <input id="uploadPlanilhaTopo" type="file" accept=".xlsx,.xls" class="hidden" />
+              </article>
+
+              <article class="rounded-[18px] border border-[rgba(15,61,36,0.08)] bg-white p-6 shadow-[0_10px_28px_rgba(15,61,36,.06)] transition-all hover:-translate-y-0.5">
+                <div class="flex items-start gap-4">
+                  <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf5e5] text-[#0f3d24]"><i data-lucide="file-check-2" class="h-5 w-5"></i></span>
+                  <div>
+                    <h3 class="text-lg font-extrabold text-[#052e1a]">Planilha de classificações</h3>
+                    <p class="mt-1 text-sm text-[#536279]">Arquivo utilizado no ranking de qualidade.</p>
+                  </div>
+                </div>
+                <div id="classificacoesAtual" class="mt-5">Carregando planilha de classificações...</div>
+                <button type="button" data-config-upload="classificacoes" data-config-drop="classificacoes" class="mt-5 flex w-full flex-col items-center justify-center rounded-[16px] border border-dashed border-[#a8c99d] bg-[#f5fbf2] px-5 py-8 text-center text-[#0f3d24] transition-all hover:border-[#2f7d32] hover:bg-[#eaf5e5]">
+                  <i data-lucide="upload-cloud" class="h-7 w-7"></i>
+                  <span class="mt-3 text-sm font-extrabold">Arraste e solte um arquivo aqui</span>
+                  <span class="mt-1 text-xs text-[#536279]">ou clique para selecionar</span>
+                </button>
+                <button id="btnUploadClassificacoes" type="button" class="mt-4 h-11 w-full rounded-xl bg-[#0f3d24] text-sm font-extrabold text-white transition-all hover:bg-[#18562f]">
+                  Substituir arquivo
+                </button>
+                <input id="uploadClassificacoes" type="file" accept=".xlsx,.xls,.csv" class="hidden" />
+              </article>
+            </div>
           </section>
 
-          <section class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4">
-            <h3 class="font-semibold text-[#1f4d2d]">Dashboard Power BI</h3>
-            <form id="formDashboard" class="mt-4 grid gap-3">
-              <input
-                id="dashboardLinkConfig"
-                type="url"
-                class="rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-sm outline-none focus:border-[#7FB23D]"
-                placeholder="Cole o link do dashboard"
-              />
-              <button type="submit" class="rounded-lg bg-[#2f6b37] px-4 py-2 text-sm font-semibold text-white hover:bg-[#25572d]">
+          <section data-config-panel="dashboard" data-admin-config-panel class="config-panel hidden rounded-[18px] border border-[rgba(15,61,36,0.08)] bg-white p-6 shadow-[0_10px_28px_rgba(15,61,36,.06)]">
+            <div class="flex items-start gap-4">
+              <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf5e5] text-[#0f3d24]"><i data-lucide="bar-chart-3" class="h-5 w-5"></i></span>
+              <div>
+                <h3 class="text-xl font-extrabold text-[#052e1a]">Dashboard Power BI</h3>
+                <p class="mt-1 text-sm text-[#536279]">Gerencie o link de acesso ao dashboard.</p>
+              </div>
+            </div>
+            <form id="formDashboard" class="mt-6 grid gap-4 lg:grid-cols-[1fr_auto]">
+              <input id="dashboardLinkConfig" type="url" class="h-12 rounded-xl border border-[#dce8d5] bg-white px-4 text-sm text-[#052e1a] outline-none transition-all focus:border-[#2f7d32] focus:shadow-[0_0_0_4px_rgba(47,125,50,0.12)]" placeholder="Cole o link atual do dashboard" />
+              <button type="submit" class="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-[#8fb98a] bg-white px-5 text-sm font-extrabold text-[#0f3d24] transition-all hover:-translate-y-0.5 hover:bg-[#f6fbf4]">
                 Atualizar link
+                <i data-lucide="external-link" class="h-4 w-4"></i>
               </button>
             </form>
           </section>
 
-          <section class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4">
-            <h3 class="font-semibold text-[#1f4d2d]">Adicionar Usuário</h3>
-            <form id="formNovoUsuarioAdmin" class="mt-4 grid gap-3">
-              <input id="novoUsuarioAdmin" type="text" class="rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-sm outline-none focus:border-[#7FB23D]" placeholder="Usuário" />
-              <input id="novoEmailAdmin" type="email" class="rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-sm outline-none focus:border-[#7FB23D]" placeholder="usuario@boasafrasementes.com.br" />
-              <input id="novaSenhaAdmin" type="password" class="rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-sm outline-none focus:border-[#7FB23D]" placeholder="Senha inicial" />
-              <label class="inline-flex items-center gap-2 text-sm text-[#38563f]">
-                <input id="novoAdminCheck" type="checkbox" class="h-4 w-4 rounded border-[#cfdcbd] text-[#7FB23D]" />
-                Administrador
-              </label>
-              <button type="submit" class="rounded-lg bg-[#2f6b37] px-4 py-2 text-sm font-semibold text-white hover:bg-[#25572d]">
-                Salvar Usuário
-              </button>
-            </form>
-          </section>
-
-          <section class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4 lg:col-span-2">
-            <div class="grid gap-4 lg:grid-cols-[1fr_1.2fr]">
+          <section data-config-panel="usuarios" data-admin-config-panel class="config-panel hidden rounded-[18px] border border-[rgba(15,61,36,0.08)] bg-white p-6 shadow-[0_10px_28px_rgba(15,61,36,.06)]">
+            <div class="flex items-start gap-4">
+              <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf5e5] text-[#0f3d24]"><i data-lucide="users-round" class="h-5 w-5"></i></span>
               <div>
-                <h3 class="font-semibold text-[#1f4d2d]">Promover administrador</h3>
-                <form id="formPromoverAdmin" class="mt-4 grid gap-3">
-                  <input id="usuarioPromoverAdmin" type="text" class="rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-sm outline-none focus:border-[#7FB23D]" placeholder="Usuário existente" />
-                  <input id="emailPromoverAdmin" type="email" class="rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-sm outline-none focus:border-[#7FB23D]" placeholder="Email corporativo" />
-                  <button type="submit" class="rounded-lg bg-[#6f5428] px-4 py-2 text-sm font-semibold text-white hover:bg-[#5c451f]">
-                    Tornar administrador
-                  </button>
+                <h3 class="text-xl font-extrabold text-[#052e1a]">Usuários e permissões</h3>
+                <p class="mt-1 text-sm text-[#536279]">Gerencie quem possui acesso ao sistema.</p>
+              </div>
+            </div>
+            <div class="mt-6 grid gap-6 xl:grid-cols-[0.9fr_1.2fr]">
+              <div class="rounded-[16px] border border-[#dce8d5] bg-[#fbfdfb] p-5">
+                <h4 class="font-extrabold text-[#052e1a]">Adicionar usuário</h4>
+                <form id="formNovoUsuarioAdmin" class="mt-4 grid gap-3">
+                  <input id="novoUsuarioAdmin" type="text" class="h-11 rounded-xl border border-[#dce8d5] bg-white px-4 text-sm outline-none transition-all focus:border-[#2f7d32] focus:shadow-[0_0_0_4px_rgba(47,125,50,0.12)]" placeholder="Nome" />
+                  <input id="novoEmailAdmin" type="email" class="h-11 rounded-xl border border-[#dce8d5] bg-white px-4 text-sm outline-none transition-all focus:border-[#2f7d32] focus:shadow-[0_0_0_4px_rgba(47,125,50,0.12)]" placeholder="Email corporativo" />
+                  <input id="novaSenhaAdmin" type="password" class="h-11 rounded-xl border border-[#dce8d5] bg-white px-4 text-sm outline-none transition-all focus:border-[#2f7d32] focus:shadow-[0_0_0_4px_rgba(47,125,50,0.12)]" placeholder="Senha" />
+                  <label class="inline-flex items-center gap-2 text-sm font-semibold text-[#38563f]">
+                    <input id="novoAdminCheck" type="checkbox" class="h-4 w-4 rounded border-[#cfdcbd] text-[#2f7d32]" />
+                    Administrador
+                  </label>
+                  <button type="submit" class="h-11 rounded-xl bg-[#0f3d24] text-sm font-extrabold text-white transition-all hover:bg-[#18562f]">Criar usuário</button>
                 </form>
+
+                <details class="mt-5 rounded-xl border border-[#dce8d5] bg-white p-4">
+                  <summary class="cursor-pointer text-sm font-extrabold text-[#0f3d24]">Promoção por usuário existente</summary>
+                  <form id="formPromoverAdmin" class="mt-4 grid gap-3">
+                    <input id="usuarioPromoverAdmin" type="text" class="h-10 rounded-xl border border-[#dce8d5] bg-white px-4 text-sm outline-none focus:border-[#2f7d32]" placeholder="Usuário existente" />
+                    <input id="emailPromoverAdmin" type="email" class="h-10 rounded-xl border border-[#dce8d5] bg-white px-4 text-sm outline-none focus:border-[#2f7d32]" placeholder="Email corporativo" />
+                    <button type="submit" class="h-10 rounded-xl border border-[#8fb98a] bg-white text-sm font-extrabold text-[#0f3d24] hover:bg-[#f6fbf4]">Tornar administrador</button>
+                  </form>
+                </details>
               </div>
               <div>
-                <h3 class="font-semibold text-[#1f4d2d]">Usuários cadastrados</h3>
-                <div id="listaUsuariosAdmin" class="mt-4 max-h-80 space-y-2 overflow-auto text-sm"></div>
+                <div class="flex items-center justify-between gap-3">
+                  <h4 class="font-extrabold text-[#052e1a]">Usuários cadastrados</h4>
+                </div>
+                <div id="listaUsuariosAdmin" class="config-scrollbar mt-4 max-h-[520px] space-y-3 overflow-auto pr-2 text-sm"></div>
               </div>
+            </div>
+          </section>
+
+          <section data-config-panel="regras" data-admin-config-panel class="config-panel hidden rounded-[18px] border border-[rgba(15,61,36,0.08)] bg-white p-6 shadow-[0_10px_28px_rgba(15,61,36,.06)]">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+              <div class="flex items-start gap-4">
+                <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf5e5] text-[#0f3d24]"><i data-lucide="shield-check" class="h-5 w-5"></i></span>
+                <div>
+                  <h3 class="text-xl font-extrabold text-[#052e1a]">Regras de tratamento</h3>
+                  <p class="mt-1 max-w-2xl text-sm text-[#536279]">Edite, remova ou acrescente linhas. Para descarte, use DESCARTAR LINHA|termo ou DESCARTAR termo.</p>
+                </div>
+              </div>
+              <button id="btnEditarRegrasClassificacoes" type="button" class="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#8fb98a] bg-white px-4 text-sm font-extrabold text-[#0f3d24] transition-all hover:bg-[#f6fbf4]">
+                <i class="fa-solid fa-pen-to-square"></i>
+                Editar regras
+              </button>
+            </div>
+            <div id="editorRegrasClassificacoes" class="mt-5 hidden space-y-4">
+              <textarea id="regrasClassificacoesTexto" rows="16" spellcheck="false" class="config-scrollbar min-h-80 w-full resize-y rounded-[16px] border border-[#dce8d5] bg-[#fbfdfb] px-4 py-3 font-mono text-xs leading-5 text-[#203a28] outline-none transition-all focus:border-[#2f7d32] focus:shadow-[0_0_0_4px_rgba(47,125,50,0.12)]" placeholder="Carregando regras..."></textarea>
+              <div class="flex flex-wrap gap-3">
+                <button id="btnSalvarRegrasClassificacoes" type="button" class="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#0f3d24] px-5 text-sm font-extrabold text-white transition-all hover:bg-[#18562f] disabled:cursor-wait disabled:opacity-60">
+                  <i class="fa-solid fa-floppy-disk"></i>
+                  Salvar regras
+                </button>
+                <button id="btnRecarregarRegrasClassificacoes" type="button" class="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#dce8d5] bg-white px-5 text-sm font-extrabold text-[#0f3d24] transition-all hover:bg-[#f6fbf4] disabled:cursor-wait disabled:opacity-60">
+                  <i class="fa-solid fa-rotate-right"></i>
+                  Recarregar
+                </button>
+              </div>
+              <p id="statusRegrasClassificacoes" class="hidden rounded-xl px-3 py-2 text-xs"></p>
             </div>
           </section>
         </div>
 
-        <p id="statusConfig" class="mt-4 hidden rounded-lg px-3 py-2 text-sm"></p>
+        <section data-config-panel="historico" class="config-panel hidden rounded-[18px] border border-[rgba(15,61,36,0.08)] bg-white p-6 shadow-[0_10px_28px_rgba(15,61,36,.06)]">
+          <div class="flex flex-wrap items-start justify-between gap-4">
+            <div class="flex items-start gap-4">
+              <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf5e5] text-[#0f3d24]"><i data-lucide="clock-3" class="h-5 w-5"></i></span>
+              <div>
+                <h3 class="text-xl font-extrabold text-[#052e1a]">Histórico de cálculos</h3>
+                <p class="mt-1 text-sm text-[#536279]">Registro das simulações realizadas no sistema.</p>
+              </div>
+            </div>
+            <button id="btnLimparHistorico" type="button" class="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-4 text-xs font-extrabold text-red-600 transition-all hover:bg-red-50">
+              <i data-lucide="trash-2" class="h-4 w-4"></i>
+              Limpar histórico
+            </button>
+          </div>
+          <div id="listaHistorico" class="config-scrollbar mt-5 max-h-[520px] space-y-2 overflow-auto pr-2 text-sm"></div>
+          <button type="button" data-config-history-link class="mt-5 inline-flex items-center gap-2 text-sm font-extrabold text-[#0f3d24] hover:text-[#2f7d32]">
+            Ver mais
+            <i data-lucide="arrow-right" class="h-4 w-4"></i>
+          </button>
+        </section>
+
+        <p id="statusConfig" class="hidden rounded-xl px-4 py-3 text-sm"></p>
+      </section>
+    </div>
+
+    <div id="uploadStatusOverlay" class="fixed inset-0 z-[70] hidden items-center justify-center bg-black/45 px-4">
+      <section class="w-full max-w-sm rounded-lg border border-[#d8e5c6] bg-white p-6 text-center shadow-xl">
+        <div id="uploadStatusIcon" class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#edf7e8] text-[#2f6b37]">
+          <i id="uploadStatusIconInner" class="fa-solid fa-spinner animate-spin text-xl"></i>
+        </div>
+        <h2 id="uploadStatusTitle" class="mt-4 text-lg font-black text-[#1f4d2d]">Aguarde...</h2>
+        <p id="uploadStatusMessage" class="mt-2 text-sm leading-6 text-[#61713d]">Atualizando os dados.</p>
+        <button
+          id="btnFecharUploadStatus"
+          type="button"
+          class="mt-5 hidden w-full rounded-lg bg-[#2f6b37] px-4 py-2 text-sm font-semibold text-white hover:bg-[#25572d]"
+        >
+          OK
+        </button>
       </section>
     </div>
 
@@ -613,13 +1055,31 @@
       const usuarioLogadoEl = document.getElementById("usuarioLogado");
       const statusTopoEl = document.getElementById("statusTopo");
       const dashboardCardEl = document.getElementById("dashboardCard");
+      const appSidebarEl = document.getElementById("appSidebar");
+      const btnToggleSidebarEl = document.getElementById("btnToggleSidebar");
+      const btnCloseSidebarEl = document.getElementById("btnCloseSidebar");
       const rankingLinkEl = document.getElementById("rankingLink");
       const btnUploadPlanilhaEl = document.getElementById("btnUploadPlanilha");
       const uploadPlanilhaTopoEl = document.getElementById("uploadPlanilhaTopo");
+      const classificacoesAtualEl = document.getElementById("classificacoesAtual");
+      const btnUploadClassificacoesEl = document.getElementById("btnUploadClassificacoes");
+      const uploadClassificacoesEl = document.getElementById("uploadClassificacoes");
+      const btnEditarRegrasClassificacoesEl = document.getElementById("btnEditarRegrasClassificacoes");
+      const editorRegrasClassificacoesEl = document.getElementById("editorRegrasClassificacoes");
+      const regrasClassificacoesTextoEl = document.getElementById("regrasClassificacoesTexto");
+      const btnSalvarRegrasClassificacoesEl = document.getElementById("btnSalvarRegrasClassificacoes");
+      const btnRecarregarRegrasClassificacoesEl = document.getElementById("btnRecarregarRegrasClassificacoes");
+      const statusRegrasClassificacoesEl = document.getElementById("statusRegrasClassificacoes");
       const btnConfiguracoesEl = document.getElementById("btnConfiguracoes");
       const btnLogoutEl = document.getElementById("btnLogout");
       const modalConfiguracoesEl = document.getElementById("modalConfiguracoes");
       const btnFecharConfiguracoesEl = document.getElementById("btnFecharConfiguracoes");
+      const uploadStatusOverlayEl = document.getElementById("uploadStatusOverlay");
+      const uploadStatusIconEl = document.getElementById("uploadStatusIcon");
+      const uploadStatusIconInnerEl = document.getElementById("uploadStatusIconInner");
+      const uploadStatusTitleEl = document.getElementById("uploadStatusTitle");
+      const uploadStatusMessageEl = document.getElementById("uploadStatusMessage");
+      const btnFecharUploadStatusEl = document.getElementById("btnFecharUploadStatus");
       const planilhaAtualEl = document.getElementById("planilhaAtual");
       const statusConfigEl = document.getElementById("statusConfig");
       const formUsuarioEl = document.getElementById("formUsuario");
@@ -652,6 +1112,11 @@
       const configPorItemEl = document.getElementById("configPorItem");
       const globalPercEl = document.getElementById("globalPerc");
       const globalValorEl = document.getElementById("globalValor");
+      const globalPracaToggleEl = document.getElementById("globalPracaToggle");
+      const globalPracaPanelEl = document.getElementById("globalPracaPanel");
+      const globalPracaEl = document.getElementById("globalPraca");
+      const globalPracaLabelEl = document.getElementById("globalPracaLabel");
+      const globalPracaValuesEl = document.getElementById("globalPracaValues");
       const resumoEl = document.getElementById("resumoCombinacoes");
       const resultadoBodyEl = document.getElementById("resultadoBody");
       const totalGeralEl = document.getElementById("totalGeral");
@@ -662,37 +1127,65 @@
       const appViewEls = Array.from(document.querySelectorAll("[data-app-view]"));
       const breadcrumbAtualEl = document.getElementById("breadcrumbAtual");
       const sidebarInitialsEl = document.getElementById("sidebarInitials");
+      const sidebarRailInitialEl = document.getElementById("sidebarRailInitial");
+      const sidebarAvatarPhotoEl = document.getElementById("sidebarAvatarPhoto");
+      const sidebarAvatarIconEl = document.getElementById("sidebarAvatarIcon");
       const sidebarUserNameEl = document.getElementById("sidebarUserName");
       const welcomeTitleEl = document.getElementById("welcomeTitle");
+      const configProfilePhotoPreviewEl = document.getElementById("configProfilePhotoPreview");
+      const configProfilePhotoFallbackEl = document.getElementById("configProfilePhotoFallback");
+      const btnUploadFotoPerfilEl = document.getElementById("btnUploadFotoPerfil");
+      const btnRemoverFotoPerfilEl = document.getElementById("btnRemoverFotoPerfil");
+      const uploadFotoPerfilEl = document.getElementById("uploadFotoPerfil");
       const btnIrSimuladorEl = document.getElementById("btnIrSimulador");
       const homeMarketBodyEl = document.getElementById("homeMarketBody");
       const homeMarketFooterEl = document.getElementById("homeMarketFooter");
+      const homeKpiLocalidadesValueEl = document.getElementById("homeKpiLocalidadesValue");
+      const homeKpiMenorValueEl = document.getElementById("homeKpiMenorValue");
+      const homeKpiMenorLabelEl = document.getElementById("homeKpiMenorLabel");
+      const homeKpiMaiorValueEl = document.getElementById("homeKpiMaiorValue");
+      const homeKpiMaiorLabelEl = document.getElementById("homeKpiMaiorLabel");
+      const homeKpiDiferencaValueEl = document.getElementById("homeKpiDiferencaValue");
       const resumoDashboardFrameEl = document.getElementById("resumoDashboardFrame");
       const resumoDashboardVazioEl = document.getElementById("resumoDashboardVazio");
       const listaFornecedoresModuloEl = document.getElementById("listaFornecedoresModulo");
       const produtoresResumoModuloEl = document.getElementById("produtoresResumoModulo");
       const fornecedoresModuloTotalEl = document.getElementById("fornecedoresModuloTotal");
+      const fornecedorSearchInputEl = document.getElementById("fornecedorSearchInput");
+      const fornecedorCentroToggleEl = document.getElementById("fornecedorCentroToggle");
+      const fornecedorCentroMenuEl = document.getElementById("fornecedorCentroMenu");
+      const fornecedorCentroOptionsEl = document.getElementById("fornecedorCentroOptions");
+      const fornecedorCentroLabelEl = document.getElementById("fornecedorCentroLabel");
+      const fornecedorCentroClearEl = document.getElementById("fornecedorCentroClear");
+      const fornecedorKpiCentroAtivoEl = document.getElementById("fornecedorKpiCentroAtivo");
+      const fornecedorKpiTop3El = document.getElementById("fornecedorKpiTop3");
+      const btnAtualizarFornecedoresModuloEl = document.getElementById("btnAtualizarFornecedoresModulo");
       const listaUnidadesModuloEl = document.getElementById("listaUnidadesModulo");
-      const unidadesModuloTotalEl = document.getElementById("unidadesModuloTotal");
       const unidadeDetalheModuloEl = document.getElementById("unidadeDetalheModulo");
       const resumoGeralUnidadesModuloEl = document.getElementById("resumoGeralUnidadesModulo");
       const listaHistoricoModuloEl = document.getElementById("listaHistoricoModulo");
       const rankingModuloStatusEl = document.getElementById("rankingModuloStatus");
       const rankingModuloGridEl = document.getElementById("rankingModuloGrid");
-      const btnAtualizarRankingModuloEl = document.getElementById("btnAtualizarRankingModulo");
       const rankingSearchInputEl = document.getElementById("rankingSearchInput");
       const rankingSearchCountEl = document.getElementById("rankingSearchCount");
+      const rankingKpiQualidadeMediaEl = document.getElementById("rankingKpiQualidadeMedia");
+      const rankingKpiCentrosEl = document.getElementById("rankingKpiCentros");
 
       let usuarioAtual = "";
       let usuarioAdminAtual = false;
+      let fotoPerfilAtual = "";
       let combinacoesAtuais = [];
       let ultimoPayloadPdf = null;
       let fornecedoresDisponiveis = [];
       let fornecedoresResumo = [];
+      let fornecedoresResumoPorCentro = [];
+      let unidadesRankingResumo = [];
+      let filtrosCentroFornecedores = [];
       let cultivaresResumo = [];
       let unidadesResumoGlobal = { unidades: [], totais: null };
       let fornecedorAtualSelecionado = "";
       let pracaOptions = [];
+      let globalPracaSelecionada = "";
       const configsLocais = {};
       const APP_TIME_ZONE = "America/Sao_Paulo";
       const APP_DATE_TIME_OPTIONS = { timeZone: APP_TIME_ZONE };
@@ -701,7 +1194,7 @@
         simulador: "Simulação de Bonificação",
         resumo: "Resumo Operacional",
         ranking: "Qualidade",
-        fornecedores: "Fornecedores",
+        fornecedores: "Produtores",
         unidades: "Unidades",
         historico: "Histórico"
       };
@@ -709,11 +1202,112 @@
       let rankingQualityView = "produtores";
       let rankingAllRows = [];
       let rankingDataCache = {};
+      let rankingQualityPorCentro = { produtores: [], cultivares: [] };
+      let filtrosCentroQualidade = [];
       const rankingQualityFiltersEl = document.getElementById("rankingQualityFilters");
+      const SIDEBAR_STORAGE_KEY = "simuladorBonificacaoSidebarCollapsed";
+
+      function isSidebarCompactViewport() {
+        return window.matchMedia("(max-width: 767px)").matches;
+      }
+
+      function readSidebarPreference() {
+        try {
+          return window.localStorage.getItem(SIDEBAR_STORAGE_KEY);
+        } catch (_error) {
+          return null;
+        }
+      }
+
+      function storeSidebarPreference(collapsed) {
+        try {
+          window.localStorage.setItem(SIDEBAR_STORAGE_KEY, collapsed ? "true" : "false");
+        } catch (_error) {}
+      }
+
+      function getInitialSidebarCollapsed() {
+        if (isSidebarCompactViewport()) return true;
+        return readSidebarPreference() === "true";
+      }
+
+      function setSidebarCollapsed(collapsed, persist = true) {
+        document.body.classList.toggle("sidebar-collapsed", collapsed);
+        if (appSidebarEl) {
+          appSidebarEl.setAttribute("aria-hidden", "false");
+          appSidebarEl.inert = false;
+        }
+        if (btnCloseSidebarEl) {
+          const label = collapsed ? "Abrir menu lateral" : "Minimizar menu lateral";
+          const icon = btnCloseSidebarEl.querySelector("[data-sidebar-toggle-icon]");
+          btnCloseSidebarEl.setAttribute("aria-expanded", collapsed ? "false" : "true");
+          btnCloseSidebarEl.setAttribute("aria-label", label);
+          btnCloseSidebarEl.setAttribute("title", label);
+          if (icon) icon.setAttribute("data-lucide", collapsed ? "chevron-right" : "x");
+        }
+        if (btnToggleSidebarEl) {
+          const label = collapsed ? "Abrir menu lateral" : "Fechar menu lateral";
+          btnToggleSidebarEl.setAttribute("aria-expanded", collapsed ? "false" : "true");
+          btnToggleSidebarEl.setAttribute("aria-label", label);
+          btnToggleSidebarEl.setAttribute("title", label);
+        }
+        if (window.lucide) window.lucide.createIcons();
+        if (persist) storeSidebarPreference(collapsed);
+      }
+
+      let sidebarWasCompactViewport = isSidebarCompactViewport();
+
+      function syncSidebarForViewport() {
+        const compact = isSidebarCompactViewport();
+        if (compact === sidebarWasCompactViewport) return;
+        sidebarWasCompactViewport = compact;
+        setSidebarCollapsed(getInitialSidebarCollapsed(), false);
+      }
 
       function getInitials(name) {
         const words = String(name || "Boa Safra").trim().split(/\s+/).filter(Boolean);
         return words.slice(0, 2).map(word => word[0]).join("").toUpperCase() || "BS";
+      }
+
+      function updateProfilePhoto(url = "", name = usuarioAtual) {
+        const photoUrl = String(url || "").trim();
+        const initial = getInitials(name).slice(0, 1);
+        fotoPerfilAtual = photoUrl;
+
+        if (sidebarInitialsEl) sidebarInitialsEl.textContent = initial;
+        if (sidebarRailInitialEl) {
+          sidebarRailInitialEl.textContent = initial;
+          sidebarRailInitialEl.style.display = photoUrl ? "none" : "";
+        }
+        if (configProfilePhotoFallbackEl) {
+          configProfilePhotoFallbackEl.textContent = initial;
+          configProfilePhotoFallbackEl.classList.toggle("hidden", Boolean(photoUrl));
+          configProfilePhotoFallbackEl.classList.toggle("flex", !photoUrl);
+        }
+        if (sidebarAvatarPhotoEl) {
+          if (photoUrl) {
+            sidebarAvatarPhotoEl.src = photoUrl;
+          } else {
+            sidebarAvatarPhotoEl.removeAttribute("src");
+          }
+          sidebarAvatarPhotoEl.classList.toggle("hidden", !photoUrl);
+        }
+        if (sidebarAvatarIconEl) sidebarAvatarIconEl.classList.toggle("hidden", Boolean(photoUrl));
+        if (configProfilePhotoPreviewEl) {
+          if (photoUrl) {
+            configProfilePhotoPreviewEl.src = photoUrl;
+          } else {
+            configProfilePhotoPreviewEl.removeAttribute("src");
+          }
+          configProfilePhotoPreviewEl.classList.toggle("hidden", !photoUrl);
+        }
+        if (btnRemoverFotoPerfilEl) btnRemoverFotoPerfilEl.classList.toggle("hidden", !photoUrl);
+      }
+
+      function limparUnidadeDetalhe() {
+        if (unidadeDetalheModuloEl) {
+          unidadeDetalheModuloEl.classList.add("hidden");
+          unidadeDetalheModuloEl.innerHTML = "";
+        }
       }
 
       function setActiveView(view) {
@@ -729,7 +1323,11 @@
         });
         if (breadcrumbAtualEl) breadcrumbAtualEl.textContent = VIEW_LABELS[activeView];
         if (activeView === "ranking") carregarRankingModulo();
-        if (activeView === "unidades") carregarUnidadesResumo();
+        if (isSidebarCompactViewport()) setSidebarCollapsed(true, false);
+        if (activeView === "unidades") {
+          limparUnidadeDetalhe();
+          carregarUnidadesResumo();
+        }
         if (activeView === "historico") carregarHistorico().catch(() => renderHistoricoModulo([]));
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
@@ -737,9 +1335,26 @@
       function updateShellUser(session) {
         const name = session?.usuario || "Usuário";
         if (sidebarUserNameEl) sidebarUserNameEl.textContent = name;
-        if (sidebarInitialsEl) sidebarInitialsEl.textContent = getInitials(name);
         if (welcomeTitleEl) welcomeTitleEl.textContent = `Bem-vindo, ${name}`;
         usuarioLogadoEl.textContent = session?.email || "";
+        updateProfilePhoto(session?.fotoPerfil || fotoPerfilAtual, name);
+      }
+
+      function updateHomeMarketKpis(rows, min = null, max = null) {
+        const difference = min && max && Number(min.valor) > 0
+          ? ((Number(max.valor) - Number(min.valor)) / Number(min.valor)) * 100
+          : null;
+
+        if (homeKpiLocalidadesValueEl) homeKpiLocalidadesValueEl.textContent = rows.length ? String(rows.length) : "--";
+        if (homeKpiMenorValueEl) homeKpiMenorValueEl.textContent = min ? `R$ ${min.valorFmt}` : "--";
+        if (homeKpiMenorLabelEl) homeKpiMenorLabelEl.textContent = min ? min.praca : "--";
+        if (homeKpiMaiorValueEl) homeKpiMaiorValueEl.textContent = max ? `R$ ${max.valorFmt}` : "--";
+        if (homeKpiMaiorLabelEl) homeKpiMaiorLabelEl.textContent = max ? max.praca : "--";
+        if (homeKpiDiferencaValueEl) {
+          homeKpiDiferencaValueEl.textContent = difference === null
+            ? "--"
+            : `${difference.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
+        }
       }
 
       function renderMarketReference() {
@@ -751,33 +1366,35 @@
           .sort((a, b) => Number(a.valor) - Number(b.valor));
 
         if (!rows.length) {
+          updateHomeMarketKpis([]);
           homeMarketBodyEl.innerHTML = `<tr><td colspan="2" class="px-5 py-5 text-center text-sm text-[#79836f]">Referência de mercado indisponível.</td></tr>`;
           homeMarketFooterEl.textContent = "";
           return;
         }
 
-        const selected = rows.slice(0, 13);
+        const selected = rows;
         const min = rows[0];
         const max = rows[rows.length - 1];
+        updateHomeMarketKpis(rows, min, max);
         homeMarketBodyEl.innerHTML = selected
           .map((item, index) => {
             const isMin = item.key === min.key;
             const isMax = item.key === max.key;
-            const rowClass = isMin ? "bg-[#ecfff5]" : isMax ? "bg-[#fff8e8]" : index % 2 ? "bg-[#fafaf7]" : "bg-white";
+            const rowClass = isMin ? "bg-[#ecfff5]" : isMax ? "bg-[#fff8e8]" : index % 2 ? "bg-[#fbfcfb]" : "bg-white";
             const badge = isMin
-              ? `<span class="ml-2 rounded bg-[#b9f2d2] px-2 py-0.5 text-[10px] font-bold text-[#1f4d2d]">MENOR</span>`
+              ? `<span class="ml-2 rounded bg-[#b9f2d2] px-2 py-0.5 text-[10px] font-extrabold text-[#1f4d2d]">MENOR</span>`
               : isMax
-                ? `<span class="ml-2 rounded bg-[#f3cc4b] px-2 py-0.5 text-[10px] font-bold text-[#1f4d2d]">MAIOR</span>`
+                ? `<span class="ml-2 rounded bg-[#f3cc4b] px-2 py-0.5 text-[10px] font-extrabold text-[#1f4d2d]">MAIOR</span>`
                 : "";
             return `
-              <tr class="${rowClass}">
-                <td class="px-5 py-3 font-medium text-[#22372a]">${escapeHtml(item.praca)}${badge}</td>
-                <td class="px-5 py-3 text-right font-semibold text-[#1f4d2d]">R$ ${escapeHtml(item.valorFmt)}</td>
+              <tr class="${rowClass} transition-colors hover:bg-[#eef8ef]">
+                <td class="px-5 py-2 font-bold text-[#1d2d24]">${escapeHtml(item.praca)}${badge}</td>
+                <td class="px-5 py-2 text-right font-extrabold text-[#0f5a28]">R$ ${escapeHtml(item.valorFmt)}</td>
               </tr>
             `;
           })
           .join("");
-        homeMarketFooterEl.innerHTML = `<span>${rows.length} localidades mapeadas</span><span>Min. R$ ${escapeHtml(min.valorFmt)} - Max. R$ ${escapeHtml(max.valorFmt)}</span>`;
+        homeMarketFooterEl.innerHTML = `<span>${rows.length} praças mapeadas</span><span>Min. R$ ${escapeHtml(min.valorFmt)} - Máx. R$ ${escapeHtml(max.valorFmt)}</span>`;
       }
 
       function updateResumoDashboard(link) {
@@ -789,86 +1406,163 @@
         if (resumoDashboardVazioEl) resumoDashboardVazioEl.classList.toggle("hidden", hasLink);
       }
 
+      function renderFornecedorModuloRank(rank) {
+        const medalThemes = {
+          1: "bg-[#f3c94d] text-[#3b2a08] shadow-[0_6px_14px_rgba(194,144,18,.18)]",
+          2: "bg-[#b7bdc8] text-white shadow-[0_6px_14px_rgba(105,116,134,.16)]",
+          3: "bg-[#c98246] text-white shadow-[0_6px_14px_rgba(165,92,37,.16)]"
+        };
+        const medalClass = medalThemes[rank];
+        if (!medalClass) return `<span class="text-sm font-extrabold text-[#536279]">${rank}</span>`;
+        return `<span class="inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-extrabold ${medalClass}">${rank}</span>`;
+      }
+
+      function updateFornecedorCentroOptions(centros) {
+        const selected = new Set(filtrosCentroFornecedores.map(normalizeFilterValue));
+        if (fornecedorCentroLabelEl) {
+          fornecedorCentroLabelEl.textContent = getFiltroCentroFornecedoresLabel();
+        }
+        if (!fornecedorCentroOptionsEl) return;
+
+        fornecedorCentroOptionsEl.innerHTML = centros.length
+          ? centros.map((centro) => {
+              const checked = selected.has(normalizeFilterValue(centro)) ? "checked" : "";
+              return `
+                <label class="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-sm font-semibold text-[#1f4d2d] transition-colors hover:bg-[#edf7e8]">
+                  <input type="checkbox" data-fornecedor-centro-option value="${escapeHtml(centro)}" ${checked} class="h-4 w-4 rounded border-[#cfdcbd] text-[#2f6b37]" />
+                  <span>${escapeHtml(centro)}</span>
+                </label>
+              `;
+            }).join("")
+          : `<p class="px-2 py-2 text-sm text-[#61713d]">Nenhum centro encontrado.</p>`;
+      }
+
+      function getCentroMaisAtivoFornecedores() {
+        const centrosDisponiveis = syncFiltrosCentroFornecedores();
+        const selected = new Set(filtrosCentroFornecedores.map(normalizeFilterValue));
+        const groups = Array.isArray(fornecedoresResumoPorCentro) ? fornecedoresResumoPorCentro : [];
+        const sourceGroups = selected.size
+          ? groups.filter((centro) => selected.has(getCentroRankingKey(centro)))
+          : groups;
+
+        if (sourceGroups.length) {
+          const topGroup = sourceGroups
+            .map((centro) => ({
+              label: centro.centroCode || centro.label || centro.centro || "",
+              peso: (centro.ranking || []).reduce((sum, item) => sum + Number(item.pesoLiquido || 0), 0)
+            }))
+            .filter((item) => item.label)
+            .sort((a, b) => (b.peso - a.peso) || String(a.label).localeCompare(String(b.label), "pt-BR", { numeric: true }))[0];
+          if (topGroup) return topGroup.label;
+        }
+
+        if (filtrosCentroFornecedores.length === 1) return filtrosCentroFornecedores[0];
+        return centrosDisponiveis[0] || "--";
+      }
+
+      function updateFornecedorModuloKpis(baseRows, totalPesoLiquido) {
+        if (fornecedorKpiCentroAtivoEl) {
+          fornecedorKpiCentroAtivoEl.textContent = getCentroMaisAtivoFornecedores();
+        }
+
+        if (fornecedorKpiTop3El) {
+          const top3Peso = baseRows
+            .slice(0, 3)
+            .reduce((sum, item) => sum + Number(item.pesoLiquido || 0), 0);
+          const percent = totalPesoLiquido > 0 ? (top3Peso / totalPesoLiquido) * 100 : 0;
+          fornecedorKpiTop3El.textContent = totalPesoLiquido > 0
+            ? `${percent.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`
+            : "--";
+        }
+      }
+
       function renderFornecedoresModulo() {
         if (!listaFornecedoresModuloEl) return;
 
-        const rows = fornecedoresResumo;
-        const totalFornecedores = rows.length;
-        const totalPesoLiquido = rows.reduce((sum, item) => sum + Number(item.pesoLiquido || 0), 0);
-        const comDivergencia = rows.filter(item => !item.codigo || item.codigo === "-").length;
+        const centrosFiltro = syncFiltrosCentroFornecedores();
+        updateFornecedorCentroOptions(centrosFiltro);
 
-        const statAtivosEl = document.getElementById("statFornecedoresAtivos");
-        const statVolumeEl = document.getElementById("statVolumeTotal");
-        const statDivEl = document.getElementById("statComDivergencia");
+        const baseRows = getFornecedoresFiltradosPorCentro();
+        const totalPesoLiquido = getTotalPesoLiquidoFornecedoresModulo(baseRows);
+        const searchTerm = normalizeFilterValue(fornecedorSearchInputEl?.value || "");
         const btnExportarEl = document.getElementById("btnExportarXlsxFornecedores");
-        if (statAtivosEl) statAtivosEl.textContent = totalFornecedores;
-        if (statVolumeEl) statVolumeEl.textContent = formatCompactWeight(totalPesoLiquido);
-        if (statDivEl) statDivEl.textContent = comDivergencia;
-        if (btnExportarEl) btnExportarEl.disabled = !rows.length;
 
-        if (!rows.length) {
-          listaFornecedoresModuloEl.innerHTML = `<p class="p-5 text-sm text-[#61713d]">Nenhum fornecedor carregado.</p>`;
+        const searchedRows = searchTerm
+          ? baseRows.filter((item) => {
+              const searchable = [
+                item.produtor,
+                item.label,
+                ...(Array.isArray(item.centros) ? item.centros : [])
+              ].join(" ");
+              return normalizeFilterValue(searchable).includes(searchTerm);
+            })
+          : baseRows;
+
+        const rankedRows = searchedRows.map((item, index) => ({
+          ...item,
+          _rank: index + 1
+        }));
+        const rows = rankedRows;
+
+        if (btnExportarEl) btnExportarEl.disabled = !baseRows.length;
+        if (fornecedoresModuloTotalEl) {
+          fornecedoresModuloTotalEl.textContent = `${rows.length} registro${rows.length === 1 ? "" : "s"}`;
+        }
+        updateFornecedorModuloKpis(baseRows, totalPesoLiquido);
+
+        if (!baseRows.length) {
+          const message = filtrosCentroFornecedores.length
+            ? `Nenhum produtor encontrado para ${getFiltroCentroFornecedoresLabel()}.`
+            : "Nenhum produtor carregado.";
+          listaFornecedoresModuloEl.innerHTML = `<p class="p-5 text-sm text-[#61713d]">${escapeHtml(message)}</p>`;
           return;
         }
 
-        const top3Badges = [
-          "bg-[#e8c15f] text-[#3b2a08]",
-          "bg-[#a7adb7] text-white",
-          "bg-[#c5864a] text-white"
-        ];
+        if (!rows.length) {
+          listaFornecedoresModuloEl.innerHTML = `<p class="p-5 text-sm text-[#61713d]">Nenhum produtor encontrado com os filtros atuais.</p>`;
+          return;
+        }
 
         listaFornecedoresModuloEl.innerHTML = `
-          <table class="w-full min-w-[800px] text-sm">
-            <thead>
-              <tr class="bg-[#1f4d2d] text-white">
-                <th class="px-4 py-3 text-left w-14">#</th>
-                <th class="px-4 py-3 text-left">Fornecedor</th>
-                <th class="px-4 py-3 text-left">Centro(s)</th>
-                <th class="px-4 py-3 text-right">Peso (kg)</th>
-                <th class="px-4 py-3 text-right">% do Total</th>
-                <th class="px-4 py-3 text-right">Status</th>
+          <table class="w-full min-w-[780px] text-sm">
+            <thead class="sticky top-0 z-10">
+              <tr class="bg-gradient-to-r from-[#0f3d24] via-[#174d2c] to-[#0f3d24] text-white shadow-sm">
+                <th class="w-16 px-5 py-3.5 text-left text-xs font-extrabold uppercase tracking-wide">#</th>
+                <th class="px-5 py-3.5 text-left text-xs font-extrabold uppercase tracking-wide">Produtor</th>
+                <th class="px-5 py-3.5 text-left text-xs font-extrabold uppercase tracking-wide">Centro(s)</th>
+                <th class="px-5 py-3.5 text-right text-xs font-extrabold uppercase tracking-wide">Peso (kg)</th>
+                <th class="px-5 py-3.5 text-right text-xs font-extrabold uppercase tracking-wide">% do Total</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-[#e5e3da]">
-              ${rows.map((item, index) => {
+            <tbody class="divide-y divide-[#edf1ec] bg-white">
+              ${rows.map((item) => {
                 const peso = Number(item.pesoLiquido || 0);
                 const percent = totalPesoLiquido > 0 ? (peso / totalPesoLiquido) * 100 : 0;
-                const rowIndex = index + 1;
-                const badgeClass = top3Badges[index] || null;
-                let statusHtml;
-                if (rowIndex <= 3) {
-                  statusHtml = `<span class="rounded-full bg-[#d4edbc] px-2 py-1 text-[11px] font-bold text-[#2f6b37]">Top</span>`;
-                } else if (rowIndex <= 8) {
-                  statusHtml = `<span class="text-xs font-semibold text-[#2f6b37]">Ativo</span>`;
-                } else {
-                  statusHtml = `<span class="text-xs text-[#8b927f]">Regular</span>`;
-                }
+                const produtor = item.produtor || item.label || "-";
                 return `
-                  <tr class="hover:bg-[#f8faf4] transition-colors">
-                    <td class="px-4 py-3">
-                      ${badgeClass
-                        ? `<span class="inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${badgeClass}">${rowIndex}</span>`
-                        : `<span class="text-sm font-semibold text-[#8b927f]">${rowIndex}</span>`
-                      }
+                  <tr class="transition-colors hover:bg-[#f1f8f1]">
+                    <td class="px-5 py-4">${renderFornecedorModuloRank(item._rank)}</td>
+                    <td class="px-5 py-4">
+                      <p class="font-extrabold uppercase text-[#203a28]">${escapeHtml(produtor)}</p>
                     </td>
-                    <td class="px-4 py-3 font-semibold text-[#1f4d2d]">${escapeHtml(item.produtor || item.label || "-")}</td>
-                    <td class="px-4 py-3">${renderCenterBadges(item.centros)}</td>
-                    <td class="px-4 py-3 text-right font-medium text-[#1f4d2d]">${formatNumberDisplay(peso)}</td>
-                    <td class="px-4 py-3 text-right">
-                      <div class="flex items-center justify-end gap-2">
-                        <div class="h-1.5 w-16 overflow-hidden rounded-full bg-[#e5e7eb]">
-                          <div class="h-full rounded-full bg-[#7FB23D]" style="width:${Math.min(percent, 100).toFixed(1)}%"></div>
+                    <td class="px-5 py-4">${renderCenterBadges(item.centros)}</td>
+                    <td class="px-5 py-4 text-right font-extrabold text-[#0f3d24]">${formatNumberDisplay(peso)}</td>
+                    <td class="px-5 py-4 text-right">
+                      <div class="flex items-center justify-end gap-3">
+                        <div class="h-2 w-24 overflow-hidden rounded-full bg-[#e8eee7]">
+                          <div class="h-full rounded-full bg-[#5aa13a]" style="width:${Math.min(percent, 100).toFixed(1)}%"></div>
                         </div>
-                        <span class="w-10 text-right text-xs font-semibold text-[#1f4d2d]">${percent.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</span>
+                        <span class="w-12 text-right text-xs font-extrabold text-[#0f3d24]">${percent.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</span>
                       </div>
                     </td>
-                    <td class="px-4 py-3 text-right">${statusHtml}</td>
                   </tr>
                 `;
               }).join("")}
             </tbody>
           </table>
         `;
+
+        if (window.lucide) window.lucide.createIcons();
       }
 
       function getRankTheme(index) {
@@ -922,20 +1616,20 @@
 
       function renderMiniMetric(icon, label, value, tone = "green") {
         const tones = {
-          green: "bg-[#edf7e8] text-[#2f6b37]",
-          blue: "bg-[#edf3ff] text-[#315cc5]",
-          purple: "bg-[#f1ecff] text-[#7547d8]"
+          green: "bg-[#eaf5e5] text-[#0f3d24]",
+          blue: "bg-[#eef4ff] text-[#315cc5]",
+          purple: "bg-[#f3ecff] text-[#7348d8]"
         };
 
         return `
-          <div class="rounded-lg border border-[#d8e5c6] bg-white p-4 shadow-sm">
-            <div class="flex items-center gap-3">
-              <span class="flex h-10 w-10 items-center justify-center rounded-lg ${tones[tone] || tones.green}">
-                <i class="fa-solid ${icon}"></i>
+          <div class="rounded-[18px] border border-[#dce8d5] bg-white p-5 shadow-[0_10px_28px_rgba(15,61,36,0.06)]">
+            <div class="flex items-center gap-4">
+              <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${tones[tone] || tones.green}">
+                <i class="fa-solid ${icon} text-base"></i>
               </span>
-              <div>
-                <p class="text-xs text-[#61713d]">${escapeHtml(label)}</p>
-                <p class="text-xl font-black text-[#0d1b2a]">${escapeHtml(value)}</p>
+              <div class="min-w-0">
+                <p class="text-xs font-medium text-[#536279]">${escapeHtml(label)}</p>
+                <p class="mt-2 break-words text-2xl font-extrabold leading-none text-[#052e1a]">${escapeHtml(value)}</p>
               </div>
             </div>
           </div>
@@ -967,47 +1661,50 @@
       function renderResumoGeralUnidades(unidades = [], totais = null) {
         if (!resumoGeralUnidadesModuloEl) return;
 
-        const totalPesoLiquido = unidades.reduce((s, u) => s + Number(u.pesoLiquido || 0), 0);
+        const totalPesoLiquido = Number(totais?.pesoLiquido ?? unidades.reduce((s, u) => s + Number(u.pesoLiquido || 0), 0));
         const totalEntradas = Number(totais?.entradas ?? unidades.reduce((s, u) => s + Number(u.entradas || 0), 0));
-        const totalProdutores = unidades.reduce((s, u) => s + Number(u.produtores || 0), 0);
+        const totalProdutores = Number(totais?.produtores ?? unidades.reduce((s, u) => s + Number(u.produtores || 0), 0));
         const topCultivares = cultivaresResumo.slice(0, 5);
-        const topProdutores = fornecedoresResumo.slice(0, 5);
+        const topUnidades = unidades.slice(0, 5);
 
         resumoGeralUnidadesModuloEl.innerHTML = `
-          <div class="rounded-lg border border-[#d8e5c6] bg-[#fbfcfa] p-5 shadow-sm">
-            <div class="flex flex-wrap items-center justify-between gap-4">
-              <div class="flex items-center gap-3">
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#1f4d2d] text-sm font-black text-white">
-                  <i class="fa-solid fa-warehouse"></i>
-                </div>
+          <div class="space-y-6">
+            <section class="rounded-[18px] border border-[#dce8d5] bg-white p-6 shadow-[0_10px_28px_rgba(15,61,36,0.06)] sm:p-7">
+              <div class="flex items-center gap-4">
+                <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#0f3d24] text-white shadow-[0_12px_24px_rgba(15,61,36,0.18)]">
+                  <i class="fa-solid fa-warehouse text-lg"></i>
+                </span>
                 <div>
-                  <h2 class="text-xl font-black text-[#0d1b2a]">Resumo Geral</h2>
-                  <p class="text-sm text-[#61713d]">Consolidado de todas as unidades</p>
+                  <h2 class="text-2xl font-extrabold tracking-normal text-[#052e1a]">Resumo Geral</h2>
+                  <p class="mt-1 text-sm text-[#536279]">Consolidado de todas as unidades</p>
                 </div>
               </div>
-            </div>
 
-            <div class="mt-5 grid gap-3 lg:grid-cols-3">
-              ${renderMiniMetric("fa-building-columns", "Volume Total (ZMM113)", `${formatNumberDisplay(totalPesoLiquido)} kg`, "green")}
-              ${renderMiniMetric("fa-copy", "Entradas", totalEntradas, "blue")}
-              ${renderMiniMetric("fa-users", "Produtores", totalProdutores, "purple")}
-            </div>
+              <div class="mt-6 grid gap-4 md:grid-cols-3">
+                ${renderMiniMetric("fa-building-columns", "Volume Total (ZMM113)", `${formatNumberDisplay(totalPesoLiquido)} kg`, "green")}
+                ${renderMiniMetric("fa-copy", "Entradas", totalEntradas, "blue")}
+                ${renderMiniMetric("fa-users", "Produtores", totalProdutores, "purple")}
+              </div>
+            </section>
 
             ${topCultivares.length ? `
-              <div class="mt-5 rounded-lg border border-[#d8e5c6] bg-white p-5">
-                <h3 class="font-bold text-[#1f4d2d]">Top Cultivares — Geral</h3>
-                <div class="mt-5 overflow-x-auto">${renderCultivarBars(topCultivares)}</div>
-              </div>
+              <section class="rounded-[18px] border border-[#dce8d5] bg-white p-6 shadow-[0_10px_28px_rgba(15,61,36,0.06)]">
+                <h3 class="text-xl font-extrabold text-[#052e1a]">Top Cultivares — Geral</h3>
+                <div class="mt-6">${renderCultivarBars(topCultivares)}</div>
+              </section>
             ` : ""}
 
-            ${topProdutores.length ? `
-              <div class="mt-5 rounded-lg border border-[#d8e5c6] bg-white p-5">
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                  <h3 class="font-bold text-[#1f4d2d]"><span class="text-[#c99022]"><i class="fa-solid fa-trophy"></i></span> Top 5 Produtores — Geral</h3>
-                  <button type="button" data-nav-ranking-detalhe class="text-sm font-semibold text-[#1f4d2d] underline-offset-4 hover:underline">Ver ranking completo →</button>
+            ${topUnidades.length ? `
+              <section class="rounded-[18px] border border-[#dce8d5] bg-white p-6 shadow-[0_10px_28px_rgba(15,61,36,0.06)]">
+                <div class="flex items-start gap-3">
+                  <span class="mt-0.5 text-[#d59a24]"><i class="fa-solid fa-trophy"></i></span>
+                  <div>
+                    <h3 class="text-xl font-extrabold text-[#052e1a]">Top Unidades que receberam cultivares</h3>
+                    <p class="mt-1 text-sm text-[#536279]">Ordenado pelo peso líquido recebido.</p>
+                  </div>
                 </div>
-                ${renderProdutorPodio(topProdutores)}
-              </div>
+                <div class="mt-5">${renderUnidadeBars(topUnidades)}</div>
+              </section>
             ` : ""}
           </div>
         `;
@@ -1019,12 +1716,6 @@
 
         unidadesResumoGlobal = { unidades, totais };
 
-        if (unidadesModuloTotalEl) {
-          const centros = Number(totais?.centros ?? unidades.length);
-          const entradas = Number(totais?.entradas ?? 0);
-          unidadesModuloTotalEl.textContent = entradas ? `${centros} centros | ${entradas} entradas` : `${centros} centros`;
-        }
-
         if (!unidades.length) {
           if (unidadeDetalheModuloEl) unidadeDetalheModuloEl.classList.add("hidden");
           if (resumoGeralUnidadesModuloEl) resumoGeralUnidadesModuloEl.classList.add("hidden");
@@ -1032,37 +1723,54 @@
           return;
         }
 
+        const rankThemes = [
+          { badge: "bg-[#f5bf3d] text-[#4a3205]", icon: "fa-medal" },
+          { badge: "bg-[#e2e7ec] text-[#334155]", icon: "fa-medal" },
+          { badge: "bg-[#f0b277] text-[#5a2e10]", icon: "fa-medal" }
+        ];
+
         listaUnidadesModuloEl.innerHTML = unidades
-          .map((unidade) => `
-            <button type="button" data-unidade-id="${escapeHtml(unidade.id || unidade.centroCode || unidade.centro)}" class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4 text-left transition-all hover:-translate-y-0.5 hover:border-[#7FB23D] hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#7FB23D]">
-              <div class="flex items-start justify-between gap-3">
-                <div>
-                  <p class="text-sm font-bold text-[#1f4d2d]">${escapeHtml(unidade.unidade || unidade.centro)}</p>
-                  <p class="mt-1 text-xs text-[#61713d]">${escapeHtml(unidade.local || unidade.centroCode || "Centro sem localidade")}</p>
+          .map((unidade, index) => {
+            const theme = rankThemes[index] || { badge: "bg-[#eaf5e5] text-[#0f3d24]", icon: "" };
+            return `
+              <button type="button" data-unidade-id="${escapeHtml(unidade.id || unidade.centroCode || unidade.centro)}" class="group min-h-[248px] rounded-[18px] border border-[#dce8d5] bg-white p-5 text-left shadow-[0_10px_28px_rgba(15,61,36,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#cfe1c8] hover:shadow-[0_14px_32px_rgba(15,61,36,0.10)] focus:outline-none focus:ring-2 focus:ring-[#2f7d32]/25">
+                <div class="flex min-w-0 items-start gap-4">
+                  <span class="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-full ${theme.badge} text-xs font-extrabold shadow-[0_8px_18px_rgba(15,61,36,0.08)]">
+                    ${theme.icon ? `<i class="fa-solid ${theme.icon} mb-0.5 text-[11px]"></i>` : ""}
+                    ${index + 1}º
+                  </span>
+                  <div class="min-w-0 pt-0.5">
+                    <p class="break-words text-sm font-extrabold uppercase leading-5 text-[#0f3d24]">${escapeHtml(unidade.unidade || unidade.centro)}</p>
+                    <p class="mt-1 text-xs font-medium uppercase text-[#26374a]">${escapeHtml(unidade.local || unidade.centroCode || "Centro sem localidade")}</p>
+                  </div>
                 </div>
-                <span class="rounded bg-[#dff0d6] px-2 py-1 text-[10px] font-bold text-[#1f4d2d]">${escapeHtml(unidade.entradas)} entradas</span>
-              </div>
-              <div class="mt-4 grid grid-cols-2 gap-3 text-xs">
-                <div>
-                  <p class="text-[#61713d]">Peso líquido</p>
-                  <p class="font-bold text-[#1f4d2d]">${escapeHtml(unidade.pesoLiquidoFmt)} kg</p>
+
+                <div class="mt-8 grid grid-cols-2 gap-x-6 gap-y-5 text-sm">
+                  <div>
+                    <p class="text-xs font-medium text-[#536279]">Peso líquido</p>
+                    <p class="mt-2 break-words text-base font-extrabold text-[#0f3d24]">${escapeHtml(unidade.pesoLiquidoFmt)} kg</p>
+                  </div>
+                  <div>
+                    <p class="text-xs font-medium text-[#536279]">Peso bruto</p>
+                    <p class="mt-2 break-words text-base font-extrabold text-[#0f3d24]">${escapeHtml(unidade.pesoBrutoFmt)} kg</p>
+                  </div>
+                  <div>
+                    <p class="text-xs font-medium text-[#536279]">Produtores</p>
+                    <p class="mt-2 text-base font-extrabold text-[#0f3d24]">${escapeHtml(unidade.produtores)}</p>
+                  </div>
+                  <div>
+                    <p class="text-xs font-medium text-[#536279]">Cultivares</p>
+                    <p class="mt-2 text-base font-extrabold text-[#0f3d24]">${escapeHtml(unidade.cultivares)}</p>
+                  </div>
                 </div>
-                <div>
-                  <p class="text-[#61713d]">Peso bruto</p>
-                  <p class="font-bold text-[#1f4d2d]">${escapeHtml(unidade.pesoBrutoFmt)} kg</p>
-                </div>
-                <div>
-                  <p class="text-[#61713d]">Produtores</p>
-                  <p class="font-bold text-[#6f5428]">${escapeHtml(unidade.produtores)}</p>
-                </div>
-                <div>
-                  <p class="text-[#61713d]">Cultivares</p>
-                  <p class="font-bold text-[#6f5428]">${escapeHtml(unidade.cultivares)}</p>
-                </div>
-              </div>
-              <p class="mt-4 border-t border-[#d8e5c6] pt-3 text-xs font-bold text-[#2f6b37]">Abrir resumo da unidade →</p>
-            </button>
-          `)
+
+                <p class="mt-8 flex items-center gap-2 text-xs font-extrabold text-[#0f3d24] transition-colors group-hover:text-[#2f7d32]">
+                  Abrir resumo da unidade
+                  <span aria-hidden="true">→</span>
+                </p>
+              </button>
+            `;
+          })
           .join("");
 
         renderResumoGeralUnidades(unidades, totais);
@@ -1078,17 +1786,17 @@
         const colors = ["#1f4d2d", "#90a844", "#2f6b37", "#a8c545", "#5a8a62"];
 
         return `
-          <div class="space-y-3">
+          <div class="space-y-5">
             ${rows.map((item, index) => {
               const percent = Math.max(5, Math.round(((Number(item.pesoLiquido) || 0) / max) * 100));
               return `
-                <div class="flex flex-col gap-1">
-                  <div class="flex items-center justify-between gap-2">
-                    <p class="text-xs text-[#61713d] break-words">${escapeHtml(item.label || item.cultivar || "-")}</p>
-                    <p class="shrink-0 text-xs font-bold text-[#6f5428]">${escapeHtml(formatCompactWeight(item.pesoLiquido))}</p>
+                <div>
+                  <div class="flex items-start justify-between gap-4">
+                    <p class="break-words text-xs font-medium uppercase text-[#26374a]">${escapeHtml(item.label || item.cultivar || "-")}</p>
+                    <p class="shrink-0 text-xs font-extrabold text-[#052e1a]">${escapeHtml(formatCompactWeight(item.pesoLiquido))}</p>
                   </div>
-                  <div class="h-6 w-full rounded bg-[#edf4e2]">
-                    <div class="h-6 rounded" style="width: ${percent}%; background: ${colors[index]};"></div>
+                  <div class="mt-2 h-3 w-full overflow-hidden rounded-full bg-[#eaf5e5]">
+                    <div class="h-full rounded-full transition-all duration-700" style="width: ${percent}%; background: linear-gradient(90deg, ${colors[index]}, #2f7d32);"></div>
                   </div>
                 </div>
               `;
@@ -1097,30 +1805,60 @@
         `;
       }
 
-      function renderProdutorPodio(produtores = []) {
-        const top = produtores.slice(0, 5);
-        if (!top.length) {
-          return `<p class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4 text-sm text-[#61713d]">Sem produtores para exibir.</p>`;
+      function renderUnidadeBars(unidades = []) {
+        const rows = unidades.slice(0, 5);
+        if (!rows.length) {
+          return `<p class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4 text-sm text-[#61713d]">Sem unidades para exibir.</p>`;
+        }
+
+        const max = Math.max(...rows.map(item => Number(item.pesoLiquido) || 0), 1);
+
+        return `
+          <div class="space-y-2.5">
+            ${rows.map((item, index) => {
+              const peso = Number(item.pesoLiquido) || 0;
+              const percent = Math.max(5, Math.round((peso / max) * 100));
+              return `
+                <div class="grid gap-4 rounded-[14px] border border-[#dce8d5] bg-white p-4 text-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(15,61,36,0.08)] md:grid-cols-[44px_1fr_140px] md:items-center">
+                  <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[#eaf5e5] text-sm font-extrabold text-[#0f3d24]">${index + 1}º</span>
+                  <div class="min-w-0">
+                    <p class="break-words text-sm font-extrabold uppercase text-[#0f3d24]">${escapeHtml(item.unidade || item.centro || item.label || "-")}</p>
+                    <p class="mt-1 text-xs font-medium uppercase text-[#26374a]">${escapeHtml(item.local || item.centroCode || "Centro sem localidade")}</p>
+                    <div class="mt-3 h-2 rounded-full bg-[#eaf5e5]">
+                      <div class="h-2 rounded-full bg-[#6aa43a]" style="width:${percent}%;"></div>
+                    </div>
+                  </div>
+                  <p class="font-extrabold text-[#5a3214] md:text-right">${escapeHtml(formatCompactWeight(peso))}</p>
+                </div>
+              `;
+            }).join("")}
+          </div>
+        `;
+      }
+
+      function renderCultivarPodioLista(cultivares = []) {
+        const rows = Array.isArray(cultivares) ? cultivares : [];
+        if (!rows.length) {
+          return `<p class="rounded-lg border border-[#d8e5c6] bg-[#f8faf4] p-4 text-sm text-[#61713d]">Sem cultivares para exibir.</p>`;
         }
 
         const podium = [
-          { rank: 2, item: top[1], height: 86 },
-          { rank: 1, item: top[0], height: 116 },
-          { rank: 3, item: top[2], height: 72 }
+          { rank: 2, item: rows[1], height: 86 },
+          { rank: 1, item: rows[0], height: 116 },
+          { rank: 3, item: rows[2], height: 72 }
         ].filter(entry => entry.item);
-
-        const max = Math.max(...top.map(item => Number(item.pesoLiquido) || 0), 1);
-        const remaining = top.slice(3);
+        const max = Math.max(...rows.map(item => Number(item.pesoLiquido) || 0), 1);
+        const remaining = rows.slice(3);
 
         return `
-          <div class="pt-3">
-            <div class="flex items-end justify-center gap-4">
+          <div class="space-y-5">
+            <div class="grid items-end gap-3 sm:flex sm:justify-center">
               ${podium.map(({ rank, item, height }) => {
                 const theme = getRankTheme(rank - 1);
                 return `
-                  <div class="w-44 text-center">
+                  <div class="min-w-0 text-center sm:w-48">
                     <div class="mb-2 text-lg ${theme.value}"><i class="fa-solid ${theme.icon}"></i></div>
-                    <p class="mx-auto text-xs font-bold uppercase text-[#0d1b2a] break-words leading-tight">${escapeHtml(item.label || item.produtor || "-")}</p>
+                    <p class="mx-auto break-words text-xs font-bold uppercase leading-tight text-[#0d1b2a]">${escapeHtml(item.label || item.cultivar || "-")}</p>
                     <p class="mt-1 text-xs text-[#61713d]">${escapeHtml(formatCompactWeight(item.pesoLiquido))}</p>
                     <div class="mt-3 flex items-center justify-center rounded-t-lg text-lg font-black text-white" style="height: ${height}px; background: ${theme.podium};">
                       ${rank}º
@@ -1129,22 +1867,32 @@
                 `;
               }).join("")}
             </div>
+
             ${remaining.length ? `
-              <div class="mt-5 border-t border-[#e5e3da] pt-4">
-                ${remaining.map((item, index) => {
-                  const rank = index + 4;
-                  const percent = Math.max(6, Math.round(((Number(item.pesoLiquido) || 0) / max) * 100));
-                  return `
-                    <div class="grid items-center gap-3 py-2 text-sm md:grid-cols-[32px_1fr_170px_110px]">
-                      <p class="font-black text-[#8b927f]">${rank}º</p>
-                      <p class="break-words text-[#203a28]">${escapeHtml(item.label || item.produtor || "-")}</p>
-                      <div class="h-2 rounded-full bg-[#edf0e8]">
-                        <div class="h-2 rounded-full bg-[#7f967c]" style="width: ${percent}%;"></div>
+              <div class="rounded-lg border border-[#d8e5c6] bg-[#fbfcfa]">
+                <div class="flex items-center justify-between border-b border-[#e5e3da] px-4 py-3">
+                  <p class="text-xs font-bold uppercase tracking-[0.12em] text-[#61713d]">Demais cultivares</p>
+                  <p class="text-xs text-[#8b927f]">${remaining.length} registros</p>
+                </div>
+                <div class="max-h-72 overflow-y-auto divide-y divide-[#e5e3da]">
+                  ${remaining.map((item, index) => {
+                    const rank = index + 4;
+                    const percent = Math.max(6, Math.round(((Number(item.pesoLiquido) || 0) / max) * 100));
+                    return `
+                      <div class="grid items-center gap-3 px-4 py-3 text-sm md:grid-cols-[36px_1fr_170px_110px]">
+                        <p class="font-black text-[#8b927f]">${rank}º</p>
+                        <div class="min-w-0">
+                          <p class="break-words font-semibold text-[#203a28]">${escapeHtml(item.label || item.cultivar || "-")}</p>
+                          <p class="mt-0.5 text-xs text-[#61713d]">${Number(item.entradas || 0).toLocaleString("pt-BR")} entradas</p>
+                        </div>
+                        <div class="h-2 rounded-full bg-[#edf0e8]">
+                          <div class="h-2 rounded-full bg-[#7f967c]" style="width: ${percent}%;"></div>
+                        </div>
+                        <p class="text-xs font-bold text-[#6f5428] md:text-right">${escapeHtml(formatCompactWeight(item.pesoLiquido))}</p>
                       </div>
-                      <p class="text-right text-xs font-bold text-[#6f5428]">${escapeHtml(formatCompactWeight(item.pesoLiquido))}</p>
-                    </div>
-                  `;
-                }).join("")}
+                    `;
+                  }).join("")}
+                </div>
               </div>
             ` : ""}
           </div>
@@ -1179,16 +1927,11 @@
             </div>
 
             <div class="mt-5 rounded-lg border border-[#d8e5c6] bg-white p-5">
-              <h3 class="font-bold text-[#1f4d2d]">Top Cultivares — ${escapeHtml(codigo)}</h3>
-              <div class="mt-5 overflow-x-auto">${renderCultivarBars(data.topCultivares || [])}</div>
-            </div>
-
-            <div class="mt-5 rounded-lg border border-[#d8e5c6] bg-white p-5">
-              <div class="flex flex-wrap items-center justify-between gap-3">
-                <h3 class="font-bold text-[#1f4d2d]"><span class="text-[#c99022]"><i class="fa-solid fa-trophy"></i></span> Top 5 Produtores — ${escapeHtml(codigo)}</h3>
-                <button type="button" data-nav-ranking-detalhe class="text-sm font-semibold text-[#1f4d2d] underline-offset-4 hover:underline">Ver ranking completo →</button>
+              <div>
+                <h3 class="font-bold text-[#1f4d2d]"><span class="text-[#c99022]"><i class="fa-solid fa-trophy"></i></span> Cultivares mais recebidas — ${escapeHtml(codigo)}</h3>
+                <p class="mt-1 text-xs text-[#61713d]">Ranking por peso líquido recebido na unidade.</p>
               </div>
-              ${renderProdutorPodio(data.topProdutores || [])}
+              <div class="mt-5">${renderCultivarPodioLista(data.topCultivares || [])}</div>
             </div>
           </div>
         `;
@@ -1229,9 +1972,305 @@
           .join("");
       }
 
+      function normalizeFilterValue(value) {
+        return String(value || "")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .trim()
+          .toUpperCase();
+      }
+
+      function itemHasCentro(item, centro) {
+        const selected = normalizeFilterValue(centro);
+        if (!selected) return true;
+        return Array.isArray(item.centros) && item.centros.some((value) => normalizeFilterValue(value) === selected);
+      }
+
+      function getCentrosFornecedoresDisponiveis() {
+        const centrosPorRanking = Array.isArray(fornecedoresResumoPorCentro)
+          ? fornecedoresResumoPorCentro.map((item) => item.centroCode || item.label || item.centro).filter(Boolean)
+          : [];
+        const centros = centrosPorRanking.length
+          ? centrosPorRanking
+          : fornecedoresResumo.flatMap((item) => Array.isArray(item.centros) ? item.centros : []);
+
+        return [...new Set(centros)]
+          .filter(Boolean)
+          .sort((a, b) => String(a).localeCompare(String(b), "pt-BR", { numeric: true }));
+      }
+
+      function itemHasCentros(item, centros) {
+        if (!Array.isArray(centros) || !centros.length) return true;
+        return centros.some((centro) => itemHasCentro(item, centro));
+      }
+
+      function syncFiltrosCentroFornecedores() {
+        const centros = getCentrosFornecedoresDisponiveis();
+        const valid = new Set(centros.map(normalizeFilterValue));
+        filtrosCentroFornecedores = filtrosCentroFornecedores.filter((centro) => valid.has(normalizeFilterValue(centro)));
+        return centros;
+      }
+
+      function getCentroRankingKey(item) {
+        return normalizeFilterValue(item?.centroCode || item?.label || item?.centro || "");
+      }
+
+      function getFornecedoresFiltradosPorCentro() {
+        if (!filtrosCentroFornecedores.length) return fornecedoresResumo;
+
+        const selected = new Set(filtrosCentroFornecedores.map(normalizeFilterValue));
+        const selectedGroups = Array.isArray(fornecedoresResumoPorCentro)
+          ? fornecedoresResumoPorCentro.filter((centro) => selected.has(getCentroRankingKey(centro)))
+          : [];
+
+        if (!selectedGroups.length) {
+          return fornecedoresResumo.filter((item) => itemHasCentros(item, filtrosCentroFornecedores));
+        }
+
+        const groups = new Map();
+        selectedGroups.forEach((centro) => {
+          const centroLabel = centro.centroCode || centro.label || centro.centro || "";
+          (centro.ranking || []).forEach((item) => {
+            const key = item.id || normalizeFilterValue(item.produtor || item.label || "");
+            if (!key) return;
+            if (!groups.has(key)) {
+              groups.set(key, {
+                ...item,
+                pesoBruto: 0,
+                pesoLiquido: 0,
+                entradas: 0,
+                romaneios: 0,
+                centros: new Set()
+              });
+            }
+
+            const current = groups.get(key);
+            current.pesoBruto += Number(item.pesoBruto || 0);
+            current.pesoLiquido += Number(item.pesoLiquido || 0);
+            current.entradas += Number(item.entradas || 0);
+            current.romaneios += Number(item.romaneios || 0);
+            if (centroLabel) current.centros.add(centroLabel);
+          });
+        });
+
+        return [...groups.values()]
+          .map((item) => ({
+            ...item,
+            centros: [...item.centros].sort((a, b) => a.localeCompare(b, "pt-BR", { numeric: true }))
+          }))
+          .sort((a, b) =>
+            (Number(b.pesoLiquido || 0) - Number(a.pesoLiquido || 0)) ||
+            String(a.produtor || a.label || "").localeCompare(String(b.produtor || b.label || ""), "pt-BR")
+          );
+      }
+
+      function getTotalPesoLiquidoFornecedoresModulo(rows) {
+        const fallbackTotal = rows.reduce((sum, item) => sum + Number(item.pesoLiquido || 0), 0);
+        const unidades = Array.isArray(unidadesRankingResumo) ? unidadesRankingResumo : [];
+        if (!unidades.length) return fallbackTotal;
+
+        const selected = new Set(filtrosCentroFornecedores.map(normalizeFilterValue));
+        const unidadesBase = selected.size
+          ? unidades.filter((item) => selected.has(getCentroRankingKey(item)))
+          : unidades;
+        const total = unidadesBase.reduce((sum, item) => sum + Number(item.pesoLiquido || 0), 0);
+        return total || fallbackTotal;
+      }
+
+      function getFiltroCentroFornecedoresLabel() {
+        if (!filtrosCentroFornecedores.length) return "Todos";
+        if (filtrosCentroFornecedores.length === 1) return filtrosCentroFornecedores[0];
+        if (filtrosCentroFornecedores.length === 2) return filtrosCentroFornecedores.join(", ");
+        return `${filtrosCentroFornecedores.length} centros`;
+      }
+
+      function renderFiltroCentroFornecedoresMenu(centros) {
+        const selected = new Set(filtrosCentroFornecedores.map(normalizeFilterValue));
+        const options = centros.length
+          ? centros.map((centro) => {
+              const checked = selected.has(normalizeFilterValue(centro)) ? "checked" : "";
+              return `
+                <label class="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-xs font-semibold text-[#1f4d2d] hover:bg-[#edf7e8]">
+                  <input type="checkbox" data-filtro-centro-option value="${escapeHtml(centro)}" ${checked} class="h-4 w-4 rounded border-[#cfdcbd] text-[#2f6b37]" />
+                  <span>${escapeHtml(centro)}</span>
+                </label>
+              `;
+            }).join("")
+          : `<p class="px-2 py-2 text-xs text-[#61713d]">Nenhum centro encontrado.</p>`;
+
+        return `
+          <div data-filtro-centro-menu class="absolute left-0 top-full z-30 mt-2 hidden w-56 rounded-lg border border-[#cfdcbd] bg-white p-2 text-[#1f4d2d] shadow-xl">
+            <div class="mb-2 flex items-center justify-between gap-2 border-b border-[#e5e3da] pb-2">
+              <span class="text-xs font-bold text-[#1f4d2d]">Filtrar centros</span>
+              <button type="button" data-filtro-centro-clear class="text-[11px] font-bold text-[#6f5428] hover:text-[#1f4d2d]">Limpar</button>
+            </div>
+            <div class="max-h-56 space-y-1 overflow-auto">${options}</div>
+            <button type="button" data-filtro-centro-apply class="mt-2 w-full rounded-md bg-[#1f4d2d] px-3 py-2 text-xs font-bold text-white hover:bg-[#163b21]">Aplicar</button>
+          </div>
+        `;
+      }
+
+      function getQualityCenterGroups(view = rankingQualityView) {
+        if (view === "produtores") return Array.isArray(rankingQualityPorCentro.produtores) ? rankingQualityPorCentro.produtores : [];
+        if (view === "cultivares") return Array.isArray(rankingQualityPorCentro.cultivares) ? rankingQualityPorCentro.cultivares : [];
+        return [];
+      }
+
+      function getCentrosQualidadeDisponiveis(view = rankingQualityView) {
+        const centros = getQualityCenterGroups(view)
+          .map((item) => item.centroCode || item.label || item.centro)
+          .filter(Boolean);
+        return [...new Set(centros)]
+          .sort((a, b) => String(a).localeCompare(String(b), "pt-BR", { numeric: true }));
+      }
+
+      function syncFiltrosCentroQualidade(view = rankingQualityView) {
+        if (view !== "produtores" && view !== "cultivares") {
+          filtrosCentroQualidade = [];
+          return [];
+        }
+
+        const centros = getCentrosQualidadeDisponiveis(view);
+        const valid = new Set(centros.map(normalizeFilterValue));
+        filtrosCentroQualidade = filtrosCentroQualidade.filter((centro) => valid.has(normalizeFilterValue(centro)));
+        return centros;
+      }
+
+      function getFiltroCentroQualidadeLabel() {
+        if (!filtrosCentroQualidade.length) return "Todos";
+        if (filtrosCentroQualidade.length === 1) return filtrosCentroQualidade[0];
+        return `${filtrosCentroQualidade.length} centros`;
+      }
+
+      function renderFiltroCentroQualidadeMenu(centros) {
+        const selected = new Set(filtrosCentroQualidade.map(normalizeFilterValue));
+        const options = centros.length
+          ? centros.map((centro) => {
+              const checked = selected.has(normalizeFilterValue(centro)) ? "checked" : "";
+              return `
+                <label class="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-xs font-semibold text-[#1f4d2d] hover:bg-[#edf7e8]">
+                  <input type="checkbox" data-filtro-qualidade-centro-option value="${escapeHtml(centro)}" ${checked} class="h-4 w-4 rounded border-[#cfdcbd] text-[#2f6b37]" />
+                  <span>${escapeHtml(centro)}</span>
+                </label>
+              `;
+            }).join("")
+          : `<p class="px-2 py-2 text-xs text-[#61713d]">Nenhum centro encontrado.</p>`;
+
+        return `
+          <div data-filtro-qualidade-centro-menu class="absolute left-0 top-full z-30 mt-2 hidden w-56 rounded-lg border border-[#cfdcbd] bg-white p-2 text-[#1f4d2d] shadow-xl">
+            <div class="mb-2 flex items-center justify-between gap-2 border-b border-[#e5e3da] pb-2">
+              <span class="text-xs font-bold text-[#1f4d2d]">Filtrar centros</span>
+              <button type="button" data-filtro-qualidade-centro-clear class="text-[11px] font-bold text-[#6f5428] hover:text-[#1f4d2d]">Limpar</button>
+            </div>
+            <div class="max-h-56 space-y-1 overflow-auto">${options}</div>
+            <button type="button" data-filtro-qualidade-centro-apply class="mt-2 w-full rounded-md bg-[#1f4d2d] px-3 py-2 text-xs font-bold text-white hover:bg-[#163b21]">Aplicar</button>
+          </div>
+        `;
+      }
+
+      function combineQualityRankingFromCenters(view) {
+        if (!filtrosCentroQualidade.length) return null;
+
+        const selected = new Set(filtrosCentroQualidade.map(normalizeFilterValue));
+        const centerGroups = getQualityCenterGroups(view).filter((centro) => selected.has(getCentroRankingKey(centro)));
+        if (!centerGroups.length) return null;
+
+        const groups = new Map();
+        centerGroups.forEach((centro) => {
+          const centroLabel = centro.centroCode || centro.label || centro.centro || "";
+          (centro.ranking || []).forEach((item) => {
+            const nome = view === "cultivares"
+              ? (item.cultivar || item.label || "")
+              : (item.produtor || item.label || "");
+            const key = item.id || normalizeFilterValue(nome);
+            if (!key) return;
+
+            if (!groups.has(key)) {
+              groups.set(key, {
+                ...item,
+                label: nome,
+                produtor: view === "produtores" ? nome : item.produtor,
+                cultivar: view === "cultivares" ? nome : item.cultivar,
+                pesoA: 0,
+                pesoB: 0,
+                pesoC: 0,
+                pesoBruto: 0,
+                pesoLiquido: 0,
+                amostras: 0,
+                centros: new Set()
+              });
+            }
+
+            const current = groups.get(key);
+            current.pesoA += Number(item.pesoA || 0);
+            current.pesoB += Number(item.pesoB || 0);
+            current.pesoC += Number(item.pesoC || 0);
+            current.pesoBruto += Number(item.pesoBruto || 0);
+            current.pesoLiquido += Number(item.pesoLiquido || 0);
+            current.amostras += Number(item.amostras || 0);
+            if (centroLabel) current.centros.add(centroLabel);
+          });
+        });
+
+        return [...groups.values()]
+          .map((item) => ({
+            ...item,
+            centros: [...item.centros].sort((a, b) => a.localeCompare(b, "pt-BR", { numeric: true })),
+            percentualA: item.pesoLiquido ? (item.pesoA / item.pesoLiquido) * 100 : 0
+          }))
+          .filter((item) => Number(item.pesoLiquido || 0) > 0)
+          .sort((a, b) =>
+            (Number(b.percentualA || 0) - Number(a.percentualA || 0)) ||
+            (Number(b.pesoLiquido || 0) - Number(a.pesoLiquido || 0)) ||
+            String(a.label || "").localeCompare(String(b.label || ""), "pt-BR")
+          );
+      }
+
+      function getQualityRowsForView(view = rankingQualityView) {
+        const base = Array.isArray(rankingDataCache[view]) ? rankingDataCache[view] : [];
+        if (view !== "produtores" && view !== "cultivares") return base;
+        syncFiltrosCentroQualidade(view);
+        if (!filtrosCentroQualidade.length) return base;
+        return combineQualityRankingFromCenters(view) || base.filter((item) => itemHasCentros(item, filtrosCentroQualidade));
+      }
+
+      function renderRankingQualityAtual() {
+        rankingAllRows = getQualityRowsForView(rankingQualityView);
+        updateRankingKpis(rankingAllRows);
+        applyRankingSearch();
+      }
+
       function formatPercent(value) {
         const numeric = Number(value) || 0;
         return `${numeric.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
+      }
+
+      function updateRankingKpis(rows = []) {
+        const baseRows = Array.isArray(rows) ? rows : [];
+        const totalPesoLiquido = baseRows.reduce((sum, item) => sum + Number(item.pesoLiquido || 0), 0);
+        const totalPesoA = baseRows.reduce((sum, item) => sum + Number(item.pesoA || 0), 0);
+        const qualidadeMedia = totalPesoLiquido > 0 ? (totalPesoA / totalPesoLiquido) * 100 : 0;
+        const centros = new Set();
+
+        baseRows.forEach((item) => {
+          if (Array.isArray(item.centros)) {
+            item.centros.forEach((centro) => {
+              if (centro) centros.add(String(centro));
+            });
+          }
+          const centro = item.centro || item.centroCode || item.codigo;
+          if (centro) centros.add(String(centro));
+        });
+
+        if (!centros.size && Array.isArray(rankingQualityPorCentro.produtores)) {
+          rankingQualityPorCentro.produtores.forEach((centro) => {
+            const label = centro.centro || centro.centroCode || centro.label;
+            if (label) centros.add(String(label));
+          });
+        }
+
+        if (rankingKpiQualidadeMediaEl) rankingKpiQualidadeMediaEl.textContent = formatPercent(qualidadeMedia);
+        if (rankingKpiCentrosEl) rankingKpiCentrosEl.textContent = centros.size ? String(centros.size) : "--";
       }
 
       function renderRankingLista(titulo, itens = []) {
@@ -1246,38 +2285,63 @@
         }
 
         const isCultivares = titulo === "Cultivares";
+        const isProdutores = titulo === "Produtores";
+        const isUnidades = titulo === "Unidades";
         const totalPesoLiquido = rows.reduce((sum, item) => sum + (Number(item.pesoLiquido) || 0), 0);
         const hasQuality = rows.some((item) => item.percentualA != null);
+        const showCodigo = !isCultivares && !(hasQuality && (isProdutores || isUnidades));
+        const showPesoBruto = !isCultivares && !(hasQuality && isProdutores);
+        const usePesoLiquidoColumn = hasQuality && isUnidades;
+        const canFilterCenters = hasQuality && (isProdutores || isCultivares);
+        const showCentros = isProdutores || canFilterCenters;
+        const centrosQualidade = canFilterCenters
+          ? syncFiltrosCentroQualidade(isCultivares ? "cultivares" : "produtores")
+          : [];
 
         const top3Badges = [
           "bg-[#e8c15f] text-[#3b2a08]",
           "bg-[#a7adb7] text-white",
           "bg-[#c5864a] text-white"
         ];
+        const titleLabel = hasQuality
+          ? (isProdutores ? "Ranking de Produtores por Qualidade" : isUnidades ? "Ranking de Centros por Qualidade" : "Ranking de Cultivares por Qualidade")
+          : (isProdutores ? "Ranking de Produtores por Volume" : isUnidades ? "Ranking de Centros por Volume" : "Ranking de Cultivares por Volume");
 
         return `
-          <div class="rounded-lg border border-[#d8e5c6] bg-white shadow-sm">
-            <div class="flex items-center justify-between border-b border-[#d8e5c6] px-5 py-4">
-              <p class="text-xs font-bold uppercase tracking-[0.12em] text-[#61713d]">Ranking de ${escapeHtml(titulo)} por Volume</p>
-              <p class="text-xs text-[#74835d]">${rows.length} ${rows.length === 1 ? "registro" : "registros"}</p>
+          <div class="overflow-hidden rounded-xl border border-[#e4ebe6] bg-white shadow-[0_12px_32px_rgba(18,44,29,0.08)]">
+            <div class="flex items-center justify-between border-b border-[#edf1ec] px-5 py-4">
+              <p class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#1f4d2d]">${escapeHtml(titleLabel)}</p>
+              <p class="text-xs font-medium text-[#7a8795]">${rows.length} ${rows.length === 1 ? "registro" : "registros"}</p>
             </div>
-            <div class="overflow-x-auto">
-              <table class="w-full min-w-[800px] text-sm">
-                <thead>
-                  <tr class="bg-[#1f4d2d] text-white">
+            <div class="max-h-[calc(100vh-335px)] min-h-[360px] overflow-auto">
+              <table class="w-full min-w-[900px] text-sm">
+                <thead class="sticky top-0 z-10">
+                  <tr class="bg-gradient-to-r from-[#0f3d24] to-[#18562f] text-white">
                     <th class="px-4 py-3 text-left w-14">#</th>
-                    <th class="px-4 py-3 text-left">${escapeHtml(titulo === "Unidades" ? "Centro" : isCultivares ? "Cultivar" : "Produtor")}</th>
-                    ${titulo === "Produtores" ? `<th class="px-4 py-3 text-left">Centro(s)</th>` : ``}
-                    ${titulo === "Unidades" ? `<th class="px-4 py-3 text-left">Local</th>` : ``}
-                    ${!isCultivares ? `<th class="px-4 py-3 text-left">Código</th>` : ``}
-                    <th class="px-4 py-3 text-right">Peso líquido</th>
-                    ${!isCultivares ? `<th class="px-4 py-3 text-right">Peso bruto</th>` : ``}
-                    ${isCultivares ? `<th class="px-4 py-3 text-right">Amostras</th>` : ``}
+                    <th class="px-4 py-3 text-left">${escapeHtml(isUnidades ? "Centro" : isCultivares ? "Cultivar" : "Produtor")}</th>
+                    ${showCentros ? `
+                      <th class="relative px-4 py-3 text-left">
+                        ${canFilterCenters ? `
+                          <div class="flex items-center gap-2">
+                            <span>Centro(s)</span>
+                            <button type="button" data-filtro-qualidade-centro-toggle class="inline-flex items-center gap-1 rounded-md border border-white/20 bg-white/10 px-2 py-1 text-[11px] font-bold text-white hover:bg-white/20">
+                              <i class="fa-solid fa-filter"></i>
+                              ${escapeHtml(getFiltroCentroQualidadeLabel())}
+                            </button>
+                          </div>
+                          ${renderFiltroCentroQualidadeMenu(centrosQualidade)}
+                        ` : `Centro(s)`}
+                      </th>
+                    ` : ``}
+                    ${isUnidades ? `<th class="px-4 py-3 text-left">Local</th>` : ``}
+                    ${showCodigo ? `<th class="px-4 py-3 text-left">Código</th>` : ``}
+                    ${showPesoBruto ? `<th class="px-4 py-3 text-right">${usePesoLiquidoColumn ? "Peso líquido" : "Peso bruto"}</th>` : ``}
                     ${isCultivares ? `<th class="px-4 py-3 text-right">Peso Grau A</th>` : ``}
                     <th class="px-4 py-3 text-right">${escapeHtml(hasQuality ? "% Qualidade" : "% do Total")}</th>
+                    <th class="px-4 py-3 text-center w-20">Ações</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-[#e5e3da]">
+                <tbody class="divide-y divide-[#edf1ec]">
                   ${rows.map((item, index) => {
                     const value = Number(item.pesoLiquido) || 0;
                     const percent = hasQuality && item.percentualA != null
@@ -1298,18 +2362,21 @@
                         <td class="px-4 py-3 font-semibold text-[#1f4d2d]">
                           ${escapeHtml(item.produtor || item.unidade || item.cultivar || item.label || "-")}
                         </td>
-                        ${titulo === "Produtores" ? `<td class="px-4 py-3">${renderCenterBadges(item.centros)}</td>` : ``}
-                        ${titulo === "Unidades" ? `<td class="px-4 py-3 text-[#61713d]">${escapeHtml(item.local || "-")}</td>` : ``}
-                        ${!isCultivares ? `<td class="px-4 py-3 text-[#61713d]">${escapeHtml(item.codigo || item.centroCode || item.centro || "-")}</td>` : ``}
-                        <td class="px-4 py-3 text-right font-medium text-[#1f4d2d]">${formatNumberDisplay(item.pesoLiquido)} kg</td>
-                        ${!isCultivares ? `<td class="px-4 py-3 text-right font-medium text-[#1f4d2d]">${formatNumberDisplay(item.pesoBruto)} kg</td>` : ``}
-                        ${isCultivares ? `<td class="px-4 py-3 text-right text-[#61713d]">${Number(item.amostras || 0).toLocaleString("pt-BR")}</td>` : ``}
+                        ${showCentros ? `<td class="px-4 py-3">${renderCenterBadges(item.centros)}</td>` : ``}
+                        ${isUnidades ? `<td class="px-4 py-3 text-[#61713d]">${escapeHtml(item.local || "-")}</td>` : ``}
+                        ${showCodigo ? `<td class="px-4 py-3 text-[#61713d]">${escapeHtml(item.codigo || item.centroCode || item.centro || "-")}</td>` : ``}
+                        ${showPesoBruto ? `<td class="px-4 py-3 text-right font-medium text-[#1f4d2d]">${formatNumberDisplay(usePesoLiquidoColumn ? item.pesoLiquido : item.pesoBruto)} kg</td>` : ``}
                         ${isCultivares ? `<td class="px-4 py-3 text-right font-medium text-[#2f6b37]">${formatNumberDisplay(item.pesoA)} kg</td>` : ``}
                         <td class="px-4 py-3 text-right">
                           <span class="font-semibold text-[#1f4d2d]">${formatPercent(percent)}</span>
                           <div class="mt-1.5 h-1.5 w-24 ml-auto overflow-hidden rounded-full bg-[#e5e7eb]">
                             <div class="h-full rounded-full bg-[#7FB23D]" style="width:${Math.min(Math.max(percent, 0), 100)}%"></div>
                           </div>
+                        </td>
+                        <td class="px-4 py-3 text-center text-[#1f4d2d]">
+                          <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-[#edf7e8]" title="Mais opções">
+                            <i data-lucide="more-vertical" class="h-4 w-4"></i>
+                          </button>
                         </td>
                       </tr>
                     `;
@@ -1325,11 +2392,12 @@
         if (!rankingQualityFiltersEl) return;
         rankingQualityFiltersEl.querySelectorAll("[data-ranking-quality]").forEach((button) => {
           const active = button.dataset.rankingQuality === rankingQualityView;
-          button.classList.toggle("bg-[#1f4d2d]", active);
+          button.classList.toggle("bg-[#0f3d24]", active);
           button.classList.toggle("text-white", active);
-          button.classList.toggle("border-[#1f4d2d]", active);
-          button.classList.toggle("bg-[#f8faf4]", !active);
+          button.classList.toggle("border-[#0f3d24]", active);
+          button.classList.toggle("bg-white", !active);
           button.classList.toggle("text-[#1f4d2d]", !active);
+          button.classList.toggle("border-[#d9e6dc]", !active);
         });
       }
 
@@ -1340,7 +2408,8 @@
         const rows = rankingAllRows;
         const filtered = q
           ? rows.filter(item => {
-              const str = [item.produtor, item.cultivar, item.unidade, item.label, item.codigo]
+              const centros = Array.isArray(item.centros) ? item.centros.join(" ") : "";
+              const str = [item.produtor, item.cultivar, item.unidade, item.label, item.codigo, centros]
                 .filter(Boolean).join(" ").toLowerCase();
               return str.includes(q);
             })
@@ -1354,6 +2423,7 @@
           }
         }
         rankingModuloGridEl.innerHTML = renderRankingLista(rankingTitleMap[rankingQualityView] || "Qualidade", filtered);
+        if (window.lucide) window.lucide.createIcons();
       }
 
       async function carregarRankingModulo(force = false) {
@@ -1370,10 +2440,13 @@
           const data = await fetchJson("/api/rankings-teste");
           rankingModuloCarregado = true;
           rankingDataCache = data.rankings?.qualidade || {};
+          rankingQualityPorCentro = {
+            produtores: Array.isArray(rankingDataCache.produtoresPorCentro) ? rankingDataCache.produtoresPorCentro : [],
+            cultivares: Array.isArray(rankingDataCache.cultivaresPorCentro) ? rankingDataCache.cultivaresPorCentro : []
+          };
           rankingModuloStatusEl.classList.add("hidden");
-          rankingAllRows = rankingDataCache[rankingQualityView] || [];
-          rankingModuloGridEl.innerHTML = renderRankingLista(rankingTitleMap[rankingQualityView] || "Qualidade", rankingAllRows);
           updateRankingQualityButtons();
+          renderRankingQualityAtual();
         } catch (error) {
           rankingModuloStatusEl.textContent = error.message;
           rankingModuloGridEl.innerHTML = "";
@@ -1442,7 +2515,84 @@
             ? "bg-[#edf7e8] border border-[#cde5bd] text-[#315b2f]"
             : "bg-red-50 border border-red-200 text-red-700";
         statusConfigEl.textContent = message;
-        statusConfigEl.className = `mt-4 rounded-lg px-3 py-2 text-sm ${colorClass}`;
+        statusConfigEl.className = `rounded-xl px-4 py-3 text-sm ${colorClass}`;
+      }
+
+      function setConfigTab(tab = "conta") {
+        const adminTabs = new Set(["arquivos", "dashboard", "usuarios", "regras"]);
+        const nextTab = adminTabs.has(tab) && !usuarioAdminAtual ? "conta" : tab;
+
+        document.querySelectorAll("[data-config-panel]").forEach((panel) => {
+          panel.classList.toggle("hidden", panel.dataset.configPanel !== nextTab);
+        });
+
+        document.querySelectorAll("[data-config-tab]").forEach((button) => {
+          const active = button.dataset.configTab === nextTab;
+          button.classList.toggle("border-[#0f3d24]", active);
+          button.classList.toggle("text-[#0f3d24]", active);
+          button.classList.toggle("border-transparent", !active);
+          button.classList.toggle("text-[#536279]", !active);
+        });
+      }
+
+      function renderConfigMeta(label, value) {
+        return `
+          <div class="rounded-xl border border-[#e5eee0] bg-white px-4 py-3">
+            <p class="text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#74835d]">${escapeHtml(label)}</p>
+            <p class="mt-1 break-words text-sm font-extrabold text-[#052e1a]">${escapeHtml(value || "--")}</p>
+          </div>
+        `;
+      }
+
+      function renderWorkbookConfigInfo(data, options = {}) {
+        const arquivo = data?.arquivoTratado || data?.arquivo || "Nenhum arquivo carregado";
+        const dataUpload = data?.enviadoEm ? formatAppDateTime(data.enviadoEm, "data não registrada") : "Sem atualização registrada";
+        const usuarioUpload = data?.atualizadoPor || data?.atualizadoPorEmail || (data?.origem ? data.origem : "sistema");
+        const linhas = options.linhas || "Não informado";
+        const extra = options.extra || "";
+
+        return `
+          <div class="grid gap-3 sm:grid-cols-2">
+            ${renderConfigMeta("Arquivo", arquivo)}
+            ${renderConfigMeta("Última atualização", dataUpload)}
+            ${renderConfigMeta("Responsável", usuarioUpload)}
+            ${renderConfigMeta("Linhas", linhas)}
+          </div>
+          ${extra ? `<p class="mt-3 rounded-xl bg-[#f6f8f6] px-4 py-3 text-xs leading-5 text-[#536279]">${escapeHtml(extra)}</p>` : ""}
+        `;
+      }
+
+      function mostrarAguardeUpload(message) {
+        if (!uploadStatusOverlayEl) return;
+        uploadStatusIconEl.className = "mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#edf7e8] text-[#2f6b37]";
+        uploadStatusIconInnerEl.className = "fa-solid fa-spinner animate-spin text-xl";
+        uploadStatusTitleEl.textContent = "Aguarde...";
+        uploadStatusMessageEl.textContent = message;
+        btnFecharUploadStatusEl.classList.add("hidden");
+        uploadStatusOverlayEl.classList.remove("hidden");
+        uploadStatusOverlayEl.classList.add("flex");
+      }
+
+      function mostrarUploadFinalizado(message, type = "success") {
+        if (!uploadStatusOverlayEl) return;
+        const success = type === "success";
+        uploadStatusIconEl.className = success
+          ? "mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#edf7e8] text-[#2f6b37]"
+          : "mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-600";
+        uploadStatusIconInnerEl.className = success
+          ? "fa-solid fa-check text-xl"
+          : "fa-solid fa-triangle-exclamation text-xl";
+        uploadStatusTitleEl.textContent = success ? "Atualização finalizada" : "Atualização não finalizada";
+        uploadStatusMessageEl.textContent = message;
+        btnFecharUploadStatusEl.classList.remove("hidden");
+        uploadStatusOverlayEl.classList.remove("hidden");
+        uploadStatusOverlayEl.classList.add("flex");
+      }
+
+      function fecharStatusUpload() {
+        if (!uploadStatusOverlayEl) return;
+        uploadStatusOverlayEl.classList.add("hidden");
+        uploadStatusOverlayEl.classList.remove("flex");
       }
 
       function isZeroValue(value) {
@@ -1560,10 +2710,13 @@
         configPorItemEl.innerHTML = "";
         configPorItemEl.classList.add("hidden");
         Object.keys(configsLocais).forEach((key) => delete configsLocais[key]);
+        globalPracaSelecionada = "";
         globalPercEl.value = "0";
         globalValorEl.value = "0";
         modoGlobalEl.checked = false;
         configGlobalEl.classList.add("hidden");
+        if (globalPracaPanelEl) globalPracaPanelEl.classList.add("hidden");
+        refreshGlobalPracaSelect();
         clearResultado();
         updateZeroHighlights();
       }
@@ -1571,6 +2724,8 @@
       async function carregarFornecedores() {
         const data = await fetchJson("/api/rankings-teste");
         fornecedoresResumo = Array.isArray(data.rankings?.produtores) ? data.rankings.produtores : [];
+        fornecedoresResumoPorCentro = Array.isArray(data.rankings?.produtoresPorCentro) ? data.rankings.produtoresPorCentro : [];
+        unidadesRankingResumo = Array.isArray(data.rankings?.unidades) ? data.rankings.unidades : [];
         cultivaresResumo = Array.isArray(data.rankings?.cultivares) ? data.rankings.cultivares : [];
         // Keep volume order (already sorted by API), only fallback-sort by name
         fornecedoresDisponiveis = fornecedoresResumo
@@ -1592,6 +2747,7 @@
         } catch (_error) {
           pracaOptions = [];
         }
+        refreshGlobalPracaSelect();
         renderMarketReference();
       }
 
@@ -1685,6 +2841,7 @@
           modoGlobal: modoGlobalEl.checked,
           globalPerc: Number(globalPercEl.value) || 0,
           globalValor: Number(globalValorEl.value) || 0,
+          globalPraca: globalPracaSelecionada || globalPracaEl?.value || "",
           configs: configsLocais,
           ...extra
         };
@@ -1768,6 +2925,39 @@
         }
 
         return optionsHtml;
+      }
+
+      function updateGlobalPracaSummary() {
+        if (!globalPracaLabelEl || !globalPracaValuesEl) return;
+
+        const praca = globalPracaSelecionada || "";
+        globalPracaLabelEl.textContent = praca ? `Praça: ${praca}` : "Praça não selecionada";
+        globalPracaLabelEl.className = praca
+          ? "rounded-md border border-[#cfdcbd] bg-white px-2 py-1 text-xs font-semibold text-[#6f5428]"
+          : "rounded-md border border-[#ead37c] bg-[#fffaf0] px-2 py-1 text-xs font-semibold text-[#6a5514]";
+        globalPracaValuesEl.textContent = `Percentual: ${formatNumberDisplay(globalPercEl.value)}% | Valor da saca: R$ ${formatNumberDisplay(globalValorEl.value)}`;
+      }
+
+      function refreshGlobalPracaSelect() {
+        if (!globalPracaEl) return;
+        globalPracaEl.innerHTML = renderPracaSelectOptions(globalPracaSelecionada);
+        updateGlobalPracaSummary();
+      }
+
+      function applyGlobalPracaSelection() {
+        if (!globalPracaEl) return;
+
+        const selectedOption = globalPracaEl.selectedOptions[0];
+        const optionData = findPracaOption(globalPracaEl.value);
+        const perc = Number(selectedOption?.dataset.perc || optionData?.perc || 0) || 0;
+        const valor = Number(selectedOption?.dataset.valor || optionData?.valor || 0) || 0;
+
+        globalPracaSelecionada = globalPracaEl.value;
+        globalPercEl.value = formatNumberInput(perc);
+        globalValorEl.value = formatNumberInput(valor);
+        updateZeroField(globalPercEl);
+        updateZeroField(globalValorEl);
+        updateGlobalPracaSummary();
       }
 
       function updatePracaSummary(card, config) {
@@ -1920,14 +3110,14 @@
           .map(
             (d) => `
               <tr>
-                <td class="px-3 py-2 text-[#38563f]">${escapeHtml(d.centro)}</td>
-                <td class="px-3 py-2 text-[#38563f]">${escapeHtml(d.inscricaoEstadual)}</td>
-                <td class="px-3 py-2 text-[#38563f]">${escapeHtml(d.cultivar)}</td>
-                <td class="px-3 py-2 text-[#38563f]">${escapeHtml(d.pesoBaseFmt)} kg</td>
-                <td class="px-3 py-2 text-[#38563f]">${escapeHtml(d.perc)}%</td>
-                <td class="px-3 py-2 text-[#38563f]">${escapeHtml(d.sacasFmt)}</td>
-                <td class="px-3 py-2 text-[#38563f]">R$ ${escapeHtml(d.valorFmt)}</td>
-                <td class="px-3 py-2 font-semibold text-[#1f4d2d]">R$ ${escapeHtml(d.subtotalFmt)}</td>
+                <td class="px-3 py-2 text-center text-[#38563f]">${escapeHtml(d.centro)}</td>
+                <td class="px-3 py-2 text-center text-[#38563f]">${escapeHtml(d.inscricaoEstadual)}</td>
+                <td class="px-3 py-2 text-center text-[#38563f]">${escapeHtml(d.cultivar)}</td>
+                <td class="px-3 py-2 text-center text-[#38563f]">${escapeHtml(d.pesoBaseFmt)} kg</td>
+                <td class="px-3 py-2 text-center text-[#38563f]">${escapeHtml(d.perc)}%</td>
+                <td class="px-3 py-2 text-center text-[#38563f]">${escapeHtml(d.sacasFmt)}</td>
+                <td class="px-3 py-2 text-center text-[#38563f]">R$ ${escapeHtml(d.valorFmt)}</td>
+                <td class="px-3 py-2 text-center font-semibold text-[#1f4d2d]">R$ ${escapeHtml(d.subtotalFmt)}</td>
               </tr>
             `
           )
@@ -1939,7 +3129,7 @@
         const completo = payload.fornecedorNome && payload.centros.length > 0 && payload.cultivares.length > 0;
 
         if (!completo) {
-          alert("Preencha fornecedor, centro e cultivar antes de calcular.");
+          alert("Preencha produtor, centro e cultivar antes de calcular.");
           return;
         }
 
@@ -2138,7 +3328,7 @@
           const url = URL.createObjectURL(blob);
           const link = document.createElement("a");
           link.href = url;
-          link.download = "ranking-fornecedores-volume.xlsx";
+          link.download = "ranking-produtores-volume.xlsx";
           document.body.appendChild(link);
           link.click();
           link.remove();
@@ -2168,22 +3358,120 @@
         showTopStatus("Planilha atualizada com sucesso.");
       }
 
+      async function enviarClassificacoes(file) {
+        const formData = new FormData();
+        formData.append("planilha", file);
+
+        const response = await fetch("/api/classificacoes-planilha", { method: "POST", body: formData });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.erro || "Não foi possível atualizar as classificações.");
+
+        rankingModuloCarregado = false;
+        rankingDataCache = {};
+        rankingAllRows = [];
+        await carregarFornecedores();
+        await carregarInfoClassificacoes();
+        showTopStatus("Planilha de classificações tratada e atualizada.");
+      }
+
+      async function processarUploadConfiguracao(tipo, file) {
+        if (!file) return;
+        if (tipo === "planilha") {
+          mostrarAguardeUpload("Atualizando a planilha ZMM113. Aguarde a finalização.");
+          await enviarPlanilha(file);
+          mostrarUploadFinalizado("Planilha ZMM113 atualizada com sucesso.");
+          return;
+        }
+
+        mostrarAguardeUpload("Atualizando e tratando a planilha de classificações. Aguarde a finalização.");
+        await enviarClassificacoes(file);
+        mostrarUploadFinalizado("Planilha de classificações atualizada e tratada com sucesso.");
+      }
+
       async function carregarInfoPlanilha() {
         const data = await fetchJson("/api/planilha");
         if (!data.arquivo) {
-          planilhaAtualEl.textContent = "Nenhuma planilha carregada.";
+          planilhaAtualEl.innerHTML = renderWorkbookConfigInfo(data);
           return;
         }
 
         const origem = data.origem === "upload" ? "upload manual" : "planilha padrão";
-        if (data.origem !== "upload") {
-          planilhaAtualEl.textContent = `Atual: ${data.arquivo} (${origem}).`;
+        planilhaAtualEl.innerHTML = renderWorkbookConfigInfo(data, {
+          linhas: "Não informado",
+          extra: `Origem: ${origem}.`
+        });
+      }
+
+      async function carregarInfoClassificacoes() {
+        if (!classificacoesAtualEl) return;
+        const data = await fetchJson("/api/classificacoes-planilha");
+        if (!data.arquivo) {
+          classificacoesAtualEl.innerHTML = renderWorkbookConfigInfo(data);
           return;
         }
 
-        const dataUpload = formatAppDateTime(data.enviadoEm, "data não registrada");
-        const usuarioUpload = data.atualizadoPor || data.atualizadoPorEmail || "usuário não registrado";
-        planilhaAtualEl.textContent = `Atual: ${data.arquivo} (${origem}). Última atualização: ${dataUpload} por ${usuarioUpload}.`;
+        const stats = data.tratamento
+          ? `Descartadas: ${(Number(data.tratamento.descartadasPorNota || 0) + Number(data.tratamento.descartadasPorCultivar || 0)).toLocaleString("pt-BR")}. Regras: ${data.regras || "regras-classificacoes.txt"}.`
+          : "";
+        const linhas = data.tratamento
+          ? `${Number(data.tratamento.linhasMantidas || 0).toLocaleString("pt-BR")} / ${Number(data.tratamento.linhasRecebidas || 0).toLocaleString("pt-BR")}`
+          : "Não informado";
+        classificacoesAtualEl.innerHTML = renderWorkbookConfigInfo(data, { linhas, extra: stats });
+      }
+
+      function setStatusRegrasClassificacoes(message, type = "success") {
+        if (!statusRegrasClassificacoesEl) return;
+        if (!message) {
+          statusRegrasClassificacoesEl.classList.add("hidden");
+          statusRegrasClassificacoesEl.textContent = "";
+          return;
+        }
+
+        const colorClass =
+          type === "error"
+            ? "bg-red-50 border border-red-200 text-red-700"
+            : type === "info"
+              ? "bg-white border border-[#d8e5c6] text-[#61713d]"
+              : "bg-[#edf7e8] border border-[#cde5bd] text-[#315b2f]";
+        statusRegrasClassificacoesEl.textContent = message;
+        statusRegrasClassificacoesEl.className = `rounded-lg px-3 py-2 text-xs ${colorClass}`;
+      }
+
+      async function carregarRegrasClassificacoes() {
+        if (!regrasClassificacoesTextoEl) return null;
+        setStatusRegrasClassificacoes("Carregando regras...", "info");
+        const data = await fetchJson("/api/classificacoes-regras");
+        regrasClassificacoesTextoEl.value = data.conteudo || "";
+        const atualizado = data.atualizadoEm ? ` Última alteração: ${formatAppDateTime(data.atualizadoEm)}.` : "";
+        setStatusRegrasClassificacoes(`Arquivo ${data.arquivo || "regras-classificacoes.txt"} carregado.${atualizado}`, "info");
+        return data;
+      }
+
+      async function salvarRegrasClassificacoes() {
+        if (!regrasClassificacoesTextoEl || !btnSalvarRegrasClassificacoesEl) return;
+        btnSalvarRegrasClassificacoesEl.disabled = true;
+        if (btnRecarregarRegrasClassificacoesEl) btnRecarregarRegrasClassificacoesEl.disabled = true;
+        try {
+          const data = await fetchJson("/api/classificacoes-regras", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ conteudo: regrasClassificacoesTextoEl.value })
+          });
+          if (data.reprocessado) {
+            rankingModuloCarregado = false;
+            rankingDataCache = {};
+            rankingAllRows = [];
+            await carregarFornecedores();
+            await carregarInfoClassificacoes();
+          }
+          setStatusRegrasClassificacoes(data.mensagem || "Regras salvas com sucesso.");
+          showTopStatus("Regras de classificações atualizadas.");
+        } catch (error) {
+          setStatusRegrasClassificacoes(error.message, "error");
+        } finally {
+          btnSalvarRegrasClassificacoesEl.disabled = false;
+          if (btnRecarregarRegrasClassificacoesEl) btnRecarregarRegrasClassificacoesEl.disabled = false;
+        }
       }
 
       async function carregarDashboardLink() {
@@ -2199,7 +3487,7 @@
 
       function renderUsuariosAdmin(usuarios) {
         if (!usuarios.length) {
-          listaUsuariosAdminEl.innerHTML = `<p class="text-[#74835d]">Nenhum usuário cadastrado.</p>`;
+          listaUsuariosAdminEl.innerHTML = `<p class="rounded-xl border border-[#dce8d5] bg-[#fbfdfb] p-4 text-[#74835d]">Nenhum usuário cadastrado.</p>`;
           return;
         }
 
@@ -2212,18 +3500,29 @@
             const email = user.email || "";
             const removeDisabled = usuario === usuarioAtual ? "disabled" : "";
             const passwordDisabled = usuario === usuarioAtual ? "disabled" : "";
+            const initial = getInitials(usuario || email).slice(0, 1);
             return `
-              <div class="rounded-lg border border-[#d8e5c6] bg-white p-3">
-                <div class="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p class="font-semibold text-[#1f4d2d]">${escapeHtml(usuario)} ${userAdmin ? "<span class=\"text-xs text-[#6f5428]\">Administrador</span>" : ""}</p>
-                    <p class="text-xs text-[#61713d]">${escapeHtml(email || "E-mail não informado")} | ${user.confirmado ? "Confirmado" : "Pendente"}</p>
+              <div class="group rounded-[16px] border border-[#dce8d5] bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(15,61,36,.06)]">
+                <div class="flex items-center gap-4">
+                  <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#0f3d24] text-sm font-extrabold text-white">${escapeHtml(initial)}</span>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <p class="break-words font-extrabold text-[#052e1a]">${escapeHtml(usuario || "Usuário")}</p>
+                      <span class="rounded-md px-2 py-1 text-[10px] font-extrabold ${userAdmin ? "bg-[#eaf5e5] text-[#0f3d24]" : "bg-[#f1f3f1] text-[#536279]"}">${userAdmin ? "Administrador" : "Usuário"}</span>
+                      <span class="rounded-md px-2 py-1 text-[10px] font-extrabold ${user.confirmado ? "bg-[#eaf5e5] text-[#2f7d32]" : "bg-[#fff3df] text-[#a06314]"}">${user.confirmado ? "Confirmado" : "Pendente"}</span>
+                    </div>
+                    <p class="mt-1 break-words text-xs text-[#536279]">${escapeHtml(email || "E-mail não informado")}</p>
                   </div>
-                  <div class="flex flex-wrap gap-2">
-                    <button type="button" data-admin-user="${escapeHtml(usuario)}" data-admin-email="${escapeHtml(email)}" data-admin-value="${adminValue}" class="rounded-lg border border-[#cfdcbd] bg-[#f8faf4] px-3 py-2 text-xs font-semibold text-[#38563f] hover:bg-[#edf4e2]">${adminLabel}</button>
-                    <button type="button" data-password-user="${escapeHtml(usuario)}" ${passwordDisabled} class="rounded-lg border border-[#cfdcbd] bg-white px-3 py-2 text-xs font-semibold text-[#38563f] hover:bg-[#edf4e2] disabled:cursor-not-allowed disabled:opacity-50">Redefinir senha</button>
-                    <button type="button" data-delete-user="${escapeHtml(usuario)}" ${removeDisabled} class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50">Excluir</button>
-                  </div>
+                  <details class="relative">
+                    <summary class="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-xl text-[#536279] hover:bg-[#f6f8f6] hover:text-[#0f3d24]">
+                      <i class="fa-solid fa-ellipsis-vertical"></i>
+                    </summary>
+                    <div class="absolute right-0 top-11 z-40 w-48 rounded-xl border border-[#dce8d5] bg-white p-2 shadow-[0_18px_40px_rgba(15,61,36,.14)]">
+                      <button type="button" data-admin-user="${escapeHtml(usuario)}" data-admin-email="${escapeHtml(email)}" data-admin-value="${adminValue}" class="block w-full rounded-lg px-3 py-2 text-left text-xs font-extrabold text-[#0f3d24] hover:bg-[#f6fbf4]">${adminLabel}</button>
+                      <button type="button" data-password-user="${escapeHtml(usuario)}" ${passwordDisabled} class="block w-full rounded-lg px-3 py-2 text-left text-xs font-extrabold text-[#0f3d24] hover:bg-[#f6fbf4] disabled:cursor-not-allowed disabled:opacity-50">Redefinir senha</button>
+                      <button type="button" data-delete-user="${escapeHtml(usuario)}" ${removeDisabled} class="block w-full rounded-lg px-3 py-2 text-left text-xs font-extrabold text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50">Excluir</button>
+                    </div>
+                  </details>
                 </div>
               </div>
             `;
@@ -2240,21 +3539,28 @@
       function renderHistorico(historico) {
         renderHistoricoModulo(historico);
         if (!historico.length) {
-          listaHistoricoEl.innerHTML = `<p class="text-[#74835d]">Nenhum cálculo salvo.</p>`;
+          listaHistoricoEl.innerHTML = `<p class="rounded-xl border border-[#dce8d5] bg-[#fbfdfb] p-4 text-[#74835d]">Nenhum cálculo salvo.</p>`;
           return;
         }
 
         listaHistoricoEl.innerHTML = historico
           .map(
             (item) => `
-              <div class="rounded-lg border border-[#d8e5c6] bg-white px-3 py-2">
-                <p class="font-semibold text-[#1f4d2d]">R$ ${escapeHtml(item.totalGeralFmt)}</p>
-                <p class="text-[#38563f]">${escapeHtml(item.produtorNome)}</p>
-                <p class="text-xs text-[#61713d]">${escapeHtml(item.usuario)} | ${formatAppDateTime(item.createdAt)} | ${escapeHtml(item.itens)} item(ns)</p>
+              <div class="group rounded-[14px] border border-[#dce8d5] bg-white px-4 py-3 transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(15,61,36,.06)]">
+                <div class="flex items-center gap-4">
+                  <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#eaf5e5] text-[#0f3d24]"><i data-lucide="receipt-text" class="h-4 w-4"></i></span>
+                  <div class="min-w-0 flex-1">
+                    <p class="font-extrabold text-[#052e1a]">R$ ${escapeHtml(item.totalGeralFmt)}</p>
+                    <p class="mt-0.5 break-words text-sm font-semibold text-[#38563f]">${escapeHtml(item.produtorNome)}</p>
+                    <p class="mt-1 text-xs text-[#61713d]">${escapeHtml(item.usuario)} | ${formatAppDateTime(item.createdAt)} | ${escapeHtml(item.itens)} item(ns)</p>
+                  </div>
+                  <i data-lucide="chevron-right" class="h-4 w-4 text-[#9aa792]"></i>
+                </div>
               </div>
             `
           )
           .join("");
+        if (window.lucide) window.lucide.createIcons();
       }
 
       async function carregarHistorico() {
@@ -2265,12 +3571,16 @@
       async function abrirConfiguracoes() {
         statusConfigEl.classList.add("hidden");
         adminConfiguracoesEl.classList.toggle("hidden", !usuarioAdminAtual);
+        document.querySelectorAll("[data-admin-config-tab]").forEach((item) => item.classList.toggle("hidden", !usuarioAdminAtual));
+        document.querySelectorAll("[data-admin-config-panel]").forEach((item) => item.classList.toggle("hidden", true));
+        setConfigTab("conta");
         modalConfiguracoesEl.classList.remove("hidden");
         modalConfiguracoesEl.classList.add("flex");
         await Promise.all([
           carregarHistorico(),
           carregarDashboardLink(),
           usuarioAdminAtual ? carregarInfoPlanilha() : Promise.resolve(),
+          usuarioAdminAtual ? carregarInfoClassificacoes() : Promise.resolve(),
           usuarioAdminAtual ? carregarUsuariosAdmin() : Promise.resolve()
         ]);
       }
@@ -2283,24 +3593,7 @@
       navLinksEls.forEach((link) => {
         link.addEventListener("click", () => setActiveView(link.dataset.navView));
       });
-      btnIrSimuladorEl.addEventListener("click", () => setActiveView("simulador"));
-      if (btnAtualizarRankingModuloEl) {
-        btnAtualizarRankingModuloEl.addEventListener("click", () => carregarRankingModulo(true));
-      }
-
-      const btnAtualizarUnidadesEl = document.getElementById("btnAtualizarUnidades");
-      if (btnAtualizarUnidadesEl) {
-        btnAtualizarUnidadesEl.addEventListener("click", async () => {
-          const icon = btnAtualizarUnidadesEl.querySelector("i");
-          if (icon) icon.classList.add("animate-spin");
-          btnAtualizarUnidadesEl.disabled = true;
-          if (unidadeDetalheModuloEl) { unidadeDetalheModuloEl.classList.add("hidden"); unidadeDetalheModuloEl.innerHTML = ""; }
-          if (resumoGeralUnidadesModuloEl) resumoGeralUnidadesModuloEl.classList.add("hidden");
-          await carregarUnidadesResumo();
-          btnAtualizarUnidadesEl.disabled = false;
-          if (icon) icon.classList.remove("animate-spin");
-        });
-      }
+      if (btnIrSimuladorEl) btnIrSimuladorEl.addEventListener("click", () => setActiveView("simulador"));
       if (rankingQualityFiltersEl) {
         rankingQualityFiltersEl.addEventListener("click", (event) => {
           const button = event.target.closest("[data-ranking-quality]");
@@ -2311,11 +3604,41 @@
           if (rankingSearchInputEl) rankingSearchInputEl.value = "";
           if (rankingSearchCountEl) rankingSearchCountEl.classList.add("hidden");
           if (rankingDataCache[view]) {
-            rankingAllRows = rankingDataCache[view] || [];
-            rankingModuloGridEl.innerHTML = renderRankingLista(rankingTitleMap[view] || "Qualidade", rankingAllRows);
             updateRankingQualityButtons();
+            renderRankingQualityAtual();
           } else {
             carregarRankingModulo(true);
+          }
+        });
+      }
+
+      if (rankingModuloGridEl) {
+        rankingModuloGridEl.addEventListener("click", (event) => {
+          const toggleFiltro = event.target.closest("[data-filtro-qualidade-centro-toggle]");
+          if (toggleFiltro) {
+            event.stopPropagation();
+            const menu = rankingModuloGridEl.querySelector("[data-filtro-qualidade-centro-menu]");
+            if (menu) menu.classList.toggle("hidden");
+            return;
+          }
+
+          if (event.target.closest("[data-filtro-qualidade-centro-menu]")) {
+            const clearButton = event.target.closest("[data-filtro-qualidade-centro-clear]");
+            const applyButton = event.target.closest("[data-filtro-qualidade-centro-apply]");
+
+            if (clearButton) {
+              filtrosCentroQualidade = [];
+              renderRankingQualityAtual();
+              return;
+            }
+
+            if (applyButton) {
+              filtrosCentroQualidade = Array.from(rankingModuloGridEl.querySelectorAll("[data-filtro-qualidade-centro-option]:checked"))
+                .map((input) => input.value)
+                .filter(Boolean);
+              renderRankingQualityAtual();
+              return;
+            }
           }
         });
       }
@@ -2343,9 +3666,6 @@
             if (resumoGeralUnidadesModuloEl) resumoGeralUnidadesModuloEl.classList.remove("hidden");
             return;
           }
-          if (event.target.closest("[data-nav-ranking-detalhe]")) {
-            setActiveView("ranking");
-          }
         });
       }
 
@@ -2353,7 +3673,9 @@
         configGlobalEl.classList.toggle("hidden", !modoGlobalEl.checked);
         if (modoGlobalEl.checked) {
           configPorItemEl.classList.add("hidden");
+          refreshGlobalPracaSelect();
         } else {
+          if (globalPracaPanelEl) globalPracaPanelEl.classList.add("hidden");
           renderConfigPorItem();
         }
       });
@@ -2393,10 +3715,75 @@
 
       if (listaFornecedoresModuloEl) {
         listaFornecedoresModuloEl.addEventListener("click", async (event) => {
-          const button = event.target.closest("[data-fornecedor-modulo]");
-          if (!button) return;
-          setActiveView("simulador");
-          await selecionarFornecedor(button.dataset.fornecedorModulo);
+          const toggleFiltro = event.target.closest("[data-filtro-centro-toggle]");
+          if (toggleFiltro) {
+            event.stopPropagation();
+            const menu = listaFornecedoresModuloEl.querySelector("[data-filtro-centro-menu]");
+            if (menu) menu.classList.toggle("hidden");
+            return;
+          }
+
+          if (event.target.closest("[data-filtro-centro-menu]")) {
+            const clearButton = event.target.closest("[data-filtro-centro-clear]");
+            const applyButton = event.target.closest("[data-filtro-centro-apply]");
+
+            if (clearButton) {
+              filtrosCentroFornecedores = [];
+              renderFornecedoresModulo();
+              return;
+            }
+
+            if (applyButton) {
+              filtrosCentroFornecedores = Array.from(listaFornecedoresModuloEl.querySelectorAll("[data-filtro-centro-option]:checked"))
+                .map((input) => input.value)
+                .filter(Boolean);
+              renderFornecedoresModulo();
+              return;
+            }
+
+            return;
+          }
+
+          return;
+        });
+      }
+
+      if (fornecedorSearchInputEl) {
+        fornecedorSearchInputEl.addEventListener("input", () => renderFornecedoresModulo());
+      }
+      if (fornecedorCentroToggleEl && fornecedorCentroMenuEl) {
+        fornecedorCentroToggleEl.addEventListener("click", (event) => {
+          event.stopPropagation();
+          fornecedorCentroMenuEl.classList.toggle("hidden");
+        });
+      }
+      if (fornecedorCentroOptionsEl) {
+        fornecedorCentroOptionsEl.addEventListener("change", () => {
+          filtrosCentroFornecedores = Array.from(fornecedorCentroOptionsEl.querySelectorAll("[data-fornecedor-centro-option]:checked"))
+            .map((input) => input.value)
+            .filter(Boolean);
+          renderFornecedoresModulo();
+        });
+      }
+      if (fornecedorCentroClearEl) {
+        fornecedorCentroClearEl.addEventListener("click", (event) => {
+          event.stopPropagation();
+          filtrosCentroFornecedores = [];
+          renderFornecedoresModulo();
+        });
+      }
+      if (btnAtualizarFornecedoresModuloEl) {
+        btnAtualizarFornecedoresModuloEl.addEventListener("click", async () => {
+          btnAtualizarFornecedoresModuloEl.disabled = true;
+          btnAtualizarFornecedoresModuloEl.classList.add("opacity-70");
+          try {
+            await carregarFornecedores();
+          } catch (error) {
+            alert(error.message);
+          } finally {
+            btnAtualizarFornecedoresModuloEl.disabled = false;
+            btnAtualizarFornecedoresModuloEl.classList.remove("opacity-70");
+          }
         });
       }
 
@@ -2404,17 +3791,49 @@
         if (!fornecedorEl.contains(event.target) && !listaFornecedoresEl.contains(event.target)) {
           listaFornecedoresEl.classList.add("hidden");
         }
+        if (listaFornecedoresModuloEl && !listaFornecedoresModuloEl.contains(event.target)) {
+          const menu = listaFornecedoresModuloEl.querySelector("[data-filtro-centro-menu]");
+          if (menu) menu.classList.add("hidden");
+        }
+        if (
+          fornecedorCentroMenuEl &&
+          fornecedorCentroToggleEl &&
+          !fornecedorCentroMenuEl.contains(event.target) &&
+          !fornecedorCentroToggleEl.contains(event.target)
+        ) {
+          fornecedorCentroMenuEl.classList.add("hidden");
+        }
+        if (rankingModuloGridEl && !rankingModuloGridEl.contains(event.target)) {
+          const menu = rankingModuloGridEl.querySelector("[data-filtro-qualidade-centro-menu]");
+          if (menu) menu.classList.add("hidden");
+        }
       });
 
       listaCentrosEl.addEventListener("change", carregarCultivares);
       listaCultivaresEl.addEventListener("change", debouncedAtualizarPreviewSeCompleto);
       [globalPercEl, globalValorEl].forEach((input) => {
-        input.addEventListener("input", () => updateZeroField(input));
+        input.addEventListener("input", () => {
+          updateZeroField(input);
+          updateGlobalPracaSummary();
+        });
         input.addEventListener("change", () => {
           updateZeroField(input);
+          updateGlobalPracaSummary();
           debouncedAtualizarPreviewSeCompleto();
         });
       });
+      if (globalPracaToggleEl && globalPracaPanelEl) {
+        globalPracaToggleEl.addEventListener("click", () => {
+          refreshGlobalPracaSelect();
+          globalPracaPanelEl.classList.toggle("hidden");
+        });
+      }
+      if (globalPracaEl) {
+        globalPracaEl.addEventListener("change", () => {
+          applyGlobalPracaSelection();
+          debouncedAtualizarPreviewSeCompleto();
+        });
+      }
       configPorItemEl.addEventListener("click", (event) => {
         const button = event.target.closest("[data-praca-toggle]");
         if (!button) return;
@@ -2449,33 +3868,207 @@
         if (!usuarioAdminAtual) return;
         uploadPlanilhaTopoEl.click();
       });
+      if (btnUploadClassificacoesEl && uploadClassificacoesEl) {
+        btnUploadClassificacoesEl.addEventListener("click", () => {
+          if (!usuarioAdminAtual) return;
+          uploadClassificacoesEl.click();
+        });
+      }
+      if (btnEditarRegrasClassificacoesEl && editorRegrasClassificacoesEl) {
+        btnEditarRegrasClassificacoesEl.addEventListener("click", async () => {
+          const abrir = editorRegrasClassificacoesEl.classList.contains("hidden");
+          editorRegrasClassificacoesEl.classList.toggle("hidden", !abrir);
+          btnEditarRegrasClassificacoesEl.innerHTML = abrir
+            ? `<i class="fa-solid fa-chevron-up"></i>Ocultar regras`
+            : `<i class="fa-solid fa-pen-to-square"></i>Editar regras`;
+
+          if (abrir && regrasClassificacoesTextoEl && !regrasClassificacoesTextoEl.value) {
+            try {
+              await carregarRegrasClassificacoes();
+            } catch (error) {
+              setStatusRegrasClassificacoes(error.message, "error");
+            }
+          }
+        });
+      }
+      if (btnSalvarRegrasClassificacoesEl) {
+        btnSalvarRegrasClassificacoesEl.addEventListener("click", salvarRegrasClassificacoes);
+      }
+      if (btnRecarregarRegrasClassificacoesEl) {
+        btnRecarregarRegrasClassificacoesEl.addEventListener("click", async () => {
+          btnRecarregarRegrasClassificacoesEl.disabled = true;
+          try {
+            await carregarRegrasClassificacoes();
+          } catch (error) {
+            setStatusRegrasClassificacoes(error.message, "error");
+          } finally {
+            btnRecarregarRegrasClassificacoesEl.disabled = false;
+          }
+        });
+      }
       const btnExportarXlsxFornecedoresEl = document.getElementById("btnExportarXlsxFornecedores");
       if (btnExportarXlsxFornecedoresEl) {
         btnExportarXlsxFornecedoresEl.addEventListener("click", () => {
           exportarRankingFornecedores();
         });
       }
+      setSidebarCollapsed(getInitialSidebarCollapsed(), false);
+      if (btnToggleSidebarEl) {
+        btnToggleSidebarEl.addEventListener("click", () => {
+          setSidebarCollapsed(!document.body.classList.contains("sidebar-collapsed"));
+        });
+      }
+      if (btnCloseSidebarEl) {
+        btnCloseSidebarEl.addEventListener("click", (event) => {
+          event.stopPropagation();
+          setSidebarCollapsed(!document.body.classList.contains("sidebar-collapsed"));
+        });
+      }
+      if (appSidebarEl) {
+        appSidebarEl.addEventListener("click", (event) => {
+          if (!document.body.classList.contains("sidebar-collapsed")) return;
+          if (event.target.closest("[data-nav-view], #btnConfiguracoes, #btnLogout")) return;
+          setSidebarCollapsed(false);
+        });
+      }
+      window.addEventListener("resize", syncSidebarForViewport);
       uploadPlanilhaTopoEl.addEventListener("change", async () => {
         if (!uploadPlanilhaTopoEl.files.length) return;
         try {
-          await enviarPlanilha(uploadPlanilhaTopoEl.files[0]);
+          await processarUploadConfiguracao("planilha", uploadPlanilhaTopoEl.files[0]);
         } catch (error) {
-          alert(error.message);
+          mostrarUploadFinalizado(error.message, "error");
         } finally {
           uploadPlanilhaTopoEl.value = "";
         }
       });
+      if (uploadClassificacoesEl) {
+        uploadClassificacoesEl.addEventListener("change", async () => {
+          if (!uploadClassificacoesEl.files.length) return;
+          try {
+            await processarUploadConfiguracao("classificacoes", uploadClassificacoesEl.files[0]);
+          } catch (error) {
+            mostrarUploadFinalizado(error.message, "error");
+          } finally {
+            uploadClassificacoesEl.value = "";
+          }
+        });
+      }
+      if (btnFecharUploadStatusEl) {
+        btnFecharUploadStatusEl.addEventListener("click", fecharStatusUpload);
+      }
       btnConfiguracoesEl.addEventListener("click", abrirConfiguracoes);
       btnFecharConfiguracoesEl.addEventListener("click", fecharConfiguracoes);
       modalConfiguracoesEl.addEventListener("click", (event) => {
+        const tab = event.target.closest("[data-config-tab]");
+        if (tab) {
+          setConfigTab(tab.dataset.configTab);
+          return;
+        }
+
+        const passwordToggle = event.target.closest("[data-toggle-config-password]");
+        if (passwordToggle) {
+          const input = document.getElementById(passwordToggle.dataset.toggleConfigPassword);
+          if (input) input.type = input.type === "password" ? "text" : "password";
+          return;
+        }
+
+        const uploadTrigger = event.target.closest("[data-config-upload]");
+        if (uploadTrigger) {
+          if (!usuarioAdminAtual) return;
+          if (uploadTrigger.dataset.configUpload === "planilha") uploadPlanilhaTopoEl.click();
+          if (uploadTrigger.dataset.configUpload === "classificacoes" && uploadClassificacoesEl) uploadClassificacoesEl.click();
+          return;
+        }
+
+        if (event.target.closest("[data-config-history-link]")) {
+          fecharConfiguracoes();
+          setActiveView("historico");
+          return;
+        }
+
         if (event.target === modalConfiguracoesEl) fecharConfiguracoes();
       });
+
+      document.querySelectorAll("[data-config-drop]").forEach((dropZone) => {
+        dropZone.addEventListener("dragover", (event) => {
+          event.preventDefault();
+          dropZone.classList.add("border-[#2f7d32]", "bg-[#eaf5e5]");
+        });
+        dropZone.addEventListener("dragleave", () => {
+          dropZone.classList.remove("border-[#2f7d32]", "bg-[#eaf5e5]");
+        });
+        dropZone.addEventListener("drop", async (event) => {
+          event.preventDefault();
+          dropZone.classList.remove("border-[#2f7d32]", "bg-[#eaf5e5]");
+          if (!usuarioAdminAtual) return;
+          const file = event.dataTransfer?.files?.[0];
+          if (!file) return;
+          try {
+            await processarUploadConfiguracao(dropZone.dataset.configDrop, file);
+          } catch (error) {
+            mostrarUploadFinalizado(error.message, "error");
+          }
+        });
+      });
+
+      if (btnUploadFotoPerfilEl && uploadFotoPerfilEl) {
+        btnUploadFotoPerfilEl.addEventListener("click", () => uploadFotoPerfilEl.click());
+        uploadFotoPerfilEl.addEventListener("change", async () => {
+          const file = uploadFotoPerfilEl.files?.[0];
+          if (!file) return;
+
+          if (file.size > 3 * 1024 * 1024) {
+            uploadFotoPerfilEl.value = "";
+            showConfigStatus("Envie uma imagem com ate 3 MB.", "error");
+            return;
+          }
+
+          const formData = new FormData();
+          formData.append("foto", file);
+          btnUploadFotoPerfilEl.disabled = true;
+          try {
+            const data = await fetchJson("/api/me/foto-perfil", {
+              method: "POST",
+              body: formData
+            });
+            updateProfilePhoto(data.fotoPerfil, usuarioAtual);
+            showConfigStatus(data.mensagem || "Foto de perfil atualizada.");
+          } catch (error) {
+            showConfigStatus(error.message, "error");
+          } finally {
+            btnUploadFotoPerfilEl.disabled = false;
+            uploadFotoPerfilEl.value = "";
+          }
+        });
+      }
+
+      if (btnRemoverFotoPerfilEl) {
+        btnRemoverFotoPerfilEl.addEventListener("click", async () => {
+          btnRemoverFotoPerfilEl.disabled = true;
+          try {
+            const data = await fetchJson("/api/me/foto-perfil", { method: "DELETE" });
+            updateProfilePhoto("", usuarioAtual);
+            showConfigStatus(data.mensagem || "Foto de perfil removida.");
+          } catch (error) {
+            showConfigStatus(error.message, "error");
+          } finally {
+            btnRemoverFotoPerfilEl.disabled = false;
+          }
+        });
+      }
 
       formUsuarioEl.addEventListener("submit", async (event) => {
         event.preventDefault();
         const senha = String(novaSenhaConfigEl.value || "").trim();
+        const confirmarSenhaEl = document.getElementById("confirmarSenhaConfig");
+        const confirmarSenha = String(confirmarSenhaEl?.value || "").trim();
         if (senha.length < 4) {
           showConfigStatus("Informe uma senha com no mínimo 4 caracteres.", "error");
+          return;
+        }
+        if (confirmarSenha && senha !== confirmarSenha) {
+          showConfigStatus("A confirmação da senha não confere.", "error");
           return;
         }
 
@@ -2486,6 +4079,9 @@
             body: JSON.stringify({ senha })
           });
           novaSenhaConfigEl.value = "";
+          if (confirmarSenhaEl) confirmarSenhaEl.value = "";
+          const senhaAtualEl = document.getElementById("senhaAtualConfig");
+          if (senhaAtualEl) senhaAtualEl.value = "";
           showConfigStatus(data.mensagem);
         } catch (error) {
           showConfigStatus(error.message, "error");
@@ -2616,7 +4212,7 @@
           usuarioLogadoEl.textContent = `Usuário: ${session.usuario}`;
           updateShellUser(session);
           await Promise.all([carregarFornecedores(), carregarPracas()]);
-          if (usuarioAdminAtual) await carregarInfoPlanilha();
+          if (usuarioAdminAtual) await Promise.all([carregarInfoPlanilha(), carregarInfoClassificacoes()]);
           await carregarDashboardLink();
           carregarHistorico().catch(() => renderHistoricoModulo([]));
           setActiveView("inicio");

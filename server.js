@@ -36,8 +36,16 @@ const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 const ROOT_DIR = __dirname;
 const PUBLIC_DIR = path.join(ROOT_DIR, "public");
 const DATA_DIR = path.join(ROOT_DIR, "data");
+const PROFILE_PHOTOS_DIR = path.join(DATA_DIR, "profile-photos");
 const WORKBOOK_SNAPSHOT_CONFIG_KEY = "planilha_atual_snapshot";
 const PRACA_PREP_META = path.join(DATA_DIR, "pracas-preparadas.json");
+const CLASSIFICATION_WORKBOOK_NAME = "classificacoes.xlsx";
+const CLASSIFICATION_WORKBOOK = path.join(ROOT_DIR, CLASSIFICATION_WORKBOOK_NAME);
+const CLASSIFICATION_META = path.join(DATA_DIR, "classificacoes.json");
+const CLASSIFICATION_RULES_FILE = path.join(ROOT_DIR, "regras-classificacoes.txt");
+const CLASSIFICATION_RULES_CONFIG_KEY = "classificacoes_regras_txt";
+const CLASSIFICATION_ORIGINAL_META = path.join(DATA_DIR, "classificacoes-original.json");
+const CLASSIFICATION_ORIGINAL_CONFIG_KEY = "classificacoes_original_snapshot";
 const UNITS_WORKBOOK = path.join(ROOT_DIR, "Unidades Boa Safra.xlsx");
 const MODEL_PDF = path.join(ROOT_DIR, "NF MODELO BONIFICACAO.pdf");
 const LOGO_IMAGE = path.join(ROOT_DIR, "logo.png");
@@ -48,6 +56,7 @@ const REPORT_CONTENT_TOP = 145;
 const REPORT_BOTTOM_MARGIN = 125;
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
+fs.mkdirSync(PROFILE_PHOTOS_DIR, { recursive: true });
 
 // ============= CONFIG =============
 const SESSION_SECRET = process.env.SESSION_SECRET || "boa-safra-secret";
@@ -61,14 +70,30 @@ const EMAIL_FROM = process.env.EMAIL_FROM || "no-reply@boasafrasementes.com.br";
 const EMAIL_DOMAIN = "@boasafrasementes.com.br";
 const APP_URL = process.env.APP_URL || "";
 const DEFAULT_PUBLIC_APP_URL = "https://simulador-bonificacao-production.up.railway.app";
+const PROFILE_PHOTO_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
 
-const upload = multer({
+function createWorkbookUpload(allowedExtensions) {
+  return multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 50 * 1024 * 1024 },
+    fileFilter: (_req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase();
+      if (!allowedExtensions.includes(ext)) {
+        return cb(new Error(`Envie uma planilha nos formatos ${allowedExtensions.join(", ")}.`));
+      }
+      return cb(null, true);
+    }
+  });
+}
+
+const upload = createWorkbookUpload([".xlsx", ".xls"]);
+const uploadClassificacoes = createWorkbookUpload([".xlsx", ".xls", ".csv"]);
+const profilePhotoUpload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 50 * 1024 * 1024 },
+  limits: { fileSize: 3 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (![".xlsx", ".xls"].includes(ext)) {
-      return cb(new Error("Envie uma planilha nos formatos .xlsx ou .xls."));
+    if (!getProfilePhotoExtension(file)) {
+      return cb(new Error("Envie uma imagem JPG, PNG ou WebP."));
     }
     return cb(null, true);
   }
@@ -133,6 +158,66 @@ function normalizeBoolean(value) {
 
 function isAdminProfile(profile) {
   return normalizeBoolean(profile?.admin);
+}
+
+function getProfilePhotoExtension(file) {
+  const originalExt = path.extname(file?.originalname || "").toLowerCase();
+  if (PROFILE_PHOTO_EXTENSIONS.includes(originalExt)) {
+    return originalExt === ".jpeg" ? ".jpg" : originalExt;
+  }
+
+  const mimeExtensions = {
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp"
+  };
+  return mimeExtensions[String(file?.mimetype || "").toLowerCase()] || "";
+}
+
+function getProfilePhotoKey(profile) {
+  const source = String(profile?.id || profile?.email || profile?.usuario || "").trim();
+  if (!source) return "";
+  return crypto.createHash("sha256").update(source).digest("hex");
+}
+
+function findProfilePhotoPath(profile) {
+  const key = getProfilePhotoKey(profile);
+  if (!key) return "";
+
+  for (const ext of PROFILE_PHOTO_EXTENSIONS) {
+    const filePath = path.join(PROFILE_PHOTOS_DIR, `${key}${ext}`);
+    if (fs.existsSync(filePath)) return filePath;
+  }
+  return "";
+}
+
+function getProfilePhotoUrl(profile) {
+  const filePath = findProfilePhotoPath(profile);
+  if (!filePath) return "";
+
+  const version = fs.statSync(filePath).mtimeMs.toFixed(0);
+  return `/api/me/foto-perfil?v=${version}`;
+}
+
+function removeProfilePhoto(profile) {
+  const key = getProfilePhotoKey(profile);
+  if (!key) return;
+
+  for (const ext of PROFILE_PHOTO_EXTENSIONS) {
+    const filePath = path.join(PROFILE_PHOTOS_DIR, `${key}${ext}`);
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+  }
+}
+
+function saveProfilePhoto(profile, file) {
+  const key = getProfilePhotoKey(profile);
+  const ext = getProfilePhotoExtension(file);
+  if (!key || !ext) throw new Error("Nao foi possivel salvar a foto de perfil.");
+
+  fs.mkdirSync(PROFILE_PHOTOS_DIR, { recursive: true });
+  removeProfilePhoto(profile);
+  fs.writeFileSync(path.join(PROFILE_PHOTOS_DIR, `${key}${ext}`), file.buffer);
+  return getProfilePhotoUrl(profile);
 }
 
 function requireAuth(req, res, next) {
@@ -440,6 +525,60 @@ function readWorkbookMeta() {
 
 function writeWorkbookMeta(meta) {
   fs.writeFileSync(path.join(DATA_DIR, "planilha.json"), JSON.stringify(meta, null, 2));
+}
+
+function readClassificationMeta() {
+  if (!fs.existsSync(CLASSIFICATION_META)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(CLASSIFICATION_META, "utf8"));
+  } catch (_err) {
+    return null;
+  }
+}
+
+function writeClassificationMeta(meta) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.writeFileSync(CLASSIFICATION_META, JSON.stringify(meta, null, 2));
+}
+
+function readClassificationOriginalMeta() {
+  if (!fs.existsSync(CLASSIFICATION_ORIGINAL_META)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(CLASSIFICATION_ORIGINAL_META, "utf8"));
+  } catch (_err) {
+    return null;
+  }
+}
+
+function writeClassificationOriginalMeta(meta) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.writeFileSync(CLASSIFICATION_ORIGINAL_META, JSON.stringify(meta, null, 2));
+}
+
+function getClassificationOriginalExt(originalName) {
+  const ext = path.extname(originalName || "").toLowerCase();
+  return [".xlsx", ".xls", ".csv"].includes(ext) ? ext : ".xlsx";
+}
+
+function getClassificationOriginalStoredName(originalName) {
+  return `classificacoes-original${getClassificationOriginalExt(originalName)}`;
+}
+
+function findClassificationOriginalPath() {
+  const meta = readClassificationOriginalMeta();
+  const names = [
+    meta?.storedName,
+    "classificacoes-original.xlsx",
+    "classificacoes-original.xls",
+    "classificacoes-original.csv"
+  ].filter(Boolean);
+
+  for (const file of [...new Set(names)]) {
+    const absolute = path.join(DATA_DIR, file);
+    if (fs.existsSync(absolute)) return absolute;
+  }
+
+  return null;
 }
 
 function getCurrentWorkbookNames() {
@@ -1150,6 +1289,8 @@ function findValorSacaWorkbookPath() {
 }
 
 function findClassificationWorkbookPath() {
+  if (fs.existsSync(CLASSIFICATION_WORKBOOK)) return CLASSIFICATION_WORKBOOK;
+
   const extensions = new Set([".csv", ".xlsx", ".xls"]);
   const candidates = fs.readdirSync(ROOT_DIR)
     .filter(file => /classifica/i.test(file) && extensions.has(path.extname(file).toLowerCase()))
@@ -1234,6 +1375,35 @@ function getWorkbookInfo() {
   return { origem: "nenhuma", arquivo: null, enviadoEm: null, atualizadoPor: null, atualizadoPorEmail: null };
 }
 
+function getClassificationWorkbookInfo() {
+  const workbookPath = findClassificationWorkbookPath();
+  if (!workbookPath) {
+    return {
+      origem: "nenhuma",
+      arquivo: null,
+      arquivoTratado: null,
+      enviadoEm: null,
+      atualizadoPor: null,
+      atualizadoPorEmail: null,
+      regras: path.basename(CLASSIFICATION_RULES_FILE),
+      tratamento: null
+    };
+  }
+
+  const stat = fs.statSync(workbookPath);
+  const meta = readClassificationMeta();
+  return {
+    origem: meta?.originalName ? "upload" : "arquivo local",
+    arquivo: meta?.originalName || path.basename(workbookPath),
+    arquivoTratado: path.basename(workbookPath),
+    enviadoEm: meta?.uploadedAt || new Date(stat.mtimeMs).toISOString(),
+    atualizadoPor: meta?.uploadedBy || null,
+    atualizadoPorEmail: meta?.uploadedByEmail || null,
+    regras: path.basename(CLASSIFICATION_RULES_FILE),
+    tratamento: meta?.stats || null
+  };
+}
+
 function getWorkbook() {
   const workbookPath = findUploadedWorkbookPath() || findWorkbookPath();
   if (!workbookPath) return null;
@@ -1306,7 +1476,14 @@ function getClassificationRows() {
 
   try {
     const stat = fs.statSync(workbookPath);
-    const cacheKey = `${workbookPath}|${stat.mtimeMs}|${stat.size}`;
+    const rulesStat = fs.existsSync(CLASSIFICATION_RULES_FILE) ? fs.statSync(CLASSIFICATION_RULES_FILE) : null;
+    const cacheKey = [
+      workbookPath,
+      stat.mtimeMs,
+      stat.size,
+      rulesStat?.mtimeMs || 0,
+      rulesStat?.size || 0
+    ].join("|");
     if (classificationRowsCache?.cacheKey === cacheKey) {
       return classificationRowsCache.rows;
     }
@@ -1314,7 +1491,12 @@ function getClassificationRows() {
     const workbook = XLSX.readFile(workbookPath, { raw: false });
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
-    const rows = XLSX.utils.sheet_to_json(worksheet, { defval: "", raw: false });
+    const rawRows = XLSX.utils.sheet_to_json(worksheet, { defval: "", raw: false });
+    const rules = readClassificationRules();
+    const stats = { cultivaresTratadas: 0 };
+    const rows = rawRows
+      .filter(row => !shouldDiscardClassificationRow(row, rules))
+      .map(row => transformClassificationRow(row, rules, stats));
     classificationRowsCache = { cacheKey, rows };
     return rows;
   } catch (error) {
@@ -1465,11 +1647,484 @@ function parseFlexibleNumber(value) {
       text = text.replace(/,/g, "");
     }
   } else if (lastComma >= 0) {
-    text = text.replace(",", ".");
+    const commaCount = (text.match(/,/g) || []).length;
+    if (commaCount > 1) {
+      text = text
+        .split("")
+        .map((char, index) => char === "," ? (index === lastComma ? "." : "") : char)
+        .join("");
+    } else {
+      text = text.replace(",", ".");
+    }
   }
 
   const parsed = Number(text);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function countTextIssues(value) {
+  return (String(value || "").match(/[ÃÂ�\u0080-\u009f]/g) || []).length;
+}
+
+function repairMojibake(value) {
+  const text = normalizeText(value);
+  if (!/[ÃÂ�\u0080-\u009f]/.test(text)) return text;
+
+  try {
+    const repaired = Buffer.from(text, "latin1").toString("utf8");
+    return countTextIssues(repaired) <= countTextIssues(text) && !repaired.includes("�")
+      ? repaired.trim()
+      : text;
+  } catch (_err) {
+    return text;
+  }
+}
+
+function normalizeRuleText(value) {
+  return repairMojibake(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function splitRuleTerms(value) {
+  return String(value || "")
+    .split(",")
+    .map(term => normalizeCultivarRuleText(term))
+    .filter(Boolean);
+}
+
+function compactRuleText(value) {
+  return normalizeRuleText(value).replace(/\s+/g, "");
+}
+
+function includesRuleTerm(text, term) {
+  const source = normalizeCultivarRuleText(text);
+  const needle = normalizeCultivarRuleText(term);
+  if (!source || !needle) return false;
+  return source.includes(needle) || compactRuleText(source).includes(compactRuleText(needle));
+}
+
+function normalizeCultivarRuleText(value) {
+  return normalizeRuleText(value).replace(/\bGUERPARDO\b/g, "GUEPARDO");
+}
+
+const REQUIRED_CLASSIFICATION_RULE_LINES = [
+  "CRIADO EM ANO|2026",
+  "DESCARTAR LINHA|FC 415,BRS A502",
+  "CULTIVAR|TODOS|DOMINIO|84I86RSF IPRO - DOMINIO",
+  "CULTIVAR|TODOS|NEO,820|O820 IPRO - NEO820 IPRO"
+];
+
+function mergeRequiredClassificationRuleLines(content) {
+  const base = String(content || "").replace(/\r\n/g, "\n").trimEnd();
+  const existing = new Set(
+    base
+      .split(/\n/)
+      .map(line => normalizeRuleText(line))
+      .filter(Boolean)
+  );
+  const missing = REQUIRED_CLASSIFICATION_RULE_LINES.filter(line => !existing.has(normalizeRuleText(line)));
+  const merged = [base, ...missing].filter(Boolean).join("\n").trimEnd();
+  return merged ? `${merged}\n` : "";
+}
+
+function getDefaultClassificationRules() {
+  return {
+    columnAliases: new Map([
+      ["codigocliente", "Código de Campo"],
+      ["codigodecampo", "Código de Campo"],
+      ["pesoliquido", "Peso Liquido"],
+      ["datalassificacao", "Data de classificação"],
+      ["dataclassificacao", "Data de classificação"]
+    ]),
+    cultivarRules: [
+      { mode: "ALL", terms: ["OLIMPO"], value: "80I82RSF IPRO - OLIMPO" },
+      { mode: "ALL", terms: ["JATOBA"], value: "22213I2X - JATOBA" },
+      { mode: "ALL", terms: ["BALSAMO"], value: "23311I2X - BALSAMO" },
+      { mode: "ALL", terms: ["DOMINIO"], value: "84I86RSF IPRO - DOMINIO" },
+      { mode: "ALL", terms: ["GUEPARDO"], value: "67I68RSF IPRO - GUEPARDO" },
+      { mode: "ALL", terms: ["TORMENTA"], value: "74K76RSF CE - TORMENTA" },
+      { mode: "ALL", terms: ["APICE"], value: "75IX78RSF I2X - APICE" },
+      { mode: "ALL", terms: ["M7601I2X"], value: "7601I2X - M7601I2X" },
+      { mode: "ALL", terms: ["COBRE"], value: "77IX78RSF I2X - COBRE" },
+      { mode: "ALL", terms: ["79K82RSF"], value: "79K82RSF CE - MITICA CE" },
+      { mode: "ALL", terms: ["2471"], value: "BS2471001 I2X - AVRA 2471" },
+      { mode: "ALL", terms: ["2576"], value: "BS2576003 I2X-AVRA 2576" },
+      { mode: "ALL", terms: ["AVRA", "2478"], value: "BS2478002 I2X-AVRA 2478" },
+      { mode: "ANY", terms: ["SPARTA", "80IX81RSF"], value: "80IX81RSF I2X - SPARTA" },
+      { mode: "ALL", terms: ["SYN", "2478"], value: "SYN2478IPRO - GH2478 IPRO" },
+      { mode: "ALL", terms: ["SYN", "1687"], value: "SYN 1687 IPRO - GH1687 IPRO" },
+      { mode: "ALL", terms: ["SYN", "2282"], value: "SYN2282IPRO - GH2282 IPRO" },
+      { mode: "ALL", terms: ["NEO", "800"], value: "O800 I2X - NEO800 I2X" },
+      { mode: "ALL", terms: ["NEO", "820"], value: "O820 IPRO - NEO820 IPRO" }
+    ],
+    discardRowTerms: ["FEIJAO", "MILHO", "SOJA INTACTA", "SORGO", "TRIGO", "FORRAGEIRA", "ARROZ", "TBIO", "FC 415", "BRS A502"],
+    discardNotas: ["G"],
+    allowedCreatedYears: ["2026"],
+    cultivarPrefix: "SEM SOJA"
+  };
+}
+
+function getEmptyClassificationRules() {
+  return {
+    columnAliases: new Map(),
+    cultivarRules: [],
+    discardRowTerms: [],
+    discardNotas: [],
+    allowedCreatedYears: ["2026"],
+    cultivarPrefix: "SEM SOJA"
+  };
+}
+
+function readClassificationRules() {
+  const hasRulesFile = fs.existsSync(CLASSIFICATION_RULES_FILE);
+  const rules = hasRulesFile ? getEmptyClassificationRules() : getDefaultClassificationRules();
+  if (!hasRulesFile) return rules;
+
+  const lines = mergeRequiredClassificationRuleLines(fs.readFileSync(CLASSIFICATION_RULES_FILE, "utf8")).split(/\r?\n/);
+  const fileCultivarRules = [];
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+
+    const shorthandType = normalizeRuleText(line);
+    if (!line.includes("|")) {
+      if (shorthandType.startsWith("DESCARTAR NOTA ")) {
+        const term = line.replace(/^\s*DESCARTAR\s+NOTA\s+/i, "");
+        rules.discardNotas.push(...splitRuleTerms(term));
+        continue;
+      }
+
+      if (
+        shorthandType.startsWith("DESCARTAR LINHA ") ||
+        shorthandType.startsWith("DESCARTAR CULTIVAR ") ||
+        shorthandType.startsWith("DESCARTAR ")
+      ) {
+        const term = line.replace(/^\s*DESCARTAR(?:\s+LINHA|\s+CULTIVAR)?\s+/i, "");
+        rules.discardRowTerms.push(...splitRuleTerms(term));
+        continue;
+      }
+    }
+
+    const parts = line.split("|").map(part => part.trim());
+    const type = normalizeRuleText(parts[0]);
+
+    if (type === "COLUNA" && parts.length >= 3) {
+      rules.columnAliases.set(normalizeColumnKey(repairMojibake(parts[1])), repairMojibake(parts.slice(2).join("|")));
+      continue;
+    }
+
+    if (type === "CULTIVAR" && parts.length >= 4) {
+      const mode = normalizeRuleText(parts[1]) === "QUALQUER" || normalizeRuleText(parts[1]) === "ANY" ? "ANY" : "ALL";
+      const terms = splitRuleTerms(parts[2]);
+      const value = repairMojibake(parts.slice(3).join("|"));
+      if (terms.length && value) fileCultivarRules.push({ mode, terms, value });
+      continue;
+    }
+
+    if (type === "DESCARTAR LINHA" || type === "DESCARTAR CULTIVAR") {
+      rules.discardRowTerms.push(...splitRuleTerms(parts.slice(1).join(",")));
+      continue;
+    }
+
+    if (type === "DESCARTAR NOTA") {
+      rules.discardNotas.push(...splitRuleTerms(parts.slice(1).join(",")));
+      continue;
+    }
+
+    if (type === "CRIADO EM ANO" || type === "CONSIDERAR ANO") {
+      rules.allowedCreatedYears.push(...splitRuleTerms(parts.slice(1).join(",")).map(String));
+      continue;
+    }
+
+    if (type === "PREFIXO CULTIVAR" && parts[1]) {
+      rules.cultivarPrefix = repairMojibake(parts.slice(1).join("|"));
+    }
+  }
+
+  if (fileCultivarRules.length) {
+    rules.cultivarRules = fileCultivarRules;
+  }
+
+  return rules;
+}
+
+function getClassificationRulesText() {
+  if (!fs.existsSync(CLASSIFICATION_RULES_FILE)) return mergeRequiredClassificationRuleLines("");
+  return mergeRequiredClassificationRuleLines(fs.readFileSync(CLASSIFICATION_RULES_FILE, "utf8"));
+}
+
+function writeClassificationRulesText(content) {
+  const text = mergeRequiredClassificationRuleLines(content);
+  const size = Buffer.byteLength(text, "utf8");
+  if (size > 200 * 1024) {
+    const error = new Error("O arquivo de regras esta muito grande.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  fs.writeFileSync(CLASSIFICATION_RULES_FILE, text, "utf8");
+  return { text, size };
+}
+
+async function restoreClassificationRulesText() {
+  const persistedRules = await getConfigValue(CLASSIFICATION_RULES_CONFIG_KEY);
+  if (!persistedRules) return false;
+  writeClassificationRulesText(persistedRules);
+  return true;
+}
+
+function saveClassificationOriginalUpload(buffer, originalName, profile) {
+  const storedName = getClassificationOriginalStoredName(originalName);
+  const absolute = path.join(DATA_DIR, storedName);
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.writeFileSync(absolute, buffer);
+
+  const meta = {
+    storedName,
+    ext: path.extname(storedName).toLowerCase(),
+    originalName: originalName || storedName,
+    uploadedAt: new Date().toISOString(),
+    uploadedBy: profile?.usuario || null,
+    uploadedByEmail: profile?.email || null,
+    size: buffer.length,
+    sha256: crypto.createHash("sha256").update(buffer).digest("hex")
+  };
+
+  writeClassificationOriginalMeta(meta);
+  return meta;
+}
+
+async function saveClassificationOriginalSnapshot(meta, buffer) {
+  try {
+    await setConfigValue(CLASSIFICATION_ORIGINAL_CONFIG_KEY, JSON.stringify({
+      ...meta,
+      savedAt: new Date().toISOString(),
+      contentBase64: buffer.toString("base64")
+    }));
+    return true;
+  } catch (error) {
+    console.warn(`Nao foi possivel salvar original de classificacoes no Supabase: ${error.message}`);
+    return false;
+  }
+}
+
+async function restoreClassificationOriginalSnapshot() {
+  let raw = "";
+  try {
+    raw = await getConfigValue(CLASSIFICATION_ORIGINAL_CONFIG_KEY);
+  } catch (_error) {
+    return false;
+  }
+
+  if (!raw) return false;
+
+  let snapshot;
+  try {
+    snapshot = JSON.parse(raw);
+  } catch (_err) {
+    return false;
+  }
+
+  if (!snapshot?.contentBase64) return false;
+  const storedName = snapshot.storedName || getClassificationOriginalStoredName(snapshot.originalName);
+  const absolute = path.join(DATA_DIR, storedName);
+  const buffer = Buffer.from(snapshot.contentBase64, "base64");
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.writeFileSync(absolute, buffer);
+
+  const { contentBase64: _contentBase64, savedAt: _savedAt, ...meta } = snapshot;
+  writeClassificationOriginalMeta({
+    ...meta,
+    storedName,
+    ext: path.extname(storedName).toLowerCase(),
+    size: buffer.length,
+    sha256: crypto.createHash("sha256").update(buffer).digest("hex")
+  });
+
+  return true;
+}
+
+async function reprocessClassificationFromStoredOriginal(profile) {
+  const originalPath = findClassificationOriginalPath();
+  if (!originalPath) {
+    return { reprocessed: false, reason: "original_missing" };
+  }
+
+  const originalMeta = readClassificationOriginalMeta();
+  const originalBuffer = fs.readFileSync(originalPath);
+  const originalName = originalMeta?.originalName || path.basename(originalPath);
+  const treated = processClassificationWorkbookBuffer(originalBuffer, originalName);
+  fs.writeFileSync(CLASSIFICATION_WORKBOOK, treated.buffer);
+
+  const meta = {
+    storedName: CLASSIFICATION_WORKBOOK_NAME,
+    originalName,
+    uploadedAt: originalMeta?.uploadedAt || new Date().toISOString(),
+    uploadedBy: originalMeta?.uploadedBy || null,
+    uploadedByEmail: originalMeta?.uploadedByEmail || null,
+    rulesUpdatedAt: new Date().toISOString(),
+    rulesUpdatedBy: profile?.usuario || null,
+    rulesUpdatedByEmail: profile?.email || null,
+    size: treated.buffer.length,
+    sha256: crypto.createHash("sha256").update(treated.buffer).digest("hex"),
+    rulesFile: path.basename(CLASSIFICATION_RULES_FILE),
+    stats: treated.stats
+  };
+
+  writeClassificationMeta(meta);
+  classificationRowsCache = null;
+
+  const config = getExtraWorkbookConfigs().find(item => item.key === "classificacoes_snapshot");
+  if (config) await saveExtraWorkbookSnapshot(config);
+
+  return { reprocessed: true, stats: treated.stats, classificacoes: getClassificationWorkbookInfo() };
+}
+
+function getRowKey(row, candidates) {
+  const normalizedCandidates = new Set(candidates.map(normalizeColumnKey));
+  return Object.keys(row).find(key => normalizedCandidates.has(normalizeColumnKey(key))) || "";
+}
+
+function normalizeClassificationColumnName(key, rules) {
+  const repaired = repairMojibake(key);
+  return rules.columnAliases.get(normalizeColumnKey(repaired)) || repaired;
+}
+
+function classificationRowText(row) {
+  return normalizeRuleText(Object.values(row).map(repairMojibake).join(" "));
+}
+
+function extractClassificationCreatedYear(row) {
+  const createdAt = normalizeText(getRowValue(row, [
+    "Criado em",
+    "Criado Em",
+    "Criado",
+    "Created At",
+    "Created"
+  ]));
+  return createdAt.match(/\b(20\d{2})\b/)?.[1] || "";
+}
+
+function shouldDiscardClassificationRow(row, rules) {
+  const nota = normalizeRuleText(getRowValue(row, ["Nota", "Classificacao", "Classificação"]));
+  if (nota && rules.discardNotas.some(term => nota.includes(term))) return "nota";
+
+  const rowText = classificationRowText(row);
+  if (rules.discardRowTerms.some(term => includesRuleTerm(rowText, term))) return "cultivar";
+
+  if (Array.isArray(rules.allowedCreatedYears) && rules.allowedCreatedYears.length) {
+    const createdYear = extractClassificationCreatedYear(row);
+    if (!createdYear || !rules.allowedCreatedYears.includes(createdYear)) return "ano";
+  }
+
+  return "";
+}
+
+function normalizeClassificationCultivar(value, rules) {
+  const repaired = repairMojibake(value);
+  const comparable = normalizeCultivarRuleText(repaired);
+  if (!comparable) return "";
+
+  const matchedRule = rules.cultivarRules.find(rule => {
+    if (rule.mode === "ANY") return rule.terms.some(term => includesRuleTerm(comparable, term));
+    return rule.terms.every(term => includesRuleTerm(comparable, term));
+  });
+
+  const cultivar = matchedRule ? matchedRule.value : repaired;
+  const prefix = repairMojibake(rules.cultivarPrefix || "SEM SOJA");
+  return normalizeRuleText(cultivar).includes(normalizeRuleText(prefix))
+    ? cultivar
+    : `${prefix} ${cultivar}`;
+}
+
+function formatClassificationPesoLiquido(value) {
+  if (typeof value === "number") {
+    return String(value).replace(".", ",");
+  }
+
+  return repairMojibake(value).replace(/\./g, ",");
+}
+
+function transformClassificationRow(row, rules, stats) {
+  const normalized = {};
+  for (const [rawKey, rawValue] of Object.entries(row)) {
+    const key = normalizeClassificationColumnName(rawKey, rules);
+    normalized[key] = typeof rawValue === "string" ? repairMojibake(rawValue) : rawValue;
+  }
+
+  const pesoKey = getRowKey(normalized, ["Peso Liquido", "Peso Líquido", "Peso LÃ­quido"]);
+  if (pesoKey) normalized[pesoKey] = formatClassificationPesoLiquido(normalized[pesoKey]);
+
+  const cultivarKey = getRowKey(normalized, ["Cultivar", "Descricao (Material)", "Descrição (Material)", "Material"]);
+  if (cultivarKey) {
+    const originalCultivar = normalizeRuleText(normalized[cultivarKey]);
+    normalized[cultivarKey] = normalizeClassificationCultivar(normalized[cultivarKey], rules);
+    if (normalizeRuleText(normalized[cultivarKey]) !== originalCultivar) stats.cultivaresTratadas += 1;
+  }
+
+  return normalized;
+}
+
+function processClassificationWorkbookBuffer(buffer, originalName = "") {
+  const isCsv = path.extname(originalName).toLowerCase() === ".csv";
+  const inputWorkbook = isCsv
+    ? XLSX.read(buffer.toString("utf8").replace(/^\uFEFF/, ""), { type: "string", raw: false })
+    : XLSX.read(buffer, { type: "buffer", raw: false });
+  const sheetName = inputWorkbook.SheetNames[0];
+  if (!sheetName) throw new Error("Planilha de classificações sem abas.");
+
+  const worksheet = inputWorkbook.Sheets[sheetName];
+  const rows = XLSX.utils.sheet_to_json(worksheet, { defval: "", raw: false });
+  const rules = readClassificationRules();
+  const stats = {
+    linhasRecebidas: rows.length,
+    linhasMantidas: 0,
+    descartadasPorNota: 0,
+    descartadasPorCultivar: 0,
+    descartadasPorAnoCriado: 0,
+    cultivaresTratadas: 0
+  };
+
+  const treatedRows = [];
+  const headers = [];
+
+  for (const row of rows) {
+    const discardReason = shouldDiscardClassificationRow(row, rules);
+    if (discardReason === "nota") {
+      stats.descartadasPorNota += 1;
+      continue;
+    }
+    if (discardReason === "cultivar") {
+      stats.descartadasPorCultivar += 1;
+      continue;
+    }
+    if (discardReason === "ano") {
+      stats.descartadasPorAnoCriado += 1;
+      continue;
+    }
+
+    const transformed = transformClassificationRow(row, rules, stats);
+    for (const key of Object.keys(transformed)) {
+      if (!headers.includes(key)) headers.push(key);
+    }
+    treatedRows.push(transformed);
+  }
+
+  stats.linhasMantidas = treatedRows.length;
+
+  const outputWorkbook = XLSX.utils.book_new();
+  const outputWorksheet = XLSX.utils.json_to_sheet(treatedRows, { header: headers });
+  XLSX.utils.book_append_sheet(outputWorkbook, outputWorksheet, "Classificacoes");
+
+  return {
+    buffer: XLSX.write(outputWorkbook, { bookType: "xlsx", type: "buffer" }),
+    stats
+  };
 }
 
 function cleanNumericCode(value) {
@@ -1498,6 +2153,7 @@ function extractCultivar(row) {
 function prefixSojaSemente(cultivar) {
   const value = normalizeText(cultivar);
   if (!value) return "";
+  if (/^sem\s+soja\b/i.test(value)) return value;
   return /^soja\s+semente\b/i.test(value) ? value : `SOJA SEMENTE ${value}`;
 }
 
@@ -1509,8 +2165,9 @@ function extractQualityCentro(row) {
   return normalizeText(getRowValue(row, ["Unidade", "Centro"]));
 }
 
-function extractQualityCultivar(row) {
-  return prefixSojaSemente(getRowValue(row, ["Cultivar", "Descricao (Material)", "Material"]));
+function extractQualityCultivar(row, rules = readClassificationRules()) {
+  const cultivar = getRowValue(row, ["Cultivar", "Descricao (Material)", "Material"]);
+  return normalizeClassificationCultivar(cultivar, rules);
 }
 
 function extractQualityPesoLiquido(row) {
@@ -1623,6 +2280,16 @@ function addRankingRow(item, row) {
 
 function addProducerCentro(item, row, cache) {
   const centro = extractCentro(row);
+  if (!centro) return;
+
+  const unit = getRankingUnitInfo(centro, cache);
+  const key = unit.centroCode || normalizeComparable(centro);
+  if (!item.centros) item.centros = new Map();
+  item.centros.set(key, unit.centroCode || extractCentroCode(centro) || centro);
+}
+
+function addQualityCentro(item, row, cache) {
+  const centro = extractQualityCentro(row);
   if (!centro) return;
 
   const unit = getRankingUnitInfo(centro, cache);
@@ -1784,6 +2451,40 @@ function buildCultivarRankingsByCentro(rows) {
     .sort((a, b) => String(a.label || "").localeCompare(String(b.label || ""), "pt-BR"));
 }
 
+function buildProdutorRankingsByCentro(rows) {
+  const rowsByCentro = new Map();
+  const unitCache = new Map();
+
+  for (const row of rows) {
+    const centro = extractCentro(row);
+    const produtor = extractFornecedorNome(row);
+    if (!centro || !produtor) continue;
+
+    const unit = getRankingUnitInfo(centro, unitCache);
+    const key = unit.centroCode || normalizeComparable(centro);
+
+    if (!rowsByCentro.has(key)) {
+      rowsByCentro.set(key, {
+        id: key,
+        label: unit.centroCode || unit.unidade || centro,
+        centro: unit.centro || centro,
+        centroCode: unit.centroCode || key,
+        local: unit.local || "",
+        rows: []
+      });
+    }
+
+    rowsByCentro.get(key).rows.push(row);
+  }
+
+  return [...rowsByCentro.values()]
+    .map(({ rows: centroRows, ...centro }) => ({
+      ...centro,
+      ranking: buildProdutorRanking(centroRows)
+    }))
+    .sort((a, b) => String(a.label || "").localeCompare(String(b.label || ""), "pt-BR", { numeric: true }));
+}
+
 function createQualityRankingItem(base) {
   return {
     ...base,
@@ -1858,7 +2559,7 @@ function buildQualityProdutorRanking(rows) {
     }
 
     const item = groups.get(key);
-    if (addQualityRow(item, row)) addProducerCentro(item, row, unitCache);
+    if (addQualityRow(item, row)) addQualityCentro(item, row, unitCache);
   }
 
   return finalizeQualityRankingItems(groups).map(({ centros, ...item }) => ({
@@ -1896,9 +2597,11 @@ function buildQualityUnidadeRanking(rows) {
 
 function buildQualityCultivarRanking(rows) {
   const groups = new Map();
+  const unitCache = new Map();
+  const rules = readClassificationRules();
 
   for (const row of rows) {
-    const cultivar = extractQualityCultivar(row);
+    const cultivar = extractQualityCultivar(row, rules);
     if (!cultivar) continue;
 
     const key = normalizeComparable(cultivar);
@@ -1908,15 +2611,21 @@ function buildQualityCultivarRanking(rows) {
         tipo: "cultivar",
         label: cultivar,
         cultivar,
-        codigo: ""
+        codigo: "",
+        centros: new Map()
       }));
     }
 
     const item = groups.get(key);
-    addQualityRow(item, row);
+    if (addQualityRow(item, row)) addQualityCentro(item, row, unitCache);
   }
 
-  return finalizeQualityRankingItems(groups);
+  return finalizeQualityRankingItems(groups).map(({ centros, ...item }) => ({
+    ...item,
+    centros: centros instanceof Map
+      ? [...centros.values()].sort((a, b) => a.localeCompare(b, "pt-BR"))
+      : []
+  }));
 }
 
 function buildQualityProdutorRankingsByCentro(rows) {
@@ -1953,12 +2662,47 @@ function buildQualityProdutorRankingsByCentro(rows) {
     .sort((a, b) => String(a.label || "").localeCompare(String(b.label || ""), "pt-BR"));
 }
 
+function buildQualityCultivarRankingsByCentro(rows) {
+  const rowsByCentro = new Map();
+  const unitCache = new Map();
+
+  for (const row of rows) {
+    const centro = extractQualityCentro(row);
+    const cultivar = extractQualityCultivar(row);
+    if (!centro || !cultivar) continue;
+
+    const unit = getRankingUnitInfo(centro, unitCache);
+    const key = unit.centroCode || normalizeComparable(centro);
+
+    if (!rowsByCentro.has(key)) {
+      rowsByCentro.set(key, {
+        id: key,
+        label: unit.unidade || centro,
+        centro: unit.centro || centro,
+        centroCode: unit.centroCode || key,
+        local: unit.local || "",
+        rows: []
+      });
+    }
+
+    rowsByCentro.get(key).rows.push(row);
+  }
+
+  return [...rowsByCentro.values()]
+    .map(({ rows: centroRows, ...centro }) => ({
+      ...centro,
+      ranking: buildQualityCultivarRanking(centroRows)
+    }))
+    .sort((a, b) => String(a.label || "").localeCompare(String(b.label || ""), "pt-BR"));
+}
+
 function buildQualityRankings(rows) {
   return {
     produtores: buildQualityProdutorRanking(rows),
     unidades: buildQualityUnidadeRanking(rows),
     cultivares: buildQualityCultivarRanking(rows),
-    produtoresPorCentro: buildQualityProdutorRankingsByCentro(rows)
+    produtoresPorCentro: buildQualityProdutorRankingsByCentro(rows),
+    cultivaresPorCentro: buildQualityCultivarRankingsByCentro(rows)
   };
 }
 
@@ -1988,6 +2732,7 @@ function buildWorkbookRankings() {
     },
     rankings: {
       produtores: buildProdutorRanking(sementesRows.filter(row => Boolean(extractFornecedorNome(row)))),
+      produtoresPorCentro: buildProdutorRankingsByCentro(sementesRows.filter(row => Boolean(extractFornecedorNome(row)))),
       unidades: buildUnidadeRanking(sementesRows),
       cultivares: buildCultivarRanking(sementesRows),
       cultivaresPorCentro: buildCultivarRankingsByCentro(sementesRows),
@@ -2000,7 +2745,7 @@ function buildRankingFornecedoresWorkbookBuffer(rankings) {
   const rows = Array.isArray(rankings?.rankings?.produtores) ? rankings.rankings.produtores : [];
   const totalPesoLiquido = rows.reduce((sum, item) => sum + Number(item.pesoLiquido || 0), 0);
   const sheetRows = [
-    ["#", "Fornecedor", "Centro(s)", "Peso (kg)", "% do Total", "Status"],
+    ["#", "Produtor", "Centro(s)", "Peso (kg)", "% do Total", "Status"],
     ...rows.map((item, index) => {
       const posicao = index + 1;
       const peso = Number(item.pesoLiquido || 0);
@@ -2031,7 +2776,7 @@ function buildRankingFornecedoresWorkbookBuffer(rankings) {
   worksheet["!autofilter"] = { ref: `A1:F${sheetRows.length}` };
 
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Ranking Fornecedores");
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Ranking Produtores");
   return XLSX.write(workbook, { bookType: "xlsx", type: "buffer" });
 }
 
@@ -2041,6 +2786,7 @@ function buildUnidadesResumo() {
 
   const groups = new Map();
   const unitCache = new Map();
+  const produtoresUnicos = new Set();
   const entradaRows = rows.filter(isEntradaRow).filter(row => !shouldIgnoreCultivar(extractCultivar(row)));
 
   for (const row of entradaRows) {
@@ -2076,7 +2822,11 @@ function buildUnidadesResumo() {
     const produtor = extractFornecedorNome(row);
     const cultivar = extractCultivar(row);
     const romaneio = extractRomaneio(row);
-    if (produtor) item.produtores.add(normalizeComparable(produtor));
+    if (produtor) {
+      const produtorKey = normalizeComparable(produtor);
+      item.produtores.add(produtorKey);
+      produtoresUnicos.add(produtorKey);
+    }
     if (cultivar) item.cultivares.add(normalizeComparable(cultivar));
     if (romaneio) item.romaneios.add(romaneio);
   }
@@ -2088,7 +2838,8 @@ function buildUnidadesResumo() {
       centros: groups.size,
       entradas: entradaRows.length,
       pesoBruto: [...groups.values()].reduce((sum, item) => sum + item.pesoBruto, 0),
-      pesoLiquido: [...groups.values()].reduce((sum, item) => sum + item.pesoLiquido, 0)
+      pesoLiquido: [...groups.values()].reduce((sum, item) => sum + item.pesoLiquido, 0),
+      produtores: produtoresUnicos.size
     },
     unidades: [...groups.values()]
       .map(item => ({
@@ -2193,7 +2944,7 @@ function buildUnidadeDetalhe(unidadeId) {
       produtores: produtores.size,
       cultivares: cultivares.size
     },
-    topCultivares: buildCultivarRanking(selectedRows).slice(0, 8).map(rankingNumberFields),
+    topCultivares: buildCultivarRanking(selectedRows).map(rankingNumberFields),
     topProdutores: buildProdutorRanking(selectedRows).slice(0, 8).map(rankingNumberFields)
   };
 }
@@ -2455,10 +3206,11 @@ function getPracaDefaultsForItem(item) {
 
 function getItemConfig(item, body) {
   if (body.modoGlobal !== false) {
+    const globalPraca = normalizeText(body.globalPraca);
     return {
       perc: Number(body.globalPerc) || 0,
       valor: Number(body.globalValor) || 0,
-      praca: item.praca || ""
+      praca: globalPraca || item.praca || ""
     };
   }
 
@@ -2680,7 +3432,7 @@ function formatNFeForDisplay(nfeStructure) {
         </div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
-            <p class="text-[#61713d] text-xs font-bold uppercase mb-2">Fornecedor</p>
+            <p class="text-[#61713d] text-xs font-bold uppercase mb-2">Produtor</p>
             <p class="text-sm font-bold text-[#1f4d2d]">${nfeStructure.fornecedor}</p>
             ${cnpjHtml}
           </div>
@@ -2880,7 +3632,12 @@ app.post("/api/login", async (req, res) => {
 
     req.session.user = profile.usuario;
     req.session.userId = profile.id;
-    res.json({ usuario: profile.usuario, email: profile.email, admin: isAdminProfile(profile) });
+    res.json({
+      usuario: profile.usuario,
+      email: profile.email,
+      admin: isAdminProfile(profile),
+      fotoPerfil: getProfilePhotoUrl(profile)
+    });
   } catch (error) {
     res.status(500).json({ erro: "Erro ao processar login." });
   }
@@ -3133,7 +3890,12 @@ app.get("/api/me", requireAuth, async (req, res) => {
       return res.status(404).json({ erro: "Usuário não encontrado." });
     }
 
-    res.json({ usuario: data.usuario, email: data.email, admin: isAdminProfile(data) });
+    res.json({
+      usuario: data.usuario,
+      email: data.email,
+      admin: isAdminProfile(data),
+      fotoPerfil: getProfilePhotoUrl(data)
+    });
   } catch (error) {
     res.status(500).json({ erro: "Erro ao buscar dados." });
   }
@@ -3147,9 +3909,66 @@ app.get("/api/session", requireAuth, async (req, res) => {
       return res.status(401).json({ erro: "Sessão inválida." });
     }
 
-    res.json({ usuario: data.usuario, email: data.email, admin: isAdminProfile(data) });
+    res.json({
+      usuario: data.usuario,
+      email: data.email,
+      admin: isAdminProfile(data),
+      fotoPerfil: getProfilePhotoUrl(data)
+    });
   } catch (error) {
     res.status(500).json({ erro: "Erro ao buscar sessão." });
+  }
+});
+
+app.get("/api/me/foto-perfil", requireAuth, async (req, res) => {
+  try {
+    const profile = await getCurrentProfile(req);
+    const filePath = findProfilePhotoPath(profile);
+    if (!profile || !filePath) {
+      return res.status(404).send("Foto de perfil nao encontrada.");
+    }
+
+    return res.sendFile(filePath);
+  } catch (error) {
+    return res.status(500).send("Erro ao buscar foto de perfil.");
+  }
+});
+
+app.post("/api/me/foto-perfil", requireAuth, (req, res) => {
+  profilePhotoUpload.single("foto")(req, res, async (uploadError) => {
+    if (uploadError) {
+      return res.status(400).json({ erro: uploadError.message || "Arquivo invalido." });
+    }
+
+    try {
+      if (!req.file) {
+        return res.status(400).json({ erro: "Envie uma imagem JPG, PNG ou WebP." });
+      }
+
+      const profile = await getCurrentProfile(req);
+      if (!profile) {
+        return res.status(404).json({ erro: "Usuario nao encontrado." });
+      }
+
+      const fotoPerfil = saveProfilePhoto(profile, req.file);
+      return res.json({ mensagem: "Foto de perfil atualizada.", fotoPerfil });
+    } catch (error) {
+      return res.status(500).json({ erro: error.message || "Erro ao salvar foto de perfil." });
+    }
+  });
+});
+
+app.delete("/api/me/foto-perfil", requireAuth, async (req, res) => {
+  try {
+    const profile = await getCurrentProfile(req);
+    if (!profile) {
+      return res.status(404).json({ erro: "Usuario nao encontrado." });
+    }
+
+    removeProfilePhoto(profile);
+    return res.json({ mensagem: "Foto de perfil removida.", fotoPerfil: "" });
+  } catch (error) {
+    return res.status(500).json({ erro: "Erro ao remover foto de perfil." });
   }
 });
 
@@ -3167,7 +3986,7 @@ app.get("/api/fornecedores", requireAuth, (_req, res) => {
 
     res.json({ fornecedores });
   } catch (error) {
-    res.status(500).json({ erro: "Erro ao buscar fornecedores." });
+    res.status(500).json({ erro: "Erro ao buscar produtores." });
   }
 });
 
@@ -3238,11 +4057,11 @@ app.get("/api/ranking-fornecedores/exportar", requireAuth, (_req, res) => {
 
     const buffer = buildRankingFornecedoresWorkbookBuffer(rankings);
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    res.setHeader("Content-Disposition", "attachment; filename=\"ranking-fornecedores-volume.xlsx\"");
+    res.setHeader("Content-Disposition", "attachment; filename=\"ranking-produtores-volume.xlsx\"");
     res.send(buffer);
   } catch (error) {
-    console.error(`Erro ao exportar ranking de fornecedores: ${error.message}`);
-    res.status(500).json({ erro: "Erro ao exportar ranking de fornecedores." });
+    console.error(`Erro ao exportar ranking de produtores: ${error.message}`);
+    res.status(500).json({ erro: "Erro ao exportar ranking de produtores." });
   }
 });
 
@@ -4317,6 +5136,89 @@ app.get("/api/planilha", requireAuth, requireAdmin, (_req, res) => {
   res.json(info);
 });
 
+app.get("/api/classificacoes-planilha", requireAuth, requireAdmin, (_req, res) => {
+  res.json(getClassificationWorkbookInfo());
+});
+
+app.get("/api/classificacoes-regras", requireAuth, requireAdmin, (_req, res) => {
+  try {
+    const stat = fs.existsSync(CLASSIFICATION_RULES_FILE) ? fs.statSync(CLASSIFICATION_RULES_FILE) : null;
+    res.json({
+      arquivo: path.basename(CLASSIFICATION_RULES_FILE),
+      conteudo: getClassificationRulesText(),
+      atualizadoEm: stat ? new Date(stat.mtimeMs).toISOString() : null
+    });
+  } catch (error) {
+    console.error(`Erro ao ler regras de classificacoes: ${error.message}`);
+    res.status(500).json({ erro: "Erro ao ler as regras de classificacoes." });
+  }
+});
+
+app.put("/api/classificacoes-regras", requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const profile = await getCurrentProfile(req);
+    const saved = writeClassificationRulesText(req.body?.conteudo || "");
+    await setConfigValue(CLASSIFICATION_RULES_CONFIG_KEY, saved.text);
+    const reprocess = await reprocessClassificationFromStoredOriginal(profile);
+    const mensagem = reprocess.reprocessed
+      ? "Regras de classificacoes atualizadas e planilha atual reprocessada com sucesso."
+      : "Regras de classificacoes atualizadas. Envie novamente a planilha de classificacoes para aplicar nas linhas atuais.";
+    res.json({
+      mensagem,
+      arquivo: path.basename(CLASSIFICATION_RULES_FILE),
+      tamanho: saved.size,
+      atualizadoEm: new Date().toISOString(),
+      reprocessado: reprocess.reprocessed,
+      motivo: reprocess.reason || null,
+      classificacoes: reprocess.classificacoes || null
+    });
+  } catch (error) {
+    console.error(`Erro ao salvar regras de classificacoes: ${error.message}`);
+    res.status(error.statusCode || 500).json({ erro: error.statusCode ? error.message : "Erro ao salvar as regras de classificacoes." });
+  }
+});
+
+app.post("/api/classificacoes-planilha", requireAuth, requireAdmin, uploadClassificacoes.single("planilha"), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ erro: "Nenhum arquivo enviado." });
+  }
+
+  try {
+    const profile = await getCurrentProfile(req);
+    const originalMeta = saveClassificationOriginalUpload(req.file.buffer, req.file.originalname, profile);
+    await saveClassificationOriginalSnapshot(originalMeta, req.file.buffer);
+    const treated = processClassificationWorkbookBuffer(req.file.buffer, req.file.originalname);
+    fs.writeFileSync(CLASSIFICATION_WORKBOOK, treated.buffer);
+
+    const meta = {
+      storedName: CLASSIFICATION_WORKBOOK_NAME,
+      originalName: req.file.originalname,
+      originalStoredName: originalMeta.storedName,
+      uploadedAt: new Date().toISOString(),
+      uploadedBy: profile?.usuario || req.session.user || null,
+      uploadedByEmail: profile?.email || null,
+      size: treated.buffer.length,
+      sha256: crypto.createHash("sha256").update(treated.buffer).digest("hex"),
+      rulesFile: path.basename(CLASSIFICATION_RULES_FILE),
+      stats: treated.stats
+    };
+
+    writeClassificationMeta(meta);
+    classificationRowsCache = null;
+
+    const config = getExtraWorkbookConfigs().find(item => item.key === "classificacoes_snapshot");
+    if (config) await saveExtraWorkbookSnapshot(config);
+
+    res.json({
+      mensagem: "Planilha de classificações tratada e atualizada com sucesso.",
+      classificacoes: getClassificationWorkbookInfo()
+    });
+  } catch (error) {
+    console.error(`Erro ao fazer upload de classificacoes: ${error.message}`);
+    res.status(500).json({ erro: "Erro ao tratar a planilha de classificações." });
+  }
+});
+
 // ============= CONFIGURACOES E USUARIOS =============
 
 app.get("/api/dashboard-link", requireAuth, async (_req, res) => {
@@ -4560,6 +5462,33 @@ async function startServer() {
     await restoreAllExtraWorkbooks();
   } catch (error) {
     console.warn(`Não foi possível restaurar planilhas auxiliares: ${error.message}`);
+  }
+
+  try {
+    const restoredOriginal = await restoreClassificationOriginalSnapshot();
+    if (restoredOriginal) {
+      console.log("Original de classificacoes restaurado do Supabase.");
+    }
+  } catch (error) {
+    console.warn(`Nao foi possivel restaurar original de classificacoes: ${error.message}`);
+  }
+
+  try {
+    const restoredRules = await restoreClassificationRulesText();
+    if (restoredRules) {
+      console.log("Regras de classificacoes restauradas do Supabase.");
+    }
+  } catch (error) {
+    console.warn(`Nao foi possivel restaurar regras de classificacoes: ${error.message}`);
+  }
+
+  try {
+    const reprocess = await reprocessClassificationFromStoredOriginal(null);
+    if (reprocess.reprocessed) {
+      console.log("Planilha de classificacoes reprocessada com as regras atuais.");
+    }
+  } catch (error) {
+    console.warn(`Nao foi possivel reprocessar classificacoes na inicializacao: ${error.message}`);
   }
 
   try {
